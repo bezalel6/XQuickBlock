@@ -1,13 +1,15 @@
 # XQuickBlock - Chrome Extension
 
+![screenshot](screenshot.png)
+
 ## Overview
 
-**XQuickBlock** is a Chrome extension designed to add mute and block functionalities directly to user elements on web pages. This extension automatically adds buttons to user name elements, allowing users to quickly mute or block other users. Without having to go through menus and confirmation dialogs.
+**XQuickBlock** is a Chrome extension designed to add mute and block functionalities directly to the user elements on X. This extension automatically adds buttons to user name elements, allowing users to quickly mute or block other users. Without having to go through the menus and confirmation dialogs.
 
 ## Features
 
 - **Mute and Block Users:** Adds mute and block buttons to user name elements.
-- **Batch Actions:** Allows muting or blocking multiple users at once with a control-click.
+- **Batch Actions:** Allows muting or blocking of all users in a given context at once with a control-click.
 - **Debounced Actions:** Ensures efficient processing of user actions.
 - **Automatic Updates:** Observes DOM changes to dynamically add buttons to new user elements.
 

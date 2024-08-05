@@ -62,19 +62,42 @@ function addButtonsToUserName(userNameElement) {
     const button = document.createElement("button");
     button.innerHTML = icon;
     button.style.marginLeft = "10px";
-    button.onmousemove = (e) => {
-      if (e.ctrlKey) {
-        button.innerHTML = `${icon} All In Here`;
-      }
+    button.style.cursor = "pointer";
+
+    button.innerHTML = icon;
+    button.style.padding = "2px 5px";
+    button.style.borderRadius = "4px";
+    button.style.border = "none";
+    button.style.cursor = "pointer";
+    button.style.backgroundColor = "#1DA1F2";
+    button.style.color = "white";
+    button.style.fontSize = "12px";
+    button.style.transition = "background-color 0.2s";
+
+    button.onmouseover = () => {};
+    button.onmouseout = () => {};
+
+    button.onmousemove =
+      button.onmouseenter =
+      button.onmouseover =
+        (e) => {
+          button.style.backgroundColor = "#0c85d0";
+          if (e.ctrlKey) {
+            button.innerHTML = `${icon} All In Here`;
+          } else {
+            button.innerHTML = icon;
+          }
+        };
+    const reset = () => {
+      button.style.backgroundColor = "#1DA1F2";
+      button.innerHTML = icon;
     };
     button.onmouseleave = () => {
-      button.innerHTML = icon;
+      reset();
     };
     button.onclick = async (e) => {
       if (e.ctrlKey) {
-        const users = Array.from(
-          document.querySelectorAll("*[data-testid=User-Name]")
-        )
+        const users = Array.from(document.querySelectorAll(userNameSelector))
           .filter((e) => e.style?.display != "none")
           .sort((a, b) => {
             return b.getBoundingClientRect().y - a.getBoundingClientRect().y;
@@ -111,7 +134,7 @@ function debounce(func, wait) {
 }
 
 let observer;
-
+const userNameSelector = "*[data-testid=User-Name]";
 /**
  * Observe DOM changes and add buttons to new user names.
  */
@@ -124,7 +147,8 @@ function observeDOMChanges() {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node["querySelectorAll"]) {
-            const userNames = node.querySelectorAll("*[data-testid=User-Name]");
+            const userNames = node.querySelectorAll(userNameSelector);
+            // const userNames = node.querySelectorAll("*[data-testid=User-Name]");
             userNames.forEach(addButtonsToUserName);
           }
         });
@@ -136,7 +160,7 @@ function observeDOMChanges() {
 }
 
 function initialize() {
-  const userNames = document.querySelectorAll("*[data-testid=User-Name]");
+  const userNames = document.querySelectorAll(userNameSelector);
   userNames.forEach(addButtonsToUserName);
   setTimeout(observeDOMChanges, 2000);
 }

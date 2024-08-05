@@ -1,1 +1,10 @@
-{"devDependencies":{"chrome-types":"^0.1.295"}}
+{
+    "scripts": {
+        "zip": "bun zipper.js"
+    },
+    "devDependencies": {
+        "archiver": "^7.0.1",
+        "chrome-types": "^0.1.295",
+        "glob": "^11.0.0"
+    }
+}
