@@ -1,0 +1,31 @@
+{
+   "$schema": "https://json.schemastore.org/chrome-manifest",
+   "content_scripts": [
+      {
+         "js": [
+            "script.js"
+         ],
+         "matches": [
+            "https://x.com/*"
+         ]
+      }
+   ],
+   "action": {
+      "default_icon": "icon128.png",
+      "default_title": "XQuickBlock: Quickly block and mute accounts on X",
+      "default_popup": "./popup.html"
+   },
+   "description": "Add easy access to blocking and muting users",
+   "icons": {
+      "48": "icon.png",
+      "128": "icon128.png"
+   },
+   "manifest_version": 3,
+   "name": "XQuickBlock",
+   "permissions": [
+      "storage",
+      "tabs",
+      "activeTab"
+   ],
+   "version": "0.0.2"
+}
