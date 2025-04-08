@@ -3,16 +3,24 @@ import { createRoot } from "react-dom/client";
 
 interface StorageState {
   sharedState?: boolean;
+  themeOverride?: "light" | "dark" | "system";
 }
 
 const Popup: React.FC = () => {
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
+  const [themeOverride, setThemeOverride] = useState<
+    "light" | "dark" | "system"
+  >("system");
 
   useEffect(() => {
-    // Initialize the toggle switch based on the saved state
-    chrome.storage.sync.get('sharedState', (data: StorageState) => {
-      setIsEnabled(data.sharedState || false);
-    });
+    // Initialize states from storage
+    chrome.storage.sync.get(
+      ["sharedState", "themeOverride"],
+      (data: StorageState) => {
+        setIsEnabled(data.sharedState || false);
+        setThemeOverride(data.themeOverride || "system");
+      }
+    );
   }, []);
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,31 +38,75 @@ const Popup: React.FC = () => {
     });
   };
 
+  const toggleTheme = () => {
+    let newTheme: "light" | "dark" | "system";
+    if (themeOverride === "system") {
+      newTheme = "dark";
+    } else if (themeOverride === "dark") {
+      newTheme = "light";
+    } else {
+      newTheme = "system";
+    }
+
+    setThemeOverride(newTheme);
+    chrome.storage.sync.set({ themeOverride: newTheme });
+  };
+
   return (
-    <div style={{ 
-      width: '300px', 
-      padding: '20px',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h2 style={{ 
-        marginBottom: '20px',
-        color: '#1DA1F2'
-      }}>
-        XQuickBlock
-      </h2>
-      
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <label style={{ 
-          fontSize: '16px',
-          color: isEnabled ? '#1DA1F2' : '#657786'
-        }}>
-          {isEnabled ? 'Enabled' : 'Disabled'}
+    <div
+      style={{
+        width: "300px",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+            color: "var(--primary-color)",
+          }}
+        >
+          XQuickBlock
+        </h2>
+
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle"
+          aria-label="Toggle theme"
+        >
+          <div className="theme-icon">
+            <div className="sun"></div>
+            <div className="moon"></div>
+          </div>
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <label
+          style={{
+            fontSize: "16px",
+            color: isEnabled
+              ? "var(--primary-color)"
+              : "var(--secondary-color)",
+          }}
+        >
+          {isEnabled ? "Enabled" : "Disabled"}
         </label>
-        
+
         <label className="switch">
           <input
             type="checkbox"
@@ -66,17 +118,109 @@ const Popup: React.FC = () => {
         </label>
       </div>
 
-      <div style={{ 
-        marginTop: '20px',
-        fontSize: '14px',
-        color: '#657786'
-      }}>
+      <div
+        style={{
+          marginTop: "20px",
+          fontSize: "14px",
+          color: "var(--secondary-color)",
+        }}
+      >
         <p>Click the Mute/Block buttons next to usernames to take action.</p>
         <p>Hold Ctrl and click to apply to all visible users.</p>
       </div>
 
       <style>
         {`
+          :root {
+            --primary-color: #1DA1F2;
+            --secondary-color: #657786;
+            --background-color: #ffffff;
+            --toggle-bg: #657786;
+            --toggle-knob: #ffffff;
+          }
+
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --primary-color: #1DA1F2;
+              --secondary-color: #8899A6;
+              --background-color: #15202B;
+              --toggle-bg: #8899A6;
+              --toggle-knob: #15202B;
+            }
+          }
+
+          [data-theme="dark"] {
+            --primary-color: #1DA1F2;
+            --secondary-color: #8899A6;
+            --background-color: #15202B;
+            --toggle-bg: #8899A6;
+            --toggle-knob: #15202B;
+          }
+
+          [data-theme="light"] {
+            --primary-color: #1DA1F2;
+            --secondary-color: #657786;
+            --background-color: #ffffff;
+            --toggle-bg: #657786;
+            --toggle-knob: #ffffff;
+          }
+
+          body {
+            background-color: var(--background-color);
+            color: var(--secondary-color);
+          }
+
+          .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+          }
+
+          .theme-toggle:hover {
+            background-color: var(--toggle-bg);
+            opacity: 0.8;
+          }
+
+          .theme-icon {
+            position: relative;
+            width: 24px;
+            height: 24px;
+          }
+
+          .sun, .moon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+          }
+
+          .sun {
+            transform: scale(1);
+            opacity: 1;
+          }
+
+          .moon {
+            transform: scale(0);
+            opacity: 0;
+          }
+
+          [data-theme="dark"] .sun {
+            transform: scale(0);
+            opacity: 0;
+          }
+
+          [data-theme="dark"] .moon {
+            transform: scale(1);
+            opacity: 1;
+          }
+
           .switch {
             position: relative;
             display: inline-block;
@@ -97,7 +241,7 @@ const Popup: React.FC = () => {
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #657786;
+            background-color: var(--toggle-bg);
             transition: .4s;
           }
           
@@ -108,12 +252,12 @@ const Popup: React.FC = () => {
             width: 26px;
             left: 4px;
             bottom: 4px;
-            background-color: white;
+            background-color: var(--toggle-knob);
             transition: .4s;
           }
           
           .toggle-switch:checked + .slider {
-            background-color: #1DA1F2;
+            background-color: var(--primary-color);
           }
           
           .toggle-switch:checked + .slider:before {
