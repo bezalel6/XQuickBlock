@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 
 interface StorageState {
   sharedState?: boolean;
-  themeOverride?: "light" | "dark" | "system";
+  themeOverride?: "light" | "dark";
 }
 
 const Popup: React.FC = () => {
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
-  const [themeOverride, setThemeOverride] = useState<
-    "light" | "dark" | "system"
-  >("system");
+  const [themeOverride, setThemeOverride] = useState<"light" | "dark">(
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
 
   useEffect(() => {
     // Initialize states from storage
@@ -18,10 +19,17 @@ const Popup: React.FC = () => {
       ["sharedState", "themeOverride"],
       (data: StorageState) => {
         setIsEnabled(data.sharedState || false);
-        setThemeOverride(data.themeOverride || "system");
+        if (data.themeOverride) {
+          setThemeOverride(data.themeOverride);
+        }
       }
     );
   }, []);
+
+  // Add effect to apply theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeOverride);
+  }, [themeOverride]);
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newState = event.target.checked;
@@ -39,15 +47,7 @@ const Popup: React.FC = () => {
   };
 
   const toggleTheme = () => {
-    let newTheme: "light" | "dark" | "system";
-    if (themeOverride === "system") {
-      newTheme = "dark";
-    } else if (themeOverride === "dark") {
-      newTheme = "light";
-    } else {
-      newTheme = "system";
-    }
-
+    const newTheme = themeOverride === "dark" ? "light" : "dark";
     setThemeOverride(newTheme);
     chrome.storage.sync.set({ themeOverride: newTheme });
   };
@@ -82,10 +82,11 @@ const Popup: React.FC = () => {
           className="theme-toggle"
           aria-label="Toggle theme"
         >
-          <div className="theme-icon">
-            <div className="sun"></div>
-            <div className="moon"></div>
-          </div>
+          {themeOverride === "dark" ? (
+            <SunIcon className="theme-icon" />
+          ) : (
+            <MoonIcon className="theme-icon" />
+          )}
         </button>
       </div>
 
@@ -176,49 +177,63 @@ const Popup: React.FC = () => {
             cursor: pointer;
             padding: 8px;
             border-radius: 50%;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .theme-toggle:hover {
-            background-color: var(--toggle-bg);
-            opacity: 0.8;
+            background-color: rgba(128, 128, 128, 0.2);
           }
 
           .theme-icon {
-            position: relative;
             width: 24px;
             height: 24px;
+            color: var(--secondary-color);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
           }
 
-          .sun, .moon {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: var(--secondary-color);
-            transition: transform 0.5s ease, opacity 0.5s ease;
+          .theme-toggle:hover .theme-icon {
+            transform: rotate(30deg) scale(1.1);
           }
 
-          .sun {
-            transform: scale(1);
-            opacity: 1;
+          /* Add morphing animation */
+          .theme-icon {
+            animation: none;
           }
 
-          .moon {
-            transform: scale(0);
-            opacity: 0;
+          [data-theme="dark"] .theme-icon {
+            animation: morphToMoon 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           }
 
-          [data-theme="dark"] .sun {
-            transform: scale(0);
-            opacity: 0;
+          [data-theme="light"] .theme-icon {
+            animation: morphToSun 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           }
 
-          [data-theme="dark"] .moon {
-            transform: scale(1);
-            opacity: 1;
+          @keyframes morphToMoon {
+            0% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(0.8) rotate(180deg);
+            }
+            100% {
+              transform: scale(1) rotate(360deg);
+            }
+          }
+
+          @keyframes morphToSun {
+            0% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(0.8) rotate(180deg);
+            }
+            100% {
+              transform: scale(1) rotate(360deg);
+            }
           }
 
           .switch {

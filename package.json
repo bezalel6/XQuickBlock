@@ -7,7 +7,8 @@
     "watch": "webpack --config webpack/webpack.dev.js --watch",
     "build": "webpack --config webpack/webpack.prod.js",
     "clean": "rimraf dist",
-    "style": "prettier --write \"src/**/*.{ts,tsx}\""
+    "style": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "package": "npm run build && node scripts/package.js"
   },
   "author": "",
   "license": "MIT",
@@ -16,6 +17,7 @@
     "url": "https://github.com/chibat/chrome-extension-typescript-starter.git"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -24,6 +26,7 @@
     "@types/jest": "^29.5.0",
     "@types/react": "^18.0.29",
     "@types/react-dom": "^18.0.11",
+    "archiver": "^6.0.2",
     "copy-webpack-plugin": "^9.0.1",
     "glob": "^7.1.6",
     "jest": "^29.5.0",
