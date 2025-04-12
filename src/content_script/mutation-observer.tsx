@@ -1,6 +1,7 @@
 import { processUsername } from ".";
 import { upsaleDialogSelector, buyIntoUpsaleHref, upsalePathname, userNameSelector } from "../constants";
 import { ExtensionState } from "../types";
+import { getSettingsManager } from "./settings-manager";
 import { getCurrentState, toggleInvisible } from "./utils";
 
 type Falsy = false | 0 | "" | null | undefined;
@@ -46,7 +47,7 @@ async function handleUpsaleDialog(ogPath: string) {
     history.replaceState(null, '', ogPath);
 }
 
-export let observer: MutationObserver | null = null;
+let observer: MutationObserver | null = null;
 
 /**
  * Observe DOM changes and add buttons to new user names
@@ -57,7 +58,7 @@ export async function observeDOMChanges(settings: ExtensionState) {
     let currentPath = location.pathname
     observer = new MutationObserver(async (mutationsList) => {
         if (location.pathname !== currentPath) {
-            settings = await getCurrentState()
+            settings = await (await getSettingsManager()).getState()
             if (location.pathname.endsWith(upsalePathname) && settings.hideSubscriptionOffers) {
                 await handleUpsaleDialog(currentPath)
             } else {
@@ -70,7 +71,7 @@ export async function observeDOMChanges(settings: ExtensionState) {
                     if (node instanceof HTMLElement) {
                         const userNames = node.querySelectorAll(userNameSelector);
                         userNames.forEach((userName) =>
-                            processUsername(userName as HTMLElement, settings)
+                            processUsername(userName as HTMLElement)
                         );
                         processMutationCallbacks(node)
                     }
@@ -80,4 +81,11 @@ export async function observeDOMChanges(settings: ExtensionState) {
     });
 
     observer.observe(targetNode, config);
+}
+
+export async function resetObserver() {
+    if (observer) {
+        observer.disconnect()
+        observer = null;
+    }
 }

@@ -2,31 +2,34 @@ import { upsaleSelectors, userNameSelector } from "../constants";
 import { ExtensionMessage, ExtensionState } from "../types";
 import AdPlaceholder from "./ad-placeholder";
 import Button from "./dispatch-btn";
-import { observeDOMChanges, observer } from "./mutation-observer";
+import { observeDOMChanges, resetObserver } from "./mutation-observer";
+import { getSettingsManager } from "./settings-manager";
 import { isUserOwnAccount, getTweet, hasAdSpan, dispatch, getCurrentState, toggleInvisible } from "./utils";
 
 /**
  * Add mute and block buttons to user names, as well as applying current Ad policy
  */
-export function processUsername(userNameElement: HTMLElement, settings: ExtensionState): void {
+export async function processUsername(userNameElement: HTMLElement) {
     if (userNameElement.hasAttribute("messedWith") || isUserOwnAccount(userNameElement)) return;
     const tweet = getTweet(userNameElement)!
     if (hasAdSpan(tweet)) {
-        console.log('Got ad')
-        switch (settings.promotedContentAction) {
-            case "nothing": break;
-            case "hide": {
-                const notification = AdPlaceholder(userNameElement)
-                tweet.parentNode?.insertBefore(notification, tweet)
-                tweet.style.height = '0'
-                break;
-            }
-            case "block": {
-                dispatch(userNameElement, "block")
-                break;
-            }
+        const behaviour = await getSettingsManager()
+        behaviour.subscribe(['promotedContentAction'], ({ promotedContentAction }) => {
+            switch (promotedContentAction) {
+                case "nothing": break;
+                case "hide": {
+                    const notification = AdPlaceholder(userNameElement)
+                    tweet.parentNode?.insertBefore(notification, tweet)
+                    tweet.style.height = '0'
+                    break;
+                }
+                case "block": {
+                    dispatch(userNameElement, "block")
+                    break;
+                }
 
-        }
+            }
+        })
     }
 
     userNameElement.setAttribute("messedWith", "true");
@@ -36,27 +39,25 @@ export function processUsername(userNameElement: HTMLElement, settings: Extensio
 }
 
 
-function applySettings(state: ExtensionState): void {
+async function applySettings(state: ExtensionState) {
     if (!state.isBlockMuteEnabled) {
         cleanup();
         return;
     }
+    const settingsManager = await getSettingsManager()
     setTimeout(() => {
-        toggleInvisible(upsaleSelectors.join(", "), state.hideSubscriptionOffers)
+        settingsManager.subscribe(["hideSubscriptionOffers"], ({ hideSubscriptionOffers }) => toggleInvisible(upsaleSelectors, hideSubscriptionOffers))
+
         const userNames = document.querySelectorAll(userNameSelector);
         userNames.forEach((userName) =>
-            processUsername(userName as HTMLElement, state)
+            processUsername(userName as HTMLElement)
         );
         observeDOMChanges(state)
     }, 1000)
 }
 
 function cleanup(): void {
-    if (observer) {
-        observer.disconnect();
-        // observer = null;
-    }
-
+    resetObserver()
     document.querySelectorAll('[messedWith="true"]').forEach((e) => {
         e.removeAttribute("messedWith");
     });
@@ -72,7 +73,7 @@ function cleanup(): void {
 // Initialize based on saved state
 async function init() {
     console.log('[XQuickBlock] DOM content loaded, starting initialization...');
-    const state = await getCurrentState();
+    const state = (await getSettingsManager()).getState();
     applySettings(state);
     console.log('[XQuickBlock] Initialized with settings:', state);
 }
@@ -83,7 +84,7 @@ window.addEventListener("load", init)
 chrome.runtime.onMessage.addListener(
     (message: ExtensionMessage, sender, sendResponse) => {
         if (message.type === "stateUpdate") {
-            applySettings(message.payload);
+            getSettingsManager().then(m => m.update(message.payload))
             sendResponse({ message: "State updated successfully" });
         }
         return true;
