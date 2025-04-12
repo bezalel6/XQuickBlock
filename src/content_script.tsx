@@ -1,6 +1,6 @@
 import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
-import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, upsaleTwitterPathname as upsalePathname, userMenuSelector, buyIntoUpsaleHref, upsaleDialogSelector } from "./constants";
+import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelectors, upsaleTwitterPathname as upsalePathname, userMenuSelector, buyIntoUpsaleHref, upsaleDialogSelector } from "./constants";
 import { html, render } from './lit.js'
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
@@ -204,10 +204,10 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
         tweet.parentNode?.insertBefore(notification, tweet)
         tweet.style.height = '0'
       }
-      case "block":
-      default: {
-        tweet.style.backgroundColor = "aqua"
+      case "block": {
+        doToUser(userNameElement, "block")
       }
+
     }
   }
 
@@ -292,7 +292,8 @@ async function observeDOMChanges(settings: ExtensionState) {
   observer.observe(targetNode, config);
 }
 function applySettings(state: ExtensionState): void {
-  toggleInvisible(upsaleSelector, state.hideSubscriptionOffers)
+  upsaleSelectors.forEach(selector => toggleInvisible(selector, state.hideSubscriptionOffers))
+
   if (!state.isBlockMuteEnabled) {
     cleanup();
     return;
@@ -353,10 +354,6 @@ async function init() {
   console.log('[XQuickBlock] DOM content loaded, starting initialization...');
   const state = await getCurrentState();
   applySettings(state);
-
-  // const container = document.createElement('div');
-  // document.body.prepend(container);
-  // render(html`<h1>Hello, world!</h1>`, container);
 }
 
 window.addEventListener("load", init)
