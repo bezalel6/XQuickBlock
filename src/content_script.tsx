@@ -1,13 +1,9 @@
 import { sleep } from "./utils";
-
-type Action = "block" | "mute";
-
-interface UserActionMessage {
-  sharedState?: boolean;
-}
+import { Action, ExtensionMessage, ExtensionState } from "./types";
 
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
+let cachedUsername: string | null = null;
 
 /**
  * Wait for an element to appear in the DOM with improved error handling
@@ -142,10 +138,48 @@ function createButton(
 }
 
 /**
+ * Get the current user's username from the account switcher button
+ */
+function getCurrentUsername(): string | null {
+  function g(){
+    if (cachedUsername) return cachedUsername;
+
+    const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
+    if (!accountSwitcher) {
+      return null;
+    }
+  
+    const userAvatarContainer = accountSwitcher.querySelector('[data-testid^="UserAvatar-Container-"]');
+    if (!userAvatarContainer) {
+      return null;
+    }
+  
+    cachedUsername = userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
+    return cachedUsername;
+  }
+  const  username = g()
+  console.log("My username:",username)
+  return username
+}
+
+/**
+ * Check if the given element belongs to the user's own account
+ */
+function isUserOwnAccount(element: HTMLElement): boolean {
+  const currentUsername = getCurrentUsername();
+  if (!currentUsername) return false;
+
+  // Get the username from the element we're checking
+  const elementUsername = element.closest('[data-testid="User-Name"]')?.querySelector('a[href^="/"]')?.getAttribute('href')?.replace('/', '');
+
+  return currentUsername === elementUsername;
+}
+
+/**
  * Add mute and block buttons to user names with improved error handling
  */
 function addButtonsToUserName(userNameElement: HTMLElement): void {
-  if (userNameElement.hasAttribute("messedWith")) return;
+  if (userNameElement.hasAttribute("messedWith") || isUserOwnAccount(userNameElement)) return;
   userNameElement.setAttribute("messedWith", "true");
 
   userNameElement.appendChild(createButton("Mute", "mute", userNameElement));
@@ -156,7 +190,7 @@ function addButtonsToUserName(userNameElement: HTMLElement): void {
  * Observe DOM changes and add buttons to new user names
  */
 function observeDOMChanges(): void {
-  const targetNode = document.body;
+  const targetNode = window.document.body;
   const config = { childList: true, subtree: true };
 
   observer = new MutationObserver((mutationsList) => {
@@ -177,12 +211,18 @@ function observeDOMChanges(): void {
   observer.observe(targetNode, config);
 }
 
-function initialize(): void {
-  const userNames = document.querySelectorAll(USER_NAME_SELECTOR);
-  userNames.forEach((userName) =>
-    addButtonsToUserName(userName as HTMLElement)
-  );
-  setTimeout(observeDOMChanges, 2000);
+function initialize(state: ExtensionState): void {
+  if (!state.isBlockMuteEnabled) {
+    cleanup();
+    return;
+  }
+  setTimeout(()=>{
+    const userNames = document.querySelectorAll(USER_NAME_SELECTOR);
+    userNames.forEach((userName) =>
+      addButtonsToUserName(userName as HTMLElement)
+    );
+    observeDOMChanges()
+  },1000)
 }
 
 function cleanup(): void {
@@ -204,23 +244,39 @@ function cleanup(): void {
 }
 
 // Initialize based on saved state
-chrome.storage.sync.get("sharedState", (data) => {
-  if (data.sharedState) {
-    initialize();
-  } else {
-    cleanup();
-  }
-});
+function init(){
+  console.log('[XQuickBlock] DOM content loaded, starting initialization...');
+  
+  chrome.storage.sync.get(null, (data: Partial<ExtensionState>) => {
+    console.log('[XQuickBlock] Retrieved storage data:', data);
+    
+    const defaultState: ExtensionState = {
+      isBlockMuteEnabled: true,
+      themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+      promotedContentAction: "hide",
+      hideSubscriptionOffers: true,
+    };
+    
+    const finalState = {
+      ...defaultState,
+      ...data,
+    };
+    
+    console.log('[XQuickBlock] Final state to initialize with:', finalState);
+    initialize(finalState);
+    console.log('[XQuickBlock] Initialization complete');
+    
+    // Force a navigation to ensure page is fully loaded
+    window.location.href = window.location.href + '#';
+  });
+}
+window.addEventListener("load",init)
 
 // Listen for messages to update the shared state
 chrome.runtime.onMessage.addListener(
-  (request: UserActionMessage, sender, sendResponse) => {
-    if (request.sharedState !== undefined) {
-      if (request.sharedState) {
-        initialize();
-      } else {
-        cleanup();
-      }
+  (message: ExtensionMessage, sender, sendResponse) => {
+    if (message.type === "stateUpdate") {
+      initialize(message.payload);
       sendResponse({ message: "State updated successfully" });
     }
     return true;
