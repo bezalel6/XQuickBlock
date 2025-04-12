@@ -1,7 +1,7 @@
 import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
 import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, userMenuSelector } from "./constants";
-import * as lit from './lit.js'
+import { html, render } from './lit.js'
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
 let cachedUsername: string | null = null;
@@ -195,12 +195,8 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
     switch (settings.promotedContentAction) {
       case "nothing": { }
       case "hide": {
-        const notif = document.createElement('article')
-        notif.textContent = "This advertisement was hidden"
-        notif.style.width = "100%"
-        notif.style.textAlign = "center"
-        notif.style.fontSize = 'large'
-        tweet.parentNode?.insertBefore(notif, tweet)
+        const notification = createAdNotification()
+        tweet.parentNode?.insertBefore(notification, tweet)
         tweet.style.display = 'none'
       }
       case "block":
@@ -304,9 +300,9 @@ async function init() {
   const state = await getCurrentState();
   applySettings(state);
 
-  const container = document.createElement('div');
-  document.body.prepend(container);
-  lit.render(lit.html`<h1>Hello, world!</h1>`, container);
+  // const container = document.createElement('div');
+  // document.body.prepend(container);
+  // render(html`<h1>Hello, world!</h1>`, container);
 }
 
 window.addEventListener("load", init)
@@ -322,3 +318,65 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+
+function createAdNotification() {
+  const container = document.createElement('div');
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .xquickblock-notification {
+      background: rgba(29, 161, 242, 0.1);
+      border: 1px solid rgba(29, 161, 242, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    .xquickblock-notification:hover {
+      background: rgba(29, 161, 242, 0.15);
+      border-color: rgba(29, 161, 242, 0.3);
+    }
+    .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .notification-icon {
+      width: 24px;
+      height: 24px;
+      fill: #1DA1F2;
+      flex-shrink: 0;
+    }
+    .notification-text h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #1DA1F2;
+      font-weight: 600;
+    }
+    .notification-text p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: #657786;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const template = html`
+    <div class="xquickblock-notification">
+      <div class="notification-content">
+        <svg class="notification-icon" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        </svg>
+        <div class="notification-text">
+          <h3>Advertisement Hidden</h3>
+          <p>This sponsored content has been hidden based on your preferences.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  render(template, container);
+  return container;
+}
