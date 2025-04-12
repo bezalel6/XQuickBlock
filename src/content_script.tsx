@@ -1,7 +1,6 @@
 import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
 import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, userMenuSelector } from "./constants";
-// @ts-ignore
 import * as lit from './lit.js'
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
