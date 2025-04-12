@@ -1,299 +1,216 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import {
+  Box,
+  Container,
+  Typography,
+  Switch,
+  FormControlLabel,
+  IconButton,
+  Paper,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  FormControl,
+  Select,
+  MenuItem,
+  FormLabel,
+  Divider,
+  SelectChangeEvent,
+} from "@mui/material";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { ExtensionState, PromotedContentAction } from "./types";
 
-interface StorageState {
-  sharedState?: boolean;
-  themeOverride?: "light" | "dark";
-}
+// Create a reusable theme toggle component
+const ThemeToggle: React.FC<{
+  theme: "light" | "dark";
+  onToggle: () => void;
+}> = ({ theme, onToggle }) => (
+  <IconButton onClick={onToggle} color="inherit" aria-label="toggle theme">
+    {theme === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+  </IconButton>
+);
+
+// Create a reusable header component
+const Header: React.FC<{
+  title: string;
+  theme: "light" | "dark";
+  onThemeToggle: () => void;
+}> = ({ title, theme, onThemeToggle }) => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      mb: 3,
+    }}
+  >
+    <Typography variant="h5" component="h1" color="primary">
+      {title}
+    </Typography>
+    <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+  </Box>
+);
+
+// Create a reusable toggle component
+const ToggleSwitch: React.FC<{
+  enabled: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+}> = ({ enabled, onChange, label }) => (
+  <FormControlLabel
+    control={
+      <Switch
+        checked={enabled}
+        onChange={(e) => onChange(e.target.checked)}
+        color="primary"
+      />
+    }
+    label={label}
+  />
+);
+
+// Create a reusable promoted content selection component
+const PromotedContentSelector: React.FC<{
+  value: PromotedContentAction;
+  onChange: (value: PromotedContentAction) => void;
+}> = ({ value, onChange }) => (
+  <FormControl fullWidth sx={{ mt: 2 }}>
+    <FormLabel>Promoted Content</FormLabel>
+    <Select
+      value={value}
+      onChange={(e: SelectChangeEvent) => onChange(e.target.value as PromotedContentAction)}
+      size="small"
+      sx={{ mt: 1 }}
+    >
+      <MenuItem value="nothing">Do nothing</MenuItem>
+      <MenuItem value="hide">Hide</MenuItem>
+      <MenuItem value="block">Block</MenuItem>
+    </Select>
+  </FormControl>
+);
+
+// Create a reusable info section component
+const InfoSection: React.FC = () => (
+  <Box sx={{ mt: 3 }}>
+    <Typography variant="body2" color="text.secondary" paragraph>
+      Click the Mute/Block buttons next to usernames to take action.
+    </Typography>
+    <Typography variant="body2" color="text.secondary">
+      Hold Ctrl and click to apply to all visible users.
+    </Typography>
+  </Box>
+);
 
 const Popup: React.FC = () => {
-  const [isEnabled, setIsEnabled] = useState<boolean>(false);
-  const [themeOverride, setThemeOverride] = useState<"light" | "dark">(
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-  );
+  const [state, setState] = useState<ExtensionState>({
+    isBlockMuteEnabled: false,
+    themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    promotedContentAction: "hide",
+    hideSubscriptionOffers: true,
+  });
 
   useEffect(() => {
-    // Initialize states from storage
-    chrome.storage.sync.get(
-      ["sharedState", "themeOverride"],
-      (data: StorageState) => {
-        setIsEnabled(data.sharedState || false);
-        if (data.themeOverride) {
-          setThemeOverride(data.themeOverride);
-        }
-      }
-    );
+    chrome.storage.sync.get(Object.keys(state), (data: Partial<ExtensionState>) => {
+      setState(prev => ({
+        ...prev,
+        ...data,
+      }));
+    });
   }, []);
 
-  // Add effect to apply theme
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', themeOverride);
-  }, [themeOverride]);
-
-  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newState = event.target.checked;
-    setIsEnabled(newState);
-
-    // Save the new state
-    chrome.storage.sync.set({ sharedState: newState }, () => {
-      // Send message to content script
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0].id) {
-          chrome.tabs.sendMessage(tabs[0].id, { sharedState: newState });
-        }
+  const updateState = (newState: Partial<ExtensionState>) => {
+    setState(prev => {
+      const updatedState = { ...prev, ...newState };
+      chrome.storage.sync.set(updatedState, () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0].id) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: "stateUpdate",
+              payload: updatedState,
+            });
+          }
+        });
       });
+      return updatedState;
     });
   };
 
-  const toggleTheme = () => {
-    const newTheme = themeOverride === "dark" ? "light" : "dark";
-    setThemeOverride(newTheme);
-    chrome.storage.sync.set({ themeOverride: newTheme });
+  const handleToggleChange = (checked: boolean) => {
+    updateState({ isBlockMuteEnabled: checked });
   };
 
+  const handlePromotedContentChange = (action: PromotedContentAction) => {
+    updateState({ promotedContentAction: action });
+  };
+
+  const handleSubscriptionOffersChange = (checked: boolean) => {
+    updateState({ hideSubscriptionOffers: checked });
+  };
+
+  const toggleTheme = () => {
+    updateState({
+      themeOverride: state.themeOverride === "dark" ? "light" : "dark",
+    });
+  };
+
+  // Create theme based on user preference
+  const theme = createTheme({
+    palette: {
+      mode: state.themeOverride,
+      primary: {
+        main: "#1DA1F2",
+      },
+      secondary: {
+        main: state.themeOverride === "dark" ? "#8899A6" : "#657786",
+      },
+    },
+    typography: {
+      fontFamily: "Arial, sans-serif",
+    },
+  });
+
   return (
-    <div
-      style={{
-        width: "300px",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            color: "var(--primary-color)",
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container sx={{ minWidth: 300 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 1,
+            mt: 2,
+            borderRadius: 2,
           }}
         >
-          XQuickBlock
-        </h2>
-
-        <button
-          onClick={toggleTheme}
-          className="theme-toggle"
-          aria-label="Toggle theme"
-        >
-          {themeOverride === "dark" ? (
-            <SunIcon className="theme-icon" />
-          ) : (
-            <MoonIcon className="theme-icon" />
-          )}
-        </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <label
-          style={{
-            fontSize: "16px",
-            color: isEnabled
-              ? "var(--primary-color)"
-              : "var(--secondary-color)",
-          }}
-        >
-          {isEnabled ? "Enabled" : "Disabled"}
-        </label>
-
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={isEnabled}
-            onChange={handleToggleChange}
-            className="toggle-switch"
+          <Header
+            title="XQuickBlock"
+            theme={state.themeOverride}
+            onThemeToggle={toggleTheme}
           />
-          <span className="slider round"></span>
-        </label>
-      </div>
-
-      <div
-        style={{
-          marginTop: "20px",
-          fontSize: "14px",
-          color: "var(--secondary-color)",
-        }}
-      >
-        <p>Click the Mute/Block buttons next to usernames to take action.</p>
-        <p>Hold Ctrl and click to apply to all visible users.</p>
-      </div>
-
-      <style>
-        {`
-          :root {
-            --primary-color: #1DA1F2;
-            --secondary-color: #657786;
-            --background-color: #ffffff;
-            --toggle-bg: #657786;
-            --toggle-knob: #ffffff;
-          }
-
-          @media (prefers-color-scheme: dark) {
-            :root {
-              --primary-color: #1DA1F2;
-              --secondary-color: #8899A6;
-              --background-color: #15202B;
-              --toggle-bg: #8899A6;
-              --toggle-knob: #15202B;
-            }
-          }
-
-          [data-theme="dark"] {
-            --primary-color: #1DA1F2;
-            --secondary-color: #8899A6;
-            --background-color: #15202B;
-            --toggle-bg: #8899A6;
-            --toggle-knob: #15202B;
-          }
-
-          [data-theme="light"] {
-            --primary-color: #1DA1F2;
-            --secondary-color: #657786;
-            --background-color: #ffffff;
-            --toggle-bg: #657786;
-            --toggle-knob: #ffffff;
-          }
-
-          body {
-            background-color: var(--background-color);
-            color: var(--secondary-color);
-          }
-
-          .theme-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .theme-toggle:hover {
-            background-color: rgba(128, 128, 128, 0.2);
-          }
-
-          .theme-icon {
-            width: 24px;
-            height: 24px;
-            color: var(--secondary-color);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: center;
-          }
-
-          .theme-toggle:hover .theme-icon {
-            transform: rotate(30deg) scale(1.1);
-          }
-
-          /* Add morphing animation */
-          .theme-icon {
-            animation: none;
-          }
-
-          [data-theme="dark"] .theme-icon {
-            animation: morphToMoon 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          }
-
-          [data-theme="light"] .theme-icon {
-            animation: morphToSun 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          }
-
-          @keyframes morphToMoon {
-            0% {
-              transform: scale(1) rotate(0deg);
-            }
-            50% {
-              transform: scale(0.8) rotate(180deg);
-            }
-            100% {
-              transform: scale(1) rotate(360deg);
-            }
-          }
-
-          @keyframes morphToSun {
-            0% {
-              transform: scale(1) rotate(0deg);
-            }
-            50% {
-              transform: scale(0.8) rotate(180deg);
-            }
-            100% {
-              transform: scale(1) rotate(360deg);
-            }
-          }
-
-          .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-          }
-          
-          .toggle-switch {
-            opacity: 0;
-            width: 0;
-            height: 0;
-          }
-          
-          .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--toggle-bg);
-            transition: .4s;
-          }
-          
-          .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: var(--toggle-knob);
-            transition: .4s;
-          }
-          
-          .toggle-switch:checked + .slider {
-            background-color: var(--primary-color);
-          }
-          
-          .toggle-switch:checked + .slider:before {
-            transform: translateX(26px);
-          }
-          
-          .slider.round {
-            border-radius: 34px;
-          }
-          
-          .slider.round:before {
-            border-radius: 50%;
-          }
-        `}
-      </style>
-    </div>
+          <ToggleSwitch
+            enabled={state.isBlockMuteEnabled}
+            onChange={handleToggleChange}
+            label={state.isBlockMuteEnabled ? "Block/Mute Buttons Enabled" : "Block/Mute Buttons Disabled"}
+          />
+          <Divider sx={{ my: 2 }} />
+          <PromotedContentSelector
+            value={state.promotedContentAction}
+            onChange={handlePromotedContentChange}
+          />
+          <ToggleSwitch
+            enabled={state.hideSubscriptionOffers}
+            onChange={handleSubscriptionOffersChange}
+            label="Hide Subscription Offers"
+          />
+          <InfoSection />
+        </Paper>
+      </Container>
+    </ThemeProvider>
   );
 };
 
 const root = createRoot(document.getElementById("root")!);
-
 root.render(
   <React.StrictMode>
     <Popup />
