@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/chrome-manifest",
   "manifest_version": 3,
   "name": "XQuickBlock",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "Quickly mute or block users on X (Twitter) with a single click",
   "permissions": [
     "storage",
