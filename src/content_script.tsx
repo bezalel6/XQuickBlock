@@ -148,25 +148,20 @@ function createButton(
  * Get the current user's username from the account switcher button
  */
 function getCurrentUsername(): string | null {
-  function g() {
-    if (cachedUsername) return cachedUsername;
+  if (cachedUsername) return cachedUsername;
 
-    const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
-    if (!accountSwitcher) {
-      return null;
-    }
-
-    const userAvatarContainer = accountSwitcher.querySelector('[data-testid^="UserAvatar-Container-"]');
-    if (!userAvatarContainer) {
-      return null;
-    }
-
-    cachedUsername = userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
-    return cachedUsername;
+  const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
+  if (!accountSwitcher) {
+    return null;
   }
-  const username = g()
-  document.title = username!!
-  return username
+
+  const userAvatarContainer = accountSwitcher.querySelector('[data-testid^="UserAvatar-Container-"]');
+  if (!userAvatarContainer) {
+    return null;
+  }
+
+  cachedUsername = userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
+  return cachedUsername;
 }
 
 function hasAdSpan(parentElement: HTMLElement) {
