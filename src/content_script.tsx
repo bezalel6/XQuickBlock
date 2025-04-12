@@ -21,7 +21,9 @@ async function waitFor(
   }
   throw new Error(`Element not found: ${selector}`);
 }
-
+function getNameElementAncestor(nameElement: HTMLElement): HTMLElement | null {
+  return nameElement.parentElement?.parentElement?.parentElement as HTMLElement
+}
 /**
  * Perform action on a user (block/mute) with improved error handling
  */
@@ -31,16 +33,14 @@ async function doToUser(
 ): Promise<void> {
   try {
     toggleInvisible(userMenuSelector, true)
-    const moreButton =
-      nameElement.parentElement?.parentElement?.parentElement?.querySelector(
-        userMenuSelector
-      );
+    const moreButton = getNameElementAncestor(nameElement)?.querySelector(
+      userMenuSelector
+    ) as HTMLElement
     if (!moreButton) {
       console.warn("More button not found for user");
       return;
     }
-
-    (moreButton as HTMLElement).click();
+    moreButton.click();
     await waitFor('[role="menu"]');
 
     let button: HTMLElement | null = null;
@@ -274,9 +274,6 @@ function init() {
     console.log('[XQuickBlock] Final state to initialize with:', finalState);
     applySettings(finalState);
     console.log('[XQuickBlock] Initialization complete');
-
-    // Force a navigation to ensure page is fully loaded
-    window.location.href = window.location.href + '#';
   });
 }
 window.addEventListener("load", init)
