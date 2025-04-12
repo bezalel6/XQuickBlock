@@ -21,8 +21,8 @@ async function waitFor(
   }
   throw new Error(`Element not found: ${selector}`);
 }
-function getNameElementAncestor(nameElement: HTMLElement): HTMLElement | null {
-  return nameElement.parentElement?.parentElement?.parentElement as HTMLElement
+function getTweet(nameElement: HTMLElement): HTMLElement | null {
+  return nameElement.closest('article') || null
 }
 /**
  * Perform action on a user (block/mute) with improved error handling
@@ -33,7 +33,7 @@ async function doToUser(
 ): Promise<void> {
   try {
     toggleInvisible(userMenuSelector, true)
-    const moreButton = getNameElementAncestor(nameElement)?.querySelector(
+    const moreButton = getTweet(nameElement)?.querySelector(
       userMenuSelector
     ) as HTMLElement
     if (!moreButton) {
@@ -166,8 +166,11 @@ function getCurrentUsername(): string | null {
   }
   const username = g()
   document.title = username!!
-  console.log("My username:", username)
   return username
+}
+
+function hasAdSpan(parentElement: HTMLElement) {
+  return !!Array.from(parentElement.querySelectorAll('span')).find(s => s.textContent === "Ad")
 }
 
 /**
@@ -182,12 +185,21 @@ function isUserOwnAccount(element: HTMLElement): boolean {
 
   return currentUsername === elementUsername;
 }
-
 /**
- * Add mute and block buttons to user names with improved error handling
+ * Add mute and block buttons to user names, as well as applying current Ad policy
  */
-function addButtonsToUserName(userNameElement: HTMLElement): void {
+function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): void {
   if (userNameElement.hasAttribute("messedWith") || isUserOwnAccount(userNameElement)) return;
+  const tweet = getTweet(userNameElement)!
+  if (hasAdSpan(tweet)) {
+    console.log(tweet)
+    switch (settings.promotedContentAction) {
+      default: {
+        tweet.style.backgroundColor = "aqua"
+      }
+    }
+  }
+
   userNameElement.setAttribute("messedWith", "true");
 
   userNameElement.appendChild(createButton("Mute", "mute", userNameElement));
@@ -197,18 +209,18 @@ function addButtonsToUserName(userNameElement: HTMLElement): void {
 /**
  * Observe DOM changes and add buttons to new user names
  */
-function observeDOMChanges(): void {
-  const targetNode = window.document.body;
+async function observeDOMChanges(settings: ExtensionState) {
+  const targetNode = document.body;
   const config = { childList: true, subtree: true };
 
-  observer = new MutationObserver((mutationsList) => {
+  observer = new MutationObserver(async (mutationsList) => {
     mutationsList.forEach((mutation) => {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node instanceof HTMLElement) {
             const userNames = node.querySelectorAll(USER_NAME_SELECTOR);
             userNames.forEach((userName) =>
-              addButtonsToUserName(userName as HTMLElement)
+              gotUsername(userName as HTMLElement, settings)
             );
           }
         });
@@ -228,9 +240,9 @@ function applySettings(state: ExtensionState): void {
   setTimeout(() => {
     const userNames = document.querySelectorAll(USER_NAME_SELECTOR);
     userNames.forEach((userName) =>
-      addButtonsToUserName(userName as HTMLElement)
+      gotUsername(userName as HTMLElement, state)
     );
-    observeDOMChanges()
+    observeDOMChanges(state)
   }, 1000)
 }
 
@@ -252,30 +264,37 @@ function cleanup(): void {
   });
 }
 
-// Initialize based on saved state
-function init() {
-  console.log('[XQuickBlock] DOM content loaded, starting initialization...');
+/**
+ * Get the current extension state from storage with defaults
+ */
+async function getCurrentState(): Promise<ExtensionState> {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(null, (data: Partial<ExtensionState>) => {
 
-  chrome.storage.sync.get(null, (data: Partial<ExtensionState>) => {
-    console.log('[XQuickBlock] Retrieved storage data:', data);
+      const defaultState: ExtensionState = {
+        isBlockMuteEnabled: true,
+        themeOverride: "dark",
+        promotedContentAction: "hide",
+        hideSubscriptionOffers: true,
+      };
 
-    const defaultState: ExtensionState = {
-      isBlockMuteEnabled: true,
-      themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-      promotedContentAction: "hide",
-      hideSubscriptionOffers: true,
-    };
+      const finalState = {
+        ...defaultState,
+        ...data,
+      };
 
-    const finalState = {
-      ...defaultState,
-      ...data,
-    };
-
-    console.log('[XQuickBlock] Final state to initialize with:', finalState);
-    applySettings(finalState);
-    console.log('[XQuickBlock] Initialization complete');
+      resolve(finalState);
+    });
   });
 }
+
+// Initialize based on saved state
+async function init() {
+  console.log('[XQuickBlock] DOM content loaded, starting initialization...');
+  const state = await getCurrentState();
+  applySettings(state);
+}
+
 window.addEventListener("load", init)
 
 // Listen for messages to update the shared state
