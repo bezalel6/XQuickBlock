@@ -196,7 +196,7 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
   if (userNameElement.hasAttribute("messedWith") || isUserOwnAccount(userNameElement)) return;
   const tweet = getTweet(userNameElement)!
   if (hasAdSpan(tweet)) {
-    console.log(tweet)
+    console.log('Got ad')
     switch (settings.promotedContentAction) {
       case "nothing": break;
       case "hide": {
@@ -222,6 +222,7 @@ async function handleUpsaleDialog(ogPath: string) {
   toggleInvisible(upsaleDialogSelector, true);
   createMutationCallback((newNode => newNode.querySelector(upsaleDialogSelector)), dialog => {
     (dialog.querySelector(`a[href="${buyIntoUpsaleHref}"] + button`) as HTMLButtonElement).click()
+    dialog.remove()
     toggleInvisible(upsaleDialogSelector, false)
   })
 
