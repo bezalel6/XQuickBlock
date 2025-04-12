@@ -1,70 +1,68 @@
-# Chrome Extension TypeScript Starter
+# XQuickBlock - Chrome Extension
 
-![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
+![screenshot](screenshot.png)
 
-Chrome Extension, TypeScript and Visual Studio Code
+## Overview
 
-## Prerequisites
+**XQuickBlock** is a Chrome extension that aims to make twitter semi-usable again. It adds quick-access mute and block buttons directly to user elements, letting you manage your feed without jumping through X's increasingly cumbersome menus and confirmation dialogs.
 
-* [node + npm](https://nodejs.org/) (Current Version)
+## Features
 
-## Option
+- **Quick Fly Swatting:**
+  - One-click mute and block buttons right where you need them
+  - Control-click to evaporate every account in a particulary toxic rabbit hole
+  - Skip X's endless confirmation dialogs
 
-* [Visual Studio Code](https://code.visualstudio.com/)
+- **Ads:**
+  - Automatically detect promoted tweets
+  - Configurable behaviour lets you hide or block any ad on your feed
+  - Put a stop to the endless stream of scam crypto ads
 
-## Includes the following
+- **Subscription:**
+  - Automatically hide premium content prompts
+  - Block upgrade interruptions
 
-* TypeScript
-* Webpack
-* React
-* Jest
-* Example Code
-    * Chrome Storage
-    * Options Version 2
-    * content script
-    * count up badge number
-    * background
+## Installation
 
-## Project Structure
+1. **Download from Chrome Web Store:**
+   - Visit the [Chrome Web Store page](https://chromewebstore.google.com/detail/xquickblock/fkcppikhgboddjlcoapmibcpcnlhepko)
+   - Click "Add to Chrome"
 
-* src/typescript: TypeScript source files
-* src/assets: static files
-* dist: Chrome Extension directory
-* dist/js: Generated JavaScript files
+2. **Install from Source:**
+   - Clone this repository:
+     ```bash
+     git clone https://github.com/bezalel6/XQuickBlock.git
+     ```
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" at the top right corner
+   - Click "Load unpacked" and select the cloned directory
 
-## Setup
+## Usage
 
-```
-npm install
-```
+1. **Moderate Your Feed:**
+   - Click the mute or block button next to any user
+   - Hold `Ctrl` and click to perform the action on every account in the current context
 
-## Import as Visual Studio Code project
+2. **Manage Ads:**
+   - Sponsored content is automatically handled based on your settings
 
-...
+3. **Configure Settings:**
+    - Customizeable promoted content behaviour `nothing`|`hide`|`block` (default: `hide`)
+    - Toggle displaying the `Block` and `Mute` buttons above usernames (`enabled` by default)
+    - Toggle hiding the constant pestering to buy a premium membership (`enabled` by default)
 
-## Build
+## Privacy
 
-```
-npm run build
-```
+XQuickBlock keeps your data private:
+- No data collection
+- No tracking
+- Everything happens in your browser
+- No external API calls
 
-## Build in watch mode
+## Contributing
 
-### terminal
+Help make XQuickBlock better - contributions are welcome.
 
-```
-npm run watch
-```
+## License
 
-### Visual Studio Code
-
-Run watch mode.
-
-type `Ctrl + Shift + B`
-
-## Load extension to chrome
-
-Load `dist` directory
-
-## Test
-`npx jest` or `npm run test`
+This project is licensed under the MIT License - see the LICENSE file for details.
