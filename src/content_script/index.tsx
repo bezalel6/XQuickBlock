@@ -4,17 +4,26 @@ import AdPlaceholder from "./ad-placeholder";
 import Button from "./dispatch-btn";
 import { observeDOMChanges, resetObserver } from "./mutation-observer";
 import { getSettingsManager } from "./settings-manager";
-import { isUserOwnAccount, getTweet, hasAdSpan, dispatch, getCurrentState, toggleInvisible } from "./utils";
+import { dispatch, getTweet, hasAdSpan, isUserOwnAccount, toggleInvisible } from "./utils";
 
 /**
  * Add mute and block buttons to user names, as well as applying current Ad policy
  */
 export async function processUsername(userNameElement: HTMLElement) {
     if (userNameElement.hasAttribute("messedWith") || isUserOwnAccount(userNameElement)) return;
+    userNameElement.setAttribute("messedWith", "true");
     const tweet = getTweet(userNameElement)!
+    const settings = await getSettingsManager()
     if (hasAdSpan(tweet)) {
-        const behaviour = await getSettingsManager()
-        behaviour.subscribe(['promotedContentAction'], ({ promotedContentAction }) => {
+        settings.subscribe(['promotedContentAction'], ({ promotedContentAction }) => {
+            // First, clean up any previous hide effects
+            const existingNotification = tweet.parentNode?.querySelector('.xquickblock-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            tweet.style.height = '';
+
+            // Then apply new effects based on the new setting
             switch (promotedContentAction) {
                 case "nothing": break;
                 case "hide": {
@@ -27,15 +36,17 @@ export async function processUsername(userNameElement: HTMLElement) {
                     dispatch(userNameElement, "block")
                     break;
                 }
-
             }
         })
     }
-
-    userNameElement.setAttribute("messedWith", "true");
-
-    userNameElement.appendChild(Button("Mute", "mute", userNameElement));
-    userNameElement.appendChild(Button("Block", "block", userNameElement));
+    const btns = [Button("Mute", "mute", userNameElement), Button("Block", "block", userNameElement)]
+    settings.subscribe(['isBlockMuteEnabled'], ({ isBlockMuteEnabled }) => {
+        if (isBlockMuteEnabled) {
+            btns.forEach(b => userNameElement.appendChild(b))
+        } else {
+            btns.forEach(b => userNameElement.removeChild(b))
+        }
+    })
 }
 
 
