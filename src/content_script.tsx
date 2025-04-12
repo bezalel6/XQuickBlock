@@ -194,6 +194,17 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
   if (hasAdSpan(tweet)) {
     console.log(tweet)
     switch (settings.promotedContentAction) {
+      case "nothing": { }
+      case "hide": {
+        const notif = document.createElement('article')
+        notif.textContent = "This advertisement was hidden"
+        notif.style.width = "100%"
+        notif.style.textAlign = "center"
+        notif.style.fontSize = 'large'
+        tweet.parentNode?.insertBefore(notif, tweet)
+        tweet.style.display = 'none'
+      }
+      case "block":
       default: {
         tweet.style.backgroundColor = "aqua"
       }
