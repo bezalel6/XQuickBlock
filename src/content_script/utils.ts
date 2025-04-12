@@ -23,7 +23,12 @@ export function toggleInvisible(selector: string, hide: boolean): void {
 /**
  * Toggle a CSS rule in a style sheet
  */
-export function toggleCSSRule(selector: string, property: string, value: string, enable: boolean): void {
+export function toggleCSSRule(
+  selector: string,
+  property: string,
+  value: string,
+  enable: boolean
+): void {
   const styleSheet = document.styleSheets[0];
   const rules = styleSheet.cssRules;
   let ruleIndex = -1;
@@ -38,7 +43,10 @@ export function toggleCSSRule(selector: string, property: string, value: string,
 
   if (enable) {
     if (ruleIndex === -1) {
-      styleSheet.insertRule(`${selector} { ${property}: ${value}; }`, rules.length);
+      styleSheet.insertRule(
+        `${selector} { ${property}: ${value}; }`,
+        rules.length
+      );
     }
   } else if (ruleIndex !== -1) {
     styleSheet.deleteRule(ruleIndex);
@@ -65,22 +73,33 @@ export async function waitFor(
  * Get the tweet element from a user name element
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
-  return nameElement.closest('article') || null;
+  return nameElement.closest("article") || null;
 }
 
 /**
  * Check if an element has an ad span
  */
 export function hasAdSpan(parentElement: HTMLElement): boolean {
-  return !!Array.from(parentElement.querySelectorAll('span')).find(s => s.textContent === "Ad");
+  return !!Array.from(parentElement.querySelectorAll("span")).find(
+    (s) => s.textContent === "Ad"
+  );
 }
 
 /**
  * Extract user details from a user name element
  */
-export function extractUserDetails(userNameElement: HTMLElement): { fullName: string; username: string } {
-  const fullName = userNameElement.querySelector('a div span span')?.textContent?.trim() || 'Unknown';
-  const username = userNameElement.querySelector('a[href^="/"]')?.getAttribute('href')?.replace('/', '') || 'unknown';
+export function extractUserDetails(userNameElement: HTMLElement): {
+  fullName: string;
+  username: string;
+} {
+  const fullName =
+    userNameElement.querySelector("a div span span")?.textContent?.trim() ||
+    "Unknown";
+  const username =
+    userNameElement
+      .querySelector('a[href^="/"]')
+      ?.getAttribute("href")
+      ?.replace("/", "") || "unknown";
   return { fullName, username };
 }
 
@@ -92,17 +111,24 @@ let cachedUsername: string | null = null;
 function getCurrentUsername(): string | null {
   if (cachedUsername) return cachedUsername;
 
-  const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
+  const accountSwitcher = document.querySelector(
+    '[data-testid="SideNav_AccountSwitcher_Button"]'
+  );
   if (!accountSwitcher) {
     return null;
   }
 
-  const userAvatarContainer = accountSwitcher.querySelector('[data-testid^="UserAvatar-Container-"]');
+  const userAvatarContainer = accountSwitcher.querySelector(
+    '[data-testid^="UserAvatar-Container-"]'
+  );
   if (!userAvatarContainer) {
     return null;
   }
 
-  cachedUsername = userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
+  cachedUsername =
+    userAvatarContainer
+      .getAttribute("data-testid")
+      ?.replace("UserAvatar-Container-", "") || null;
   return cachedUsername;
 }
 /**
@@ -112,10 +138,13 @@ export function isUserOwnAccount(element: HTMLElement): boolean {
   const currentUsername = getCurrentUsername();
   if (!currentUsername) return false;
 
-  const elementUsername = element.closest('[data-testid="User-Name"]')?.querySelector('a[href^="/"]')?.getAttribute('href')?.replace('/', '');
+  const elementUsername = element
+    .closest('[data-testid="User-Name"]')
+    ?.querySelector('a[href^="/"]')
+    ?.getAttribute("href")
+    ?.replace("/", "");
   return currentUsername === elementUsername;
 }
-
 
 /**
  * Perform action on a user (block/mute) with improved error handling
@@ -125,10 +154,10 @@ export async function dispatch(
   action: Action
 ): Promise<void> {
   try {
-    toggleInvisible(userMenuSelector, true)
+    toggleInvisible(userMenuSelector, true);
     const moreButton = getTweet(nameElement)?.querySelector(
       userMenuSelector
-    ) as HTMLElement
+    ) as HTMLElement;
     if (!moreButton) {
       console.warn("More button not found for user");
       return;
@@ -153,13 +182,11 @@ export async function dispatch(
     button.click();
     if (action === "mute") return;
 
-    await waitFor(confirmDialogConfirmSelector).then((e) =>
-      e.click()
-    );
+    await waitFor(confirmDialogConfirmSelector).then((e) => e.click());
   } catch (error) {
     console.error(`Error performing ${action} action:`, error);
   } finally {
-    toggleInvisible(userMenuSelector, false)
+    toggleInvisible(userMenuSelector, false);
   }
 }
 

@@ -12,4 +12,4 @@ export interface ExtensionMessage {
   payload: ExtensionState;
 }
 
-export type Action = "block" | "mute"; 
+export type Action = "block" | "mute";

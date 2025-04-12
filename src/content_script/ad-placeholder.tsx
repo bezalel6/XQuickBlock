@@ -3,10 +3,10 @@ import { Action } from "../types";
 import { dispatch, extractUserDetails } from "./utils";
 
 export default function AdPlaceholder(userNameElement: HTMLElement) {
-    const container = document.createElement('div');
-    const { fullName, username } = extractUserDetails(userNameElement)
-    const style = document.createElement('style');
-    style.textContent = `
+  const container = document.createElement("div");
+  const { fullName, username } = extractUserDetails(userNameElement);
+  const style = document.createElement("style");
+  style.textContent = `
       .xquickblock-notification {
         background: rgba(29, 161, 242, 0.1);
         border: 1px solid rgba(29, 161, 242, 0.2);
@@ -73,32 +73,47 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
         color: #1DA1F2;
       }
     `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    const handleAction = async (action: Action) => {
-        try {
-            await dispatch(userNameElement, action);
-            container.style.opacity = '0';
-            setTimeout(() => container.remove(), 300);
-        } catch (error) {
-            console.error(`Error performing ${action} action:`, error);
-        }
-    };
+  const handleAction = async (action: Action) => {
+    try {
+      await dispatch(userNameElement, action);
+      container.style.opacity = "0";
+      setTimeout(() => container.remove(), 300);
+    } catch (error) {
+      console.error(`Error performing ${action} action:`, error);
+    }
+  };
 
-    const template = html`
-      <div class="xquickblock-notification">
-        <div class="notification-content">
-          <svg class="notification-icon" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-          </svg>
-          <div class="notification-text">
-            <p>This sponsored content from <span class="user-info">@${username}</span> has been hidden. You can <button class="inline-button" @click=${() => handleAction('block')}>block</button> or <button class="inline-button secondary" @click=${() => handleAction('mute')}>mute</button> them.</p>
-          </div>
+  const template = html`
+    <div class="xquickblock-notification">
+      <div class="notification-content">
+        <svg class="notification-icon" viewBox="0 0 24 24">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"
+          />
+        </svg>
+        <div class="notification-text">
+          <p>
+            This sponsored content from
+            <span class="user-info">@${username}</span> has been hidden. You can
+            <button class="inline-button" @click=${() => handleAction("block")}>
+              block
+            </button>
+            or
+            <button
+              class="inline-button secondary"
+              @click=${() => handleAction("mute")}
+            >
+              mute
+            </button>
+            them.
+          </p>
         </div>
       </div>
-    `;
+    </div>
+  `;
 
-    render(template, container);
-    return container;
+  render(template, container);
+  return container;
 }
-

@@ -13,6 +13,7 @@ class StateManager<T extends object> {
         this.previousState = { ...initialState };
     }
 
+
     /**
      * Subscribe to changes for specific keys of the state
      * @param keys Array of keys to subscribe to
@@ -20,15 +21,15 @@ class StateManager<T extends object> {
      * @returns Unsubscribe function
      */
     subscribe(keys: (keyof T)[], callback: Callback<T>): () => void {
-        keys.forEach(key => {
+        keys.forEach((key) => {
             if (!this.callbacks.has(key)) {
                 this.callbacks.set(key, new Set());
             }
             this.callbacks.get(key)!.add(callback);
         });
-        callback(this.getState())
+        callback(this.getState());
         return () => {
-            keys.forEach(key => {
+            keys.forEach((key) => {
                 const callbacks = this.callbacks.get(key);
                 if (callbacks) {
                     callbacks.delete(callback);
@@ -55,13 +56,13 @@ class StateManager<T extends object> {
                 changedKeys.add(typedKey);
             }
         });
-        console.log("Chenged keys:", [...changedKeys])
+        console.log("Chenged keys:", [...changedKeys]);
         // Notify callbacks for changed keys
         const notifiedCallbacks = new Set<Callback<T>>();
-        changedKeys.forEach(key => {
+        changedKeys.forEach((key) => {
             const callbacks = this.callbacks.get(key);
             if (callbacks) {
-                callbacks.forEach(callback => {
+                callbacks.forEach((callback) => {
                     if (!notifiedCallbacks.has(callback)) {
                         notifiedCallbacks.add(callback);
                         callback(this.state);

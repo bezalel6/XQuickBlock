@@ -1,6 +1,6 @@
-import * as litHtml from 'lit-html';
+import * as litHtml from "lit-html";
 
-declare module './lit.js' {
-    export const html: typeof litHtml.html;
-    export const render: typeof litHtml.render;
-} 
+declare module "./lit.js" {
+  export const html: typeof litHtml.html;
+  export const render: typeof litHtml.render;
+}

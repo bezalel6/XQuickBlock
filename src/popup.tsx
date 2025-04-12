@@ -80,7 +80,9 @@ const PromotedContentSelector: React.FC<{
     <FormLabel>Promoted Content</FormLabel>
     <Select
       value={value}
-      onChange={(e: SelectChangeEvent) => onChange(e.target.value as PromotedContentAction)}
+      onChange={(e: SelectChangeEvent) =>
+        onChange(e.target.value as PromotedContentAction)
+      }
       size="small"
       sx={{ mt: 1 }}
     >
@@ -106,22 +108,27 @@ const InfoSection: React.FC = () => (
 const Popup: React.FC = () => {
   const [state, setState] = useState<ExtensionState>({
     isBlockMuteEnabled: false,
-    themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light",
     promotedContentAction: "hide",
     hideSubscriptionOffers: true,
   });
 
   useEffect(() => {
-    chrome.storage.sync.get(Object.keys(state), (data: Partial<ExtensionState>) => {
-      setState(prev => ({
-        ...prev,
-        ...data,
-      }));
-    });
+    chrome.storage.sync.get(
+      Object.keys(state),
+      (data: Partial<ExtensionState>) => {
+        setState((prev) => ({
+          ...prev,
+          ...data,
+        }));
+      }
+    );
   }, []);
 
   const updateState = (newState: Partial<ExtensionState>) => {
-    setState(prev => {
+    setState((prev) => {
       const updatedState = { ...prev, ...newState };
       chrome.storage.sync.set(updatedState, () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -191,7 +198,11 @@ const Popup: React.FC = () => {
           <ToggleSwitch
             enabled={state.isBlockMuteEnabled}
             onChange={handleToggleChange}
-            label={state.isBlockMuteEnabled ? "Block/Mute Buttons Enabled" : "Block/Mute Buttons Disabled"}
+            label={
+              state.isBlockMuteEnabled
+                ? "Block/Mute Buttons Enabled"
+                : "Block/Mute Buttons Disabled"
+            }
           />
           <Divider sx={{ my: 2 }} />
           <PromotedContentSelector
