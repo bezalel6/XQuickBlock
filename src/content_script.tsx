@@ -1,5 +1,7 @@
-import { sleep } from "./utils";
+import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
+import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, userMenuSelector } from "./constants";
+import { Facebook } from "@mui/icons-material";
 
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
@@ -29,9 +31,10 @@ async function doToUser(
   action: Action
 ): Promise<void> {
   try {
+    toggleInvisible(userMenuSelector, true)
     const moreButton =
       nameElement.parentElement?.parentElement?.parentElement?.querySelector(
-        '[aria-label="More"]'
+        userMenuSelector
       );
     if (!moreButton) {
       console.warn("More button not found for user");
@@ -58,11 +61,13 @@ async function doToUser(
     button.click();
     if (action === "mute") return;
 
-    await waitFor('[data-testid="confirmationSheetConfirm"]').then((e) =>
+    await waitFor(confirmDialogConfirmSelector).then((e) =>
       e.click()
     );
   } catch (error) {
     console.error(`Error performing ${action} action:`, error);
+  } finally {
+    toggleInvisible(userMenuSelector, false)
   }
 }
 
@@ -109,6 +114,7 @@ function createButton(
 
   button.addEventListener("click", async (e) => {
     try {
+      toggleInvisible(confirmDialogSelector, true)
       if (e.ctrlKey) {
         const users = Array.from(document.querySelectorAll(USER_NAME_SELECTOR))
           .filter(
@@ -131,6 +137,8 @@ function createButton(
       }
     } catch (error) {
       console.error("Error handling button click:", error);
+    } finally {
+      toggleInvisible(confirmDialogSelector, false)
     }
   });
 
@@ -141,24 +149,25 @@ function createButton(
  * Get the current user's username from the account switcher button
  */
 function getCurrentUsername(): string | null {
-  function g(){
+  function g() {
     if (cachedUsername) return cachedUsername;
 
     const accountSwitcher = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
     if (!accountSwitcher) {
       return null;
     }
-  
+
     const userAvatarContainer = accountSwitcher.querySelector('[data-testid^="UserAvatar-Container-"]');
     if (!userAvatarContainer) {
       return null;
     }
-  
+
     cachedUsername = userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
     return cachedUsername;
   }
-  const  username = g()
-  console.log("My username:",username)
+  const username = g()
+  document.title = username!!
+  console.log("My username:", username)
   return username
 }
 
@@ -211,18 +220,19 @@ function observeDOMChanges(): void {
   observer.observe(targetNode, config);
 }
 
-function initialize(state: ExtensionState): void {
+function applySettings(state: ExtensionState): void {
+  toggleInvisible(upsaleSelector, state.hideSubscriptionOffers)
   if (!state.isBlockMuteEnabled) {
     cleanup();
     return;
   }
-  setTimeout(()=>{
+  setTimeout(() => {
     const userNames = document.querySelectorAll(USER_NAME_SELECTOR);
     userNames.forEach((userName) =>
       addButtonsToUserName(userName as HTMLElement)
     );
     observeDOMChanges()
-  },1000)
+  }, 1000)
 }
 
 function cleanup(): void {
@@ -244,39 +254,39 @@ function cleanup(): void {
 }
 
 // Initialize based on saved state
-function init(){
+function init() {
   console.log('[XQuickBlock] DOM content loaded, starting initialization...');
-  
+
   chrome.storage.sync.get(null, (data: Partial<ExtensionState>) => {
     console.log('[XQuickBlock] Retrieved storage data:', data);
-    
+
     const defaultState: ExtensionState = {
       isBlockMuteEnabled: true,
       themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
       promotedContentAction: "hide",
       hideSubscriptionOffers: true,
     };
-    
+
     const finalState = {
       ...defaultState,
       ...data,
     };
-    
+
     console.log('[XQuickBlock] Final state to initialize with:', finalState);
-    initialize(finalState);
+    applySettings(finalState);
     console.log('[XQuickBlock] Initialization complete');
-    
+
     // Force a navigation to ensure page is fully loaded
     window.location.href = window.location.href + '#';
   });
 }
-window.addEventListener("load",init)
+window.addEventListener("load", init)
 
 // Listen for messages to update the shared state
 chrome.runtime.onMessage.addListener(
   (message: ExtensionMessage, sender, sendResponse) => {
     if (message.type === "stateUpdate") {
-      initialize(message.payload);
+      applySettings(message.payload);
       sendResponse({ message: "State updated successfully" });
     }
     return true;
