@@ -40,11 +40,16 @@ export async function processUsername(userNameElement: HTMLElement) {
         })
     }
     const btns = [Button("Mute", "mute", userNameElement), Button("Block", "block", userNameElement)]
-    settings.subscribe(['isBlockMuteEnabled'], ({ isBlockMuteEnabled }) => {
+    const unsubscribe = settings.subscribe(['isBlockMuteEnabled'], ({ isBlockMuteEnabled }) => {
         if (isBlockMuteEnabled) {
             btns.forEach(b => userNameElement.appendChild(b))
         } else {
-            btns.forEach(b => userNameElement.removeChild(b))
+            try {
+                userNameElement.removeChild
+                btns.forEach(b => userNameElement.removeChild(b))
+            } catch (e) {
+                unsubscribe()
+            }
         }
     })
 }
