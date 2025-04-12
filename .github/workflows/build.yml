@@ -26,4 +26,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - run: npm run build --if-present
+    - run: npm run package --if-present
+    - name: Upload to Chrome Web Store
+      uses: mnao305/chrome-extension-upload@v5.0.0
+      with:
+        extension-id: ${{ secrets.EXTENSION_ID }}
+        client-id: ${{ secrets.CLIENT_ID }}
+        client-secret: ${{ secrets.CLIENT_SECRET }}
+        refresh-token: ${{ secrets.REFRESH_TOKEN }}
+        file-path: packages/extension.zip

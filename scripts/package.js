@@ -13,14 +13,14 @@ if (!fs.existsSync(outputDir)) {
 }
 
 // Create a file to stream archive data to
-const output = fs.createWriteStream(path.join(outputDir, `extension-v${version}.zip`));
+const output = fs.createWriteStream(path.join(outputDir, `extension.zip`));
 const archive = archiver('zip', {
     zlib: { level: 9 } // Sets the compression level
 });
 
 // Listen for all archive data to be written
 output.on('close', () => {
-    console.log(`Extension package created: extension-v${version}.zip`);
+    console.log(`Extension package created: extension.zip`);
     console.log(`Total bytes: ${archive.pointer()}`);
 });
 
