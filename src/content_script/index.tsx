@@ -1,6 +1,6 @@
 import { upsaleSelectors, userNameSelector } from "../constants";
 import { ExtensionMessage, ExtensionState } from "../types";
-import AdPlaceholder from "./ad-placeholder";
+import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
 import { observeDOMChanges, resetObserver } from "./mutation-observer";
 import { getSettingsManager } from "./settings-manager";
@@ -33,7 +33,7 @@ export async function processUsername(userNameElement: HTMLElement) {
             ({ promotedContentAction }) => {
                 // First, clean up any previous hide effects
                 const existingNotification = tweet.parentNode?.querySelector(
-                    ".xquickblock-notification"
+                    `.${adPlaceHolderClassName}`
                 );
                 if (existingNotification) {
                     existingNotification.remove();

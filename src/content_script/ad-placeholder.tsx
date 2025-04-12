@@ -2,6 +2,8 @@ import { html, render } from "../lit";
 import { Action } from "../types";
 import { dispatch, extractUserDetails } from "./utils";
 
+export const adPlaceHolderClassName = "xquickblock-notification"
+
 export default function AdPlaceholder(userNameElement: HTMLElement) {
   const container = document.createElement("div");
   const { fullName, username } = extractUserDetails(userNameElement);
@@ -78,15 +80,15 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
   const handleAction = async (action: Action) => {
     try {
       await dispatch(userNameElement, action);
-      container.style.opacity = "0";
-      setTimeout(() => container.remove(), 300);
+      // container.style.opacity = "0";
+      // setTimeout(() => container.remove(), 300);
     } catch (error) {
       console.error(`Error performing ${action} action:`, error);
     }
   };
 
   const template = html`
-    <div class="xquickblock-notification">
+    <div class="${adPlaceHolderClassName}">
       <div class="notification-content">
         <svg class="notification-icon" viewBox="0 0 24 24">
           <path
