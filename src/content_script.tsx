@@ -1,7 +1,8 @@
 import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
 import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, userMenuSelector } from "./constants";
-
+// @ts-ignore
+import * as lit from './lit.js'
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
 let cachedUsername: string | null = null;
@@ -172,7 +173,6 @@ function getCurrentUsername(): string | null {
 function hasAdSpan(parentElement: HTMLElement) {
   return !!Array.from(parentElement.querySelectorAll('span')).find(s => s.textContent === "Ad")
 }
-
 /**
  * Check if the given element belongs to the user's own account
  */
@@ -304,6 +304,10 @@ async function init() {
   console.log('[XQuickBlock] DOM content loaded, starting initialization...');
   const state = await getCurrentState();
   applySettings(state);
+
+  const container = document.createElement('div');
+  document.body.prepend(container);
+  lit.render(lit.html`<h1>Hello, world!</h1>`, container);
 }
 
 window.addEventListener("load", init)
@@ -318,3 +322,4 @@ chrome.runtime.onMessage.addListener(
     return true;
   }
 );
+

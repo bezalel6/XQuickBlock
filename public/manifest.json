@@ -27,6 +27,17 @@
       ]
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "js/lit.js"
+      ],
+      "matches": [
+        "https://twitter.com/*",
+        "https://x.com/*"
+      ]
+    }
+  ],
   "icons": {
     "48": "icon.png",
     "128": "icon128.png"
