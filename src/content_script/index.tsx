@@ -37,13 +37,12 @@ export function processUsername(userNameElement: HTMLElement, settings: Extensio
 
 
 function applySettings(state: ExtensionState): void {
-    upsaleSelectors.forEach(selector => toggleInvisible(selector, state.hideSubscriptionOffers))
-
     if (!state.isBlockMuteEnabled) {
         cleanup();
         return;
     }
     setTimeout(() => {
+        toggleInvisible(upsaleSelectors.join(", "), state.hideSubscriptionOffers)
         const userNames = document.querySelectorAll(userNameSelector);
         userNames.forEach((userName) =>
             processUsername(userName as HTMLElement, state)
@@ -75,6 +74,7 @@ async function init() {
     console.log('[XQuickBlock] DOM content loaded, starting initialization...');
     const state = await getCurrentState();
     applySettings(state);
+    console.log('[XQuickBlock] Initialized with settings:', state);
 }
 
 window.addEventListener("load", init)
