@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "XQuickBlock",
   "version": "1.5.0",
-  "description": "Quickly mute or block users on X (Twitter) with a single click",
+  "description": "Quickly mute or block users on X with a single click, Automatically block advertisers, and more...",
   "permissions": [
     "storage",
     "activeTab"
