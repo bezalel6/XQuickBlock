@@ -27,7 +27,7 @@ function getTweet(nameElement: HTMLElement): HTMLElement | null {
 /**
  * Perform action on a user (block/mute) with improved error handling
  */
-async function doToUser(
+async function dispatch(
   nameElement: HTMLElement,
   action: Action
 ): Promise<void> {
@@ -128,11 +128,11 @@ function createButton(
         for (const user of users) {
           user.scrollIntoView({ behavior: "smooth" });
           await sleep(100);
-          await doToUser(user, action);
+          await dispatch(user, action);
           await sleep(100);
         }
       } else {
-        await doToUser(nameElement, action);
+        await dispatch(nameElement, action);
       }
     } catch (error) {
       console.error("Error handling button click:", error);
@@ -198,14 +198,16 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
   if (hasAdSpan(tweet)) {
     console.log(tweet)
     switch (settings.promotedContentAction) {
-      case "nothing": { }
+      case "nothing": break;
       case "hide": {
         const notification = createAdNotification(userNameElement)
         tweet.parentNode?.insertBefore(notification, tweet)
         tweet.style.height = '0'
+        break;
       }
       case "block": {
-        doToUser(userNameElement, "block")
+        dispatch(userNameElement, "block")
+        break;
       }
 
     }
@@ -383,7 +385,6 @@ function createAdNotification(userNameElement: HTMLElement) {
       margin: 16px 0;
       width: 100%;
       box-sizing: border-box;
-      transition: all 0.3s ease;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .xquickblock-notification:hover {
@@ -410,32 +411,32 @@ function createAdNotification(userNameElement: HTMLElement) {
       color: #657786;
       line-height: 1.4;
     }
-    .notification-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .notification-button {
-      background: #1DA1F2;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .notification-button:hover {
-      background: #0c85d0;
-    }
-    .notification-button.secondary {
+    .inline-button {
       background: transparent;
       color: #1DA1F2;
-      border: 1px solid #1DA1F2;
+      border: none;
+      border-radius: 4px;
+      padding: 0;
+      font-size: inherit;
+      font-weight: inherit;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: inline;
+      margin: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
-    .notification-button.secondary:hover {
-      background: rgba(29, 161, 242, 0.1);
+    .inline-button:hover {
+      background: transparent;
+      outline: 2px solid #1DA1F2;
+      outline-offset: 1.5px;
+      text-decoration: none;
+    }
+    .inline-button.secondary {
+      color: #1DA1F2;
+    }
+    .inline-button.secondary:hover {
+      background: transparent;
     }
     .user-info {
       font-weight: 600;
@@ -446,7 +447,7 @@ function createAdNotification(userNameElement: HTMLElement) {
 
   const handleAction = async (action: Action) => {
     try {
-      await doToUser(userNameElement, action);
+      await dispatch(userNameElement, action);
       container.style.opacity = '0';
       setTimeout(() => container.remove(), 300);
     } catch (error) {
@@ -461,11 +462,7 @@ function createAdNotification(userNameElement: HTMLElement) {
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
         </svg>
         <div class="notification-text">
-          <p>This sponsored content from <span class="user-info">@${username}</span> has been hidden based on your preferences.</p>
-          <div class="notification-actions">
-            <button class="notification-button" @click=${() => handleAction('block')}>Block User</button>
-            <button class="notification-button secondary" @click=${() => handleAction('mute')}>Mute User</button>
-          </div>
+          <p>This sponsored content from <span class="user-info">@${username}</span> has been hidden. You can <button class="inline-button" @click=${() => handleAction('block')}>block</button> or <button class="inline-button secondary" @click=${() => handleAction('mute')}>mute</button> them.</p>
         </div>
       </div>
     </div>
