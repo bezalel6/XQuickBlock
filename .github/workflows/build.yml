@@ -8,6 +8,13 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to Chrome Web Store'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -28,6 +35,7 @@ jobs:
     - run: npm ci
     - run: npm run package --if-present
     - name: Upload to Chrome Web Store
+      if: github.event.inputs.publish == 'true'
       uses: mnao305/chrome-extension-upload@v5.0.0
       with:
         extension-id: ${{ secrets.EXTENSION_ID }}
