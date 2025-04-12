@@ -1,6 +1,6 @@
 import { sleep, toggleCSSRule, toggleInvisible } from "./utils";
 import { Action, ExtensionMessage, ExtensionState } from "./types";
-import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, userMenuSelector } from "./constants";
+import { confirmDialogConfirmSelector, confirmDialogSelector, upsaleSelector, upsaleTwitterPathname as upsalePathname, userMenuSelector, buyIntoUpsaleHref, upsaleDialogSelector } from "./constants";
 import { html, render } from './lit.js'
 let observer: MutationObserver | null = null;
 const USER_NAME_SELECTOR = "*[data-testid=User-Name]";
@@ -172,6 +172,11 @@ function getCurrentUsername(): string | null {
 function hasAdSpan(parentElement: HTMLElement) {
   return !!Array.from(parentElement.querySelectorAll('span')).find(s => s.textContent === "Ad")
 }
+function extractUserDetails(userNameElement: HTMLElement) {
+  const fullName = userNameElement.querySelector('a div span span')?.textContent?.trim() || 'Unknown';
+  const username = userNameElement.querySelector('a[href^="/"]')?.getAttribute('href')?.replace('/', '') || 'unknown';
+  return { fullName, username };
+}
 /**
  * Check if the given element belongs to the user's own account
  */
@@ -195,9 +200,9 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
     switch (settings.promotedContentAction) {
       case "nothing": { }
       case "hide": {
-        const notification = createAdNotification()
+        const notification = createAdNotification(userNameElement)
         tweet.parentNode?.insertBefore(notification, tweet)
-        tweet.style.display = 'none'
+        tweet.style.height = '0'
       }
       case "block":
       default: {
@@ -211,6 +216,47 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
   userNameElement.appendChild(createButton("Mute", "mute", userNameElement));
   userNameElement.appendChild(createButton("Block", "block", userNameElement));
 }
+async function handleUpsaleDialog(ogPath: string) {
+  toggleInvisible(upsaleDialogSelector, true);
+  createMutationCallback((newNode => newNode.querySelector(upsaleDialogSelector)), dialog => {
+    (dialog.querySelector(`a[href="${buyIntoUpsaleHref}"] + button`) as HTMLButtonElement).click()
+    toggleInvisible(upsaleDialogSelector, false)
+  })
+
+  history.replaceState(null, '', ogPath);
+}
+type Falsy = false | 0 | "" | null | undefined;
+type Truthy<T> = T extends Falsy ? never : T;
+
+type MutationCallback<T> = {
+  condition: (newNode: HTMLElement) => T;
+  callback: (value: Truthy<T>) => void;
+};
+function createMutationCallback<T>(
+  condition: (newNode: HTMLElement) => T,
+  callback: (value: Truthy<T>) => void
+): MutationCallback<T> {
+  // @ts-ignore
+  return mutationCallbacks.push({ condition, callback })
+}
+
+const mutationCallbacks: MutationCallback<HTMLElement>[] = [];
+
+/**
+ * Process mutation callbacks for a given node, removing callbacks after they're executed
+ */
+function processMutationCallbacks(node: HTMLElement): void {
+  for (let i = mutationCallbacks.length - 1; i >= 0; i--) {
+    const { condition, callback } = mutationCallbacks[i];
+    const result = condition(node);
+
+    if (result) {
+      callback(result as Truthy<typeof result>);
+      mutationCallbacks.splice(i, 1);
+    }
+  }
+}
+
 
 /**
  * Observe DOM changes and add buttons to new user names
@@ -218,8 +264,16 @@ function gotUsername(userNameElement: HTMLElement, settings: ExtensionState): vo
 async function observeDOMChanges(settings: ExtensionState) {
   const targetNode = document.body;
   const config = { childList: true, subtree: true };
-
+  let currentPath = location.pathname
   observer = new MutationObserver(async (mutationsList) => {
+    if (location.pathname !== currentPath) {
+      settings = await getCurrentState()
+      if (location.pathname.endsWith(upsalePathname) && settings.hideSubscriptionOffers) {
+        await handleUpsaleDialog(currentPath)
+      } else {
+        currentPath = location.pathname;
+      }
+    }
     mutationsList.forEach((mutation) => {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
@@ -228,6 +282,7 @@ async function observeDOMChanges(settings: ExtensionState) {
             userNames.forEach((userName) =>
               gotUsername(userName as HTMLElement, settings)
             );
+            processMutationCallbacks(node)
           }
         });
       }
@@ -236,7 +291,6 @@ async function observeDOMChanges(settings: ExtensionState) {
 
   observer.observe(targetNode, config);
 }
-
 function applySettings(state: ExtensionState): void {
   toggleInvisible(upsaleSelector, state.hideSubscriptionOffers)
   if (!state.isBlockMuteEnabled) {
@@ -319,9 +373,9 @@ chrome.runtime.onMessage.addListener(
 );
 
 
-function createAdNotification() {
+function createAdNotification(userNameElement: HTMLElement) {
   const container = document.createElement('div');
-
+  const { fullName, username } = extractUserDetails(userNameElement)
   const style = document.createElement('style');
   style.textContent = `
     .xquickblock-notification {
@@ -333,6 +387,7 @@ function createAdNotification() {
       width: 100%;
       box-sizing: border-box;
       transition: all 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .xquickblock-notification:hover {
       background: rgba(29, 161, 242, 0.15);
@@ -349,19 +404,58 @@ function createAdNotification() {
       fill: #1DA1F2;
       flex-shrink: 0;
     }
-    .notification-text h3 {
-      margin: 0;
-      font-size: 16px;
-      color: #1DA1F2;
-      font-weight: 600;
+    .notification-text {
+      flex: 1;
     }
     .notification-text p {
       margin: 4px 0 0;
       font-size: 14px;
       color: #657786;
+      line-height: 1.4;
+    }
+    .notification-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .notification-button {
+      background: #1DA1F2;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .notification-button:hover {
+      background: #0c85d0;
+    }
+    .notification-button.secondary {
+      background: transparent;
+      color: #1DA1F2;
+      border: 1px solid #1DA1F2;
+    }
+    .notification-button.secondary:hover {
+      background: rgba(29, 161, 242, 0.1);
+    }
+    .user-info {
+      font-weight: 600;
+      color: #1DA1F2;
     }
   `;
   document.head.appendChild(style);
+
+  const handleAction = async (action: Action) => {
+    try {
+      await doToUser(userNameElement, action);
+      container.style.opacity = '0';
+      setTimeout(() => container.remove(), 300);
+    } catch (error) {
+      console.error(`Error performing ${action} action:`, error);
+    }
+  };
 
   const template = html`
     <div class="xquickblock-notification">
@@ -370,8 +464,11 @@ function createAdNotification() {
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
         </svg>
         <div class="notification-text">
-          <h3>Advertisement Hidden</h3>
-          <p>This sponsored content has been hidden based on your preferences.</p>
+          <p>This sponsored content from <span class="user-info">@${username}</span> has been hidden based on your preferences.</p>
+          <div class="notification-actions">
+            <button class="notification-button" @click=${() => handleAction('block')}>Block User</button>
+            <button class="notification-button secondary" @click=${() => handleAction('mute')}>Mute User</button>
+          </div>
         </div>
       </div>
     </div>
@@ -380,3 +477,4 @@ function createAdNotification() {
   render(template, container);
   return container;
 }
+
