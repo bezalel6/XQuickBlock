@@ -20,6 +20,7 @@ export async function processUsername(userNameElement: HTMLElement) {
         userNameElement.hasAttribute("messedWith") ||
         //In a quote tweet the user context menu is not available, and so dipatching at it is not possible
         // To detect a quote tweet username, we check the closest element with tabindex=0. if it's not an article, this is not a valid context
+        // bugbug like in the case here: https://x.com/Jackdechipper/status/1911358233987461364 running document.querySelector("#id__nmemdq6q5z").closest(`[tabindex="0"]`) returns: div aria-label="Home timeline" tabindex="0"... 
         userNameElement.closest('[tabindex="0"]').tagName !== "ARTICLE" ||
         isUserOwnAccount(userNameElement)
     )
