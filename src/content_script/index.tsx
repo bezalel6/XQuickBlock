@@ -60,19 +60,25 @@ export async function processUsername(userNameElement: HTMLElement) {
             }
         );
     }
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'inline-flex';
+    buttonContainer.style.alignItems = 'center';
+    buttonContainer.style.marginLeft = '4px';
+
     const btns = [
         Button("Mute", "mute", userNameElement),
         Button("Block", "block", userNameElement),
     ];
+    btns.forEach(btn => buttonContainer.appendChild(btn));
+
     const unsubscribe = settings.subscribe(
         ["isBlockMuteEnabled"],
         ({ isBlockMuteEnabled }) => {
             if (isBlockMuteEnabled) {
-                btns.forEach((b) => userNameElement.appendChild(b));
+                userNameElement.appendChild(buttonContainer);
             } else {
                 try {
-                    userNameElement.removeChild;
-                    btns.forEach((b) => userNameElement.removeChild(b));
+                    userNameElement.removeChild(buttonContainer);
                 } catch (e) {
                     unsubscribe();
                 }
