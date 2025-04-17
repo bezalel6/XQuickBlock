@@ -75,10 +75,10 @@ export async function processUsername(userNameElement: HTMLElement) {
         ["isBlockMuteEnabled"],
         ({ isBlockMuteEnabled }) => {
             if (isBlockMuteEnabled) {
-                userNameElement.appendChild(buttonContainer);
+                userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
             } else {
                 try {
-                    userNameElement.removeChild(buttonContainer);
+                    userNameElement.parentElement?.parentElement?.removeChild(buttonContainer);
                 } catch (e) {
                     unsubscribe();
                 }
