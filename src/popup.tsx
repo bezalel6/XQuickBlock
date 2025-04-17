@@ -187,6 +187,7 @@ const Popup: React.FC = () => {
           sx={{
             p: 1,
             mt: 2,
+            mb: 2,
             borderRadius: 2,
           }}
         >
