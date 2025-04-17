@@ -10,4 +10,4 @@ export const upsaleSelectors = [
   `a[href="${buyIntoUpsaleHref}"]`,
 ].join(", ");
 export const upsaleDialogSelector = '[data-testid="sheetDialog"]';
-export const subscribeToButtonSelector = 'div [aria-label^="Subscribe to @"]';
+export const subscribeToButtonSelector = 'div > [aria-label^="Subscribe to @"]';

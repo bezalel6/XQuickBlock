@@ -101,8 +101,9 @@ async function applySettings(state: ExtensionState) {
         );
         settingsManager.subscribe(
             ["hideUserSubscriptions"],
-            ({ hideUserSubscriptions }) =>
+            ({ hideUserSubscriptions }) => {
                 toggleInvisible(subscribeToButtonSelector, hideUserSubscriptions)
+            }
         );
         const userNames = document.querySelectorAll(userNameSelector);
         userNames.forEach((userName) => processUsername(userName as HTMLElement));

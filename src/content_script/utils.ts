@@ -9,15 +9,10 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Toggle visibility of elements matching a selector
+ * Toggle visibility of elements matching a selector, using {@link toggleCSSRule}
  */
 export function toggleInvisible(selector: string, hide: boolean): void {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach((element) => {
-    if (element instanceof HTMLElement) {
-      element.style.display = hide ? "none" : "";
-    }
-  });
+    toggleCSSRule(selector, "display", hide ? "none" : "", hide);
 }
 
 /**
