@@ -1,6 +1,6 @@
 # XQuickBlock - Chrome Extension
 
-![screenshot](screenshot.png)
+![screenshot](public/screenshot.png)
 
 ## Overview
 
@@ -21,7 +21,6 @@
 - **Subscription:**
   - Automatically hide premium content prompts
   - Block upgrade interruptions
-
 ## Installation
 
 1. **Download from Chrome Web Store:**
