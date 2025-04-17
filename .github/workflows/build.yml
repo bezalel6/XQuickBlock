@@ -34,6 +34,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
     - run: npm run package --if-present
+    - name: Upload extension as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: extension
+        path: packages/extension.zip
+        retention-days: 7
     - name: Upload to Chrome Web Store
       if: github.event.inputs.publish == 'true'
       uses: mnao305/chrome-extension-upload@v5.0.0
