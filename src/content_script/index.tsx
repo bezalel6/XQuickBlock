@@ -1,4 +1,4 @@
-import { upsaleSelectors, userNameSelector } from "../constants";
+import { upsaleSelectors, userMenuSelector, userNameSelector } from "../constants";
 import { ExtensionMessage, ExtensionState } from "../types";
 import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
@@ -9,6 +9,7 @@ import {
     getTweet,
     hasAdSpan,
     isUserOwnAccount,
+    sleep,
     toggleInvisible,
 } from "./utils";
 
@@ -16,17 +17,17 @@ import {
  * Add mute and block buttons to user names, as well as applying current Ad policy
  */
 export async function processUsername(userNameElement: HTMLElement) {
+
+    const tweet = getTweet(userNameElement)!;
+    await sleep(100)
+    const moreBtn = tweet.querySelector(userMenuSelector)
     if (
+        !moreBtn ||
         userNameElement.hasAttribute("messedWith") ||
-        //In a quote tweet the user context menu is not available, and so dipatching at it is not possible
-        // To detect a quote tweet username, we check the closest element with tabindex=0. if it's not an article, this is not a valid context
-        // bugbug like in the case here: https://x.com/Jackdechipper/status/1911358233987461364 running document.querySelector("#id__nmemdq6q5z").closest(`[tabindex="0"]`) returns: div aria-label="Home timeline" tabindex="0"... 
-        userNameElement.closest('[tabindex="0"]').tagName !== "ARTICLE" ||
         isUserOwnAccount(userNameElement)
     )
         return;
     userNameElement.setAttribute("messedWith", "true");
-    const tweet = getTweet(userNameElement)!;
     const settings = await getSettingsManager();
     if (hasAdSpan(tweet)) {
         settings.subscribe(

@@ -73,7 +73,7 @@ export async function waitFor(
  * Get the tweet element from a user name element
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
-  return nameElement.closest("article") || null;
+  return nameElement.closest('[role="link"]') || nameElement.closest("article") || null;
 }
 
 /**
