@@ -201,6 +201,7 @@ export async function getCurrentState(): Promise<ExtensionState> {
         themeOverride: "dark",
         promotedContentAction: "hide",
         hideSubscriptionOffers: true,
+        hideUserSubscriptions: true,
       };
 
       const finalState = {

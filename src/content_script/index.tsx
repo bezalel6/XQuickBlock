@@ -1,4 +1,4 @@
-import { upsaleSelectors, userMenuSelector, userNameSelector } from "../constants";
+import { upsaleSelectors, userMenuSelector, userNameSelector, subscribeToButtonSelector } from "../constants";
 import { ExtensionMessage, ExtensionState } from "../types";
 import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
@@ -99,7 +99,11 @@ async function applySettings(state: ExtensionState) {
             ({ hideSubscriptionOffers }) =>
                 toggleInvisible(upsaleSelectors, hideSubscriptionOffers)
         );
-
+        settingsManager.subscribe(
+            ["hideUserSubscriptions"],
+            ({ hideUserSubscriptions }) =>
+                toggleInvisible(subscribeToButtonSelector, hideUserSubscriptions)
+        );
         const userNames = document.querySelectorAll(userNameSelector);
         userNames.forEach((userName) => processUsername(userName as HTMLElement));
         observeDOMChanges(state);

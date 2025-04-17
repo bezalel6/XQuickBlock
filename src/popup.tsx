@@ -113,6 +113,7 @@ const Popup: React.FC = () => {
       : "light",
     promotedContentAction: "hide",
     hideSubscriptionOffers: true,
+    hideUserSubscriptions: true,
   });
 
   useEffect(() => {
@@ -154,6 +155,10 @@ const Popup: React.FC = () => {
 
   const handleSubscriptionOffersChange = (checked: boolean) => {
     updateState({ hideSubscriptionOffers: checked });
+  };
+
+  const handleUserSubscriptionsChange = (checked: boolean) => {
+    updateState({ hideUserSubscriptions: checked });
   };
 
   const toggleTheme = () => {
@@ -214,6 +219,11 @@ const Popup: React.FC = () => {
             enabled={state.hideSubscriptionOffers}
             onChange={handleSubscriptionOffersChange}
             label="Hide Subscription Offers"
+          />
+          <ToggleSwitch
+            enabled={state.hideUserSubscriptions}
+            onChange={handleUserSubscriptionsChange}
+            label="Hide User Subscriptions"
           />
           <InfoSection />
         </Paper>

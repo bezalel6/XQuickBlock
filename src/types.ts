@@ -5,6 +5,7 @@ export interface ExtensionState {
   themeOverride: "light" | "dark";
   promotedContentAction: PromotedContentAction;
   hideSubscriptionOffers: boolean;
+  hideUserSubscriptions: boolean;
 }
 
 export interface ExtensionMessage {
