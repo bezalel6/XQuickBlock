@@ -1,4 +1,4 @@
-import  { type Selectors } from "./constants";
+import { type Selectors } from "./constants";
 
 export type PromotedContentAction = "nothing" | "hide" | "block";
 
@@ -8,16 +8,16 @@ export interface ExtensionSettings {
   promotedContentAction: PromotedContentAction;
   hideSubscriptionOffers: boolean;
   hideUserSubscriptions: boolean;
-  lastUpdatedSeleectors?:number;
-  selectors:Selectors
-  automaticUpdatePolicy:UpdatePolicy
+  lastUpdatedSeleectors?: number;
+  selectors: Selectors;
+  automaticUpdatePolicy: UpdatePolicy;
 }
 
 export interface ExtensionMessage {
-  type: "stateUpdate";
-  payload: ExtensionSettings;
+  type: "stateUpdate" | "forceUpdate" | "manualUpdate";
+  payload?: ExtensionSettings;
 }
 
 export type Action = "block" | "mute";
 
-export type UpdatePolicy = "daily"|"weekly"|"monthly"|"never"
+export type UpdatePolicy = "daily" | "weekly" | "monthly" | "never";

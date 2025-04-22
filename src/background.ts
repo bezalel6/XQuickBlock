@@ -1,64 +1,116 @@
-import { ExtensionSettings } from './types';
-import { getSettingsManager } from './content_script/settings-manager';
-
+import { ExtensionMessage, ExtensionSettings, UpdatePolicy } from "./types";
+import { getSettingsManager } from "./content_script/settings-manager";
+import { handleManualUpdate, handleStateUpdate } from "./message-handler";
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
   try {
-    // // Replace this URL with your actual JSON endpoint
-    // const response = await fetch('YOUR_JSON_ENDPOINT');
-    // const data = await response.json();
-    
     // Get the settings manager instance
     const settingsManager = await getSettingsManager();
-    console.log("Background setting:",settingsManager.getState())
-    // Update the settings with the fetched data
+    const currentSettings = settingsManager.getState();
+    console.log("Background setting:", currentSettings);
+
+    // Update the settings with the current timestamp
     settingsManager.update({
-        lastUpdatedSeleectors:Date.now()
-      // Add any new settings from the fetched data
-      // For example:
-      // newSetting: data.newSetting,
-      // anotherSetting: data.anotherSetting,
+      lastUpdatedSeleectors: Date.now(),
+      ...currentSettings, // Preserve existing settings
     });
-    
-    console.log('[XQuickBlock] Successfully updated settings from JSON');
+
+    console.log("[XQuickBlock] Successfully updated settings");
   } catch (error) {
-    console.error('[XQuickBlock] Error fetching JSON:', error);
+    console.error("[XQuickBlock] Error updating settings:", error);
   }
 }
 
 // Function to check if we need to fetch new data
-async function checkAndFetchIfNeeded() {
-  const { lastUpdatedSeleectors } = (await getSettingsManager()).getState()
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-  
-  if (!lastUpdatedSeleectors || Date.now() - lastUpdatedSeleectors > ONE_DAY_MS) {
+async function checkAndFetchIfNeeded(alarm = false) {
+  const { lastUpdatedSeleectors, automaticUpdatePolicy } = (
+    await getSettingsManager()
+  ).getState();
+
+  if ((!lastUpdatedSeleectors && automaticUpdatePolicy !== "never") || alarm) {
     await fetchAndUpdateJson();
   }
 }
 
-// Initial fetch when the service worker starts
-checkAndFetchIfNeeded();
-
-// Set up periodic checking
-chrome.alarms.create('checkForUpdates', {
-  periodInMinutes: 60 // Check every hour
-});
+const ALARM_NAME = "checkForUpdates";
 
 // Listen for the alarm
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'checkForUpdates') {
-    checkAndFetchIfNeeded();
+  if (alarm.name === ALARM_NAME) {
+    checkAndFetchIfNeeded(true);
   }
 });
 
-// Listen for messages from content script or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'forceUpdate') {
-    fetchAndUpdateJson().then(() => {
-      sendResponse({ success: true });
-    }).catch((error) => {
-      sendResponse({ success: false, error: error.message });
+async function settingsUpdated(settings: ExtensionSettings) {
+  // Set up periodic checking based on user's update policy
+  const periodInMinutes = getUpdatePolicyInMinutes(
+    settings.automaticUpdatePolicy
+  );
+
+  if (periodInMinutes) {
+    await chrome.alarms.create(ALARM_NAME, {
+      periodInMinutes,
     });
+  } else {
+    // If no policy is set or policy is "never", clear any existing alarm
+    await chrome.alarms.clear(ALARM_NAME);
+  }
+}
+
+// Listen for messages from content script or popup
+chrome.runtime.onMessage.addListener(
+  (message: ExtensionMessage, sender, sendResponse) => {
+    console.log("[XQuickBlock] Received message:", message);
+
+    switch (message.type) {
+      case "stateUpdate": {
+        handleStateUpdate(message.payload)
+          .then(settingsUpdated)
+          .then(() => sendResponse({ success: true }))
+          .catch((error) =>
+            sendResponse({ success: false, error: error.message })
+          );
+        break;
+      }
+      case "manualUpdate": {
+        fetchAndUpdateJson()
+          .then(() => sendResponse({ success: true }))
+          .catch((error) =>
+            sendResponse({ success: false, error: error.message })
+          );
+        break;
+      }
+    }
+
     return true; // Keep the message channel open for the async response
   }
-}); 
+);
+
+// Initialize the alarm when the extension starts
+chrome.runtime.onInstalled.addListener(async () => {
+  const settingsManager = await getSettingsManager();
+  const settings = settingsManager.getState();
+  const periodInMinutes = getUpdatePolicyInMinutes(
+    settings.automaticUpdatePolicy
+  );
+
+  if (periodInMinutes) {
+    await chrome.alarms.create(ALARM_NAME, {
+      periodInMinutes,
+    });
+  }
+});
+
+// Function to convert update policy to minutes
+function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
+  switch (policy) {
+    case "daily":
+      return 24 * 60; // 24 hours
+    case "weekly":
+      return 7 * 24 * 60; // 7 days
+    case "monthly":
+      return 30 * 24 * 60; // 30 days
+    case "never":
+      return null;
+  }
+}

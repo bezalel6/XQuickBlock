@@ -1,11 +1,10 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "moduleResolution": "bundler",
+        "moduleResolution": "node",
         "module": "ES6",
         "esModuleInterop": true,
         "sourceMap": false,
-        "rootDir": "src",
         "outDir": "dist/js",
         "noEmitOnError": true,
         "jsx": "react",
@@ -17,7 +16,17 @@
             ]
         },
         "typeRoots": [
-            "node_modules/@types",
-        ]
+            "node_modules/@types"
+        ],
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true
     }
 }

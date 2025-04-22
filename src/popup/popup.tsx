@@ -12,9 +12,12 @@ import { createRoot } from "react-dom/client";
 import { ExtensionSettings } from "../types";
 import Header from "./components/header";
 import InfoSection from "./components/info-section";
+import ManualUpdateSection from "./components/manual-update-section";
 import PromotedContentSelector from "./components/promoted-content-selector";
 import ToggleSwitch from "./components/toggle-switch";
 import AutomaticPolicySelector from "./components/update-policy-selector";
+import { processPopupUpdate } from "../message-handler";
+import SELECTORS from "constants";
 
 const Popup: React.FC = () => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -26,6 +29,7 @@ const Popup: React.FC = () => {
     hideSubscriptionOffers: true,
     hideUserSubscriptions: true,
     automaticUpdatePolicy: "weekly",
+    selectors: null,
   });
 
   useEffect(() => {
@@ -41,20 +45,9 @@ const Popup: React.FC = () => {
   }, []);
 
   const updateState = (newState: Partial<ExtensionSettings>) => {
-    setState((prev) => {
-      const updatedState = { ...prev, ...newState };
-      chrome.storage.sync.set(updatedState, () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-              type: "stateUpdate",
-              payload: updatedState,
-            });
-          }
-        });
-      });
-      return updatedState;
-    });
+    const settings = { ...state, ...newState };
+    processPopupUpdate(settings);
+    setState(settings);
   };
   const makeOnChange = <K extends keyof ExtensionSettings>(k: K) => {
     return (value: ExtensionSettings[K]) => {
@@ -117,6 +110,7 @@ const Popup: React.FC = () => {
             value={state.automaticUpdatePolicy}
             onChange={makeOnChange("automaticUpdatePolicy")}
           />
+          <ManualUpdateSection />
           <PromotedContentSelector
             value={state.promotedContentAction}
             onChange={makeOnChange("promotedContentAction")}
