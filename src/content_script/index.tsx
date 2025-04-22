@@ -92,34 +92,36 @@ export async function processUsername(userNameElement: HTMLElement) {
 }
 
 async function applySettings(state: ExtensionSettings) {
+  console.log("Applying:");
+  console.log(state);
   if (!state.isBlockMuteEnabled) {
     cleanup(state);
     return;
   }
   const settings = await getSettingsManager();
   setTimeout(() => {
-    settings.subscribe(
-      ["hideSubscriptionOffers"],
-      ({ hideSubscriptionOffers }) =>
-        toggleInvisible(
-          settings.getState().selectors.upsaleSelectors,
-          hideSubscriptionOffers
-        )
-    );
-    settings.subscribe(
-      ["hideUserSubscriptions"],
-      ({ hideUserSubscriptions }) => {
-        toggleInvisible(
-          settings.getState().selectors.subscribeToButtonSelector,
-          hideUserSubscriptions
-        );
-      }
-    );
-    const userNames = document.querySelectorAll(
-      settings.getState().selectors.userNameSelector
-    );
-    userNames.forEach((userName) => processUsername(userName as HTMLElement));
-    observeDOMChanges(state);
+    settings.subscribe(["hideSubscriptionOffers"], (sett) => {
+      const { selectors, hideSubscriptionOffers } = sett;
+      console.log(sett);
+      if (selectors)
+        toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
+    });
+    settings.subscribe(["hideUserSubscriptions"], (sett) => {
+      const { hideUserSubscriptions, selectors } = sett;
+      console.log(sett);
+      /* The `toggleInvisible` function is being called with two arguments:
+      `selectors.subscribeToButtonSelector` and `hideUserSubscriptions`. */
+      // toggleInvisible(
+      //   selectors.subscribeToButtonSelector,
+      //   hideUserSubscriptions
+      // );
+    });
+
+    // const userNames = document.querySelectorAll(
+    //   settings.getState().selectors.userNameSelector
+    // );
+    // userNames.forEach((userName) => processUsername(userName as HTMLElement));
+    // observeDOMChanges(state);
   }, 1000);
 }
 

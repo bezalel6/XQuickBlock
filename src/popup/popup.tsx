@@ -17,7 +17,7 @@ import PromotedContentSelector from "./components/promoted-content-selector";
 import ToggleSwitch from "./components/toggle-switch";
 import AutomaticPolicySelector from "./components/update-policy-selector";
 import { processPopupUpdate } from "../message-handler";
-import SELECTORS from "constants";
+import SELECTORS from "../constants";
 
 const Popup: React.FC = () => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -29,7 +29,7 @@ const Popup: React.FC = () => {
     hideSubscriptionOffers: true,
     hideUserSubscriptions: true,
     automaticUpdatePolicy: "weekly",
-    selectors: null,
+    selectors: SELECTORS,
   });
 
   useEffect(() => {
