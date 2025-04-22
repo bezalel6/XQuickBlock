@@ -24,8 +24,8 @@ import SELECTORS from "../../constants";
 import SourceSelector from "../components/source-selector";
 import Advanced from "./advanced-settings";
 import Button from "./button";
-type PopupProps = { showAdvanced?: boolean };
-const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
+type PopupProps = { optionsPage?: boolean };
+const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
     isBlockMuteEnabled: false,
     themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -87,7 +87,7 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{ width: 300 }}>
+      <Container sx={{ ...(optionsPage ? { width: 600 } : { width: 300 }) }}>
         <Paper
           elevation={3}
           sx={{
@@ -97,11 +97,9 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
             borderRadius: 2,
           }}
         >
-          <Header
-            title="XQuickBlock"
-            theme={state.themeOverride}
-            onThemeToggle={toggleTheme}
-          />
+          <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />
+
+          {/* Core Functionality */}
           <ToggleSwitch
             enabled={state.isBlockMuteEnabled}
             onChange={makeOnChange("isBlockMuteEnabled")}
@@ -111,32 +109,11 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
                 : "Block/Mute Buttons Disabled"
             }
           />
+          <InfoSection />
+
           <Divider sx={{ my: 2 }} />
-          <Accordion defaultExpanded={showAdvanced}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Advanced Settings</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Advanced>
-                <SourceSelector
-                  value={state.source || Source.MAIN}
-                  onChange={makeOnChange("source")}
-                ></SourceSelector>
-                <Button
-                  onClick={() => {
-                    chrome.storage.sync.clear().then(() => alert("Done"));
-                  }}
-                >
-                  Reset Saved Settings
-                </Button>
-              </Advanced>
-            </AccordionDetails>
-          </Accordion>
-          <AutomaticPolicySelector
-            value={state.automaticUpdatePolicy}
-            onChange={makeOnChange("automaticUpdatePolicy")}
-          />
-          <ManualUpdateSection />
+
+          {/* Content Filtering */}
           <PromotedContentSelector
             value={state.promotedContentAction}
             onChange={makeOnChange("promotedContentAction")}
@@ -151,7 +128,38 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
             onChange={makeOnChange("hideUserSubscriptions")}
             label="Hide User Subscriptions"
           />
-          <InfoSection />
+          <Divider sx={{ my: 2 }} />
+
+          {/* Update Settings */}
+          <AutomaticPolicySelector
+            value={state.automaticUpdatePolicy}
+            onChange={makeOnChange("automaticUpdatePolicy")}
+          />
+          <ManualUpdateSection />
+          <Divider sx={{ my: 2 }} />
+
+          {/* Advanced Settings */}
+          <Accordion defaultExpanded={optionsPage}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Advanced Settings</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Advanced>
+                <SourceSelector
+                  value={state.source || Source.MAIN}
+                  onChange={makeOnChange("source")}
+                ></SourceSelector>
+                <Button
+                  onClick={() => {
+                    chrome.storage.sync.clear().then(() => alert("Done"));
+                  }}
+                >
+                  Reset Extension Storage
+                </Button>
+              </Advanced>
+            </AccordionDetails>
+          </Accordion>
+          <Divider sx={{ my: 2 }} />
         </Paper>
       </Container>
     </ThemeProvider>

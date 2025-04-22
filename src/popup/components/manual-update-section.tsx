@@ -61,7 +61,7 @@ const ManualUpdateSection: React.FC = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <UpdateIcon sx={{ mr: 1, color: "primary.main" }} />
+          <UpdateIcon sx={{ mr: 1, mb: "0.35em", color: "primary.main" }} />
           <Typography variant="h6" color="primary" gutterBottom>
             Manual Update
           </Typography>

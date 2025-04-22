@@ -2,14 +2,14 @@ import { html, render } from "../lit";
 import { Action } from "../types";
 import { dispatch, extractUserDetails } from "./utils";
 
-export const adPlaceHolderClassName = "xquickblock-notification"
+export const adPlaceHolderClassName = "xquickblock-notification";
 
 export default function AdPlaceholder(userNameElement: HTMLElement) {
   const container = document.createElement("div");
   const { fullName, username } = extractUserDetails(userNameElement);
   const style = document.createElement("style");
   style.textContent = `
-      .xquickblock-notification {
+      .${adPlaceHolderClassName} {
         background: rgba(29, 161, 242, 0.1);
         border: 1px solid rgba(29, 161, 242, 0.2);
         border-radius: 12px;
@@ -19,7 +19,7 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
         box-sizing: border-box;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       }
-      .xquickblock-notification:hover {
+      .${adPlaceHolderClassName}:hover {
         background: rgba(29, 161, 242, 0.15);
         border-color: rgba(29, 161, 242, 0.3);
       }

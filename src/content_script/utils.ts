@@ -190,7 +190,13 @@ export async function dispatch(
     toggleInvisible(selectors.userMenuSelector, false);
   }
 }
-
+export function isMessedWith(node: Element) {
+  return node.getAttribute("messedWith");
+}
+export function setMessedWith(node: Element, messedWith = true) {
+  if (messedWith) return node.setAttribute("messedWith", "true");
+  node.removeAttribute("messedWith");
+}
 /**
  * Get the current extension state from storage with defaults
  */

@@ -1,7 +1,13 @@
 import { processUsername } from "./script";
 import { ExtensionSettings } from "../types";
 import { getSettingsManager } from "./settings-manager";
-import { getCurrentState, toggleInvisible } from "./utils";
+import {
+  getCurrentState,
+  isMessedWith,
+  setMessedWith,
+  toggleInvisible,
+} from "./utils";
+import Reminder from "./reminder";
 
 type Falsy = false | 0 | "" | null | undefined;
 type Truthy<T> = T extends Falsy ? never : T;
@@ -35,18 +41,30 @@ function processMutationCallbacks(node: HTMLElement): void {
   }
 }
 
-async function handleUpsaleDialog(ogPath: string) {
-  const { selectors } = await (await getSettingsManager()).getState();
-  toggleInvisible(selectors.upsaleDialogSelector, true);
+async function handleUpsaleDialog(
+  ogPath: string,
+  { selectors, hideSubscriptionOffers }: ExtensionSettings
+) {
+  toggleInvisible(selectors.upsaleDialogSelector, hideSubscriptionOffers);
   createMutationCallback(
     (newNode) => newNode.querySelector(selectors.upsaleDialogSelector),
     (dialog) => {
-      (
-        dialog.querySelector(
-          `a[href="${selectors.buyIntoUpsaleHref}"] + button`
-        ) as HTMLButtonElement
-      ).click();
-      dialog.remove();
+      if (isMessedWith(dialog)) return;
+      setMessedWith(dialog);
+      if (hideSubscriptionOffers) {
+        (
+          dialog.querySelector(
+            `a[href="${selectors.buyIntoUpsaleHref}"] + button`
+          ) as HTMLButtonElement
+        ).click();
+        dialog.remove();
+      } else {
+        const btns = Array.from(
+          dialog.querySelectorAll(`a[href="${selectors.buyIntoUpsaleHref}"]`)
+        ) as HTMLAnchorElement[];
+        console.log(btns);
+        // btns.style.backgroundColor = "aqua";
+      }
       toggleInvisible(selectors.upsaleDialogSelector, false);
     }
   );
@@ -55,7 +73,7 @@ async function handleUpsaleDialog(ogPath: string) {
 }
 
 let observer: MutationObserver | null = null;
-
+let observerInit = true;
 /**
  * Observe DOM changes and add buttons to new user names
  */
@@ -64,17 +82,14 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
   const config = { childList: true, subtree: true };
   let currentPath = location.pathname;
   observer = new MutationObserver(async (mutationsList) => {
-    if (location.pathname !== currentPath) {
-      settings = await (await getSettingsManager()).getState();
-      if (
-        location.pathname.endsWith(settings.selectors.upsalePathname) &&
-        settings.hideSubscriptionOffers
-      ) {
-        await handleUpsaleDialog(currentPath);
-      } else {
-        currentPath = location.pathname;
-      }
+    if (
+      location.pathname.endsWith(settings.selectors.upsalePathname) &&
+      (observerInit || location.pathname !== currentPath)
+    ) {
+      await handleUpsaleDialog(currentPath, settings);
     }
+    currentPath = location.pathname;
+    observerInit = false;
     mutationsList.forEach((mutation) => {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {

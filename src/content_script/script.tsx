@@ -7,7 +7,9 @@ import {
   dispatch,
   getTweet,
   hasAdSpan,
+  isMessedWith,
   isUserOwnAccount,
+  setMessedWith,
   sleep,
   toggleCSSRule,
   toggleInvisible,
@@ -25,11 +27,11 @@ export async function processUsername(userNameElement: HTMLElement) {
   );
   if (
     !moreBtn ||
-    userNameElement.hasAttribute("messedWith") ||
+    isMessedWith(userNameElement) ||
     isUserOwnAccount(userNameElement)
   )
     return;
-  userNameElement.setAttribute("messedWith", "true");
+  setMessedWith(userNameElement);
   if (hasAdSpan(tweet)) {
     settings.subscribe(
       ["promotedContentAction"],
@@ -85,7 +87,7 @@ export async function processUsername(userNameElement: HTMLElement) {
             buttonContainer
           );
         } catch (e) {
-          unsubscribe();
+          // unsubscribe();
         }
       }
     }
@@ -126,13 +128,13 @@ async function applySettings(state: ExtensionSettings) {
 function cleanup({ selectors }: ExtensionSettings): void {
   resetObserver();
   document.querySelectorAll('[messedWith="true"]').forEach((e) => {
-    e.removeAttribute("messedWith");
+    setMessedWith(e, false);
   });
 
   document
     .querySelectorAll(selectors.userNameSelector)
     .forEach((userNameElement) => {
-      userNameElement.removeAttribute("messedWith");
+      setMessedWith(userNameElement, false);
       userNameElement
         .querySelectorAll("button")
         .forEach((button) => button.remove());
