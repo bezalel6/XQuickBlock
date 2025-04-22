@@ -11,6 +11,7 @@ export interface ExtensionSettings {
   lastUpdatedSeleectors?: number;
   selectors: Selectors;
   automaticUpdatePolicy: UpdatePolicy;
+  source?: Source;
 }
 
 export interface ExtensionMessage {
@@ -21,3 +22,8 @@ export interface ExtensionMessage {
 export type Action = "block" | "mute";
 
 export type UpdatePolicy = "daily" | "weekly" | "monthly" | "never";
+
+export enum Source {
+  MAIN = "main",
+  TEST = "test",
+}
