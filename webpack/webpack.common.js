@@ -5,21 +5,21 @@ const srcDir = path.join(__dirname, "..", "src");
 
 module.exports = {
     entry: {
-        popup: path.join(srcDir, 'popup', 'popup.tsx'),
-        content_script: path.join(srcDir, 'content_script', 'index.tsx'),
-        background: path.join(srcDir, 'background.ts'),
+        popup: path.join(srcDir, "popup", "popup.tsx"),
+        options: path.join(srcDir, "options.tsx"),
+        content_script: path.join(srcDir, "content_script", "index.tsx"),
+        background: path.join(srcDir, "background.ts"),
     },
     output: {
-        path: path.join(__dirname, "../dist/js"),
-        filename: "[name].js",
+        path: path.join(__dirname, "../dist"),
+        filename: "js/[name].js",
     },
     optimization: {
-        splitChunks: {
-            name: "vendor",
-            chunks(chunk) {
-                return chunk.name !== 'background';
-            }
-        },
+        // Disable code splitting
+        splitChunks: false,
+        // Preserve modules
+        moduleIds: "named",
+        chunkIds: "named",
     },
     module: {
         rules: [
@@ -35,7 +35,7 @@ module.exports = {
     },
     plugins: [
         new CopyPlugin({
-            patterns: [{ from: ".", to: "../", context: "public" }],
+            patterns: [{ from: ".", to: "./", context: "public" }],
             options: {},
         }),
     ],

@@ -4,8 +4,8 @@
   "description": "XQuickBlock",
   "main": "index.js",
   "scripts": {
-    "watch": "webpack --config webpack/webpack.dev.js --watch",
-    "build": "webpack --config webpack/webpack.prod.js",
+    "watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",
+    "build": "npm run clean && webpack --config webpack/webpack.prod.js",
     "clean": "rimraf dist",
     "style": "prettier --write \"src/**/*.{ts,tsx}\"",
     "package": "npm run build && node scripts/package.js",
@@ -24,6 +24,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "framer-motion": "^12.7.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

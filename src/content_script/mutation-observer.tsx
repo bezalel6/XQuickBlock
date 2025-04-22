@@ -1,4 +1,4 @@
-import { processUsername } from ".";
+import { processUsername } from "./script";
 import { ExtensionSettings } from "../types";
 import { getSettingsManager } from "./settings-manager";
 import { getCurrentState, toggleInvisible } from "./utils";
@@ -36,7 +36,7 @@ function processMutationCallbacks(node: HTMLElement): void {
 }
 
 async function handleUpsaleDialog(ogPath: string) {
-  const {selectors} = await (await getSettingsManager()).getState()
+  const { selectors } = await (await getSettingsManager()).getState();
   toggleInvisible(selectors.upsaleDialogSelector, true);
   createMutationCallback(
     (newNode) => newNode.querySelector(selectors.upsaleDialogSelector),
@@ -79,7 +79,9 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node instanceof HTMLElement) {
-            const userNames = node.querySelectorAll(settings.selectors.userNameSelector);
+            const userNames = node.querySelectorAll(
+              settings.selectors.userNameSelector
+            );
             userNames.forEach((userName) =>
               processUsername(userName as HTMLElement)
             );

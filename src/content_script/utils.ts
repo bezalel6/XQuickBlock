@@ -1,5 +1,5 @@
-import {default as default_selectors} from "../constants";
-import { Action, ExtensionSettings } from "../types";
+import { default as default_selectors } from "../constants";
+import { Action, ExtensionSettings, Source } from "../types";
 
 /**
  * Sleep for a specified number of milliseconds
@@ -12,7 +12,7 @@ export function sleep(ms: number): Promise<void> {
  * Toggle visibility of elements matching a selector, using {@link toggleCSSRule}
  */
 export function toggleInvisible(selector: string, hide: boolean): void {
-    toggleCSSRule(selector, "display", hide ? "none" : "", hide);
+  toggleCSSRule(selector, "display", hide ? "none" : "", hide);
 }
 
 /**
@@ -68,7 +68,11 @@ export async function waitFor(
  * Get the tweet element from a user name element
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
-  return nameElement.closest('[role="link"]') || nameElement.closest("article") || null;
+  return (
+    nameElement.closest('[role="link"]') ||
+    nameElement.closest("article") ||
+    null
+  );
 }
 
 /**
@@ -147,7 +151,7 @@ export async function dispatch(
   nameElement: HTMLElement,
   action: Action
 ): Promise<void> {
-  const {selectors} = await getCurrentState()
+  const { selectors } = await getCurrentState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
     const moreButton = getTweet(nameElement)?.querySelector(
@@ -177,7 +181,9 @@ export async function dispatch(
     button.click();
     if (action === "mute") return;
 
-    await waitFor(selectors.confirmDialogConfirmSelector).then((e) => e.click());
+    await waitFor(selectors.confirmDialogConfirmSelector).then((e) =>
+      e.click()
+    );
   } catch (error) {
     console.error(`Error performing ${action} action:`, error);
   } finally {
@@ -197,8 +203,9 @@ export async function getCurrentState(): Promise<ExtensionSettings> {
         promotedContentAction: "hide",
         hideSubscriptionOffers: true,
         hideUserSubscriptions: true,
-        selectors:default_selectors,
-        automaticUpdatePolicy:"weekly"
+        selectors: default_selectors,
+        automaticUpdatePolicy: "weekly",
+        source: Source.MAIN,
       };
 
       const finalState = {
