@@ -17,7 +17,7 @@ async function contentScript() {
   await sleep(1000);
   try {
     const init = require("./script");
-    await init();
+    await init.default();
   } catch (e) {
     console.error(e);
   }
