@@ -9,6 +9,8 @@ export const upsaleSelectors = [
   `aside:has( a[href="${buyIntoUpsaleHref}"])`,
   `a[href="${buyIntoUpsaleHref}"]`,
   `div [data-testid="super-upsell-UpsellCardRenderProperties"]`,
+  `div [data-testid="inlinePrompt"] a[href^=${buyIntoUpsaleHref}]`,
 ].join(", ");
 export const upsaleDialogSelector = '[data-testid="sheetDialog"]';
 export const subscribeToButtonSelector = 'div > [aria-label^="Subscribe to @"]';
+
