@@ -1,4 +1,3 @@
-import { upsaleSelectors, userMenuSelector, userNameSelector, subscribeToButtonSelector } from "../constants";
 import { ExtensionMessage, ExtensionSettings } from "../types";
 import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
@@ -18,9 +17,10 @@ import {
  */
 export async function processUsername(userNameElement: HTMLElement) {
 
+    const settings = await getSettingsManager();
     const tweet = getTweet(userNameElement)!;
     await sleep(100)
-    const moreBtn = tweet.querySelector(userMenuSelector)
+    const moreBtn = tweet.querySelector(settings.getState().selectors.userMenuSelector)
     if (
         !moreBtn ||
         userNameElement.hasAttribute("messedWith") ||
@@ -28,7 +28,6 @@ export async function processUsername(userNameElement: HTMLElement) {
     )
         return;
     userNameElement.setAttribute("messedWith", "true");
-    const settings = await getSettingsManager();
     if (hasAdSpan(tweet)) {
         settings.subscribe(
             ["promotedContentAction"],
@@ -89,35 +88,35 @@ export async function processUsername(userNameElement: HTMLElement) {
 
 async function applySettings(state: ExtensionSettings) {
     if (!state.isBlockMuteEnabled) {
-        cleanup();
+        cleanup(state);
         return;
     }
-    const settingsManager = await getSettingsManager();
+    const settings = await getSettingsManager();
     setTimeout(() => {
-        settingsManager.subscribe(
+        settings.subscribe(
             ["hideSubscriptionOffers"],
             ({ hideSubscriptionOffers }) =>
-                toggleInvisible(upsaleSelectors, hideSubscriptionOffers)
+                toggleInvisible(settings.getState().selectors.upsaleSelectors, hideSubscriptionOffers)
         );
-        settingsManager.subscribe(
+        settings.subscribe(
             ["hideUserSubscriptions"],
             ({ hideUserSubscriptions }) => {
-                toggleInvisible(subscribeToButtonSelector, hideUserSubscriptions)
+                toggleInvisible(settings.getState().selectors.subscribeToButtonSelector, hideUserSubscriptions)
             }
         );
-        const userNames = document.querySelectorAll(userNameSelector);
+        const userNames = document.querySelectorAll(settings.getState().selectors.userNameSelector);
         userNames.forEach((userName) => processUsername(userName as HTMLElement));
         observeDOMChanges(state);
     }, 1000);
 }
 
-function cleanup(): void {
+function cleanup({selectors}:ExtensionSettings): void {
     resetObserver();
     document.querySelectorAll('[messedWith="true"]').forEach((e) => {
         e.removeAttribute("messedWith");
     });
 
-    document.querySelectorAll(userNameSelector).forEach((userNameElement) => {
+    document.querySelectorAll(selectors.userNameSelector).forEach((userNameElement) => {
         userNameElement.removeAttribute("messedWith");
         userNameElement
             .querySelectorAll("button")

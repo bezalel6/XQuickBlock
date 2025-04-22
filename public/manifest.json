@@ -6,7 +6,8 @@
   "description": "Quickly mute or block users on X with a single click, Automatically block advertisers, and more...",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
   "host_permissions": [
     "https://twitter.com/*",
@@ -27,6 +28,10 @@
       ]
     }
   ],
+  "background": {
+    "service_worker": "js/background.js",
+    "type": "module"
+  },
   "icons": {
     "48": "icon.png",
     "128": "icon128.png"

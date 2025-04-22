@@ -1,10 +1,4 @@
 import { processUsername } from ".";
-import {
-  upsaleDialogSelector,
-  buyIntoUpsaleHref,
-  upsalePathname,
-  userNameSelector,
-} from "../constants";
 import { ExtensionSettings } from "../types";
 import { getSettingsManager } from "./settings-manager";
 import { getCurrentState, toggleInvisible } from "./utils";
@@ -42,17 +36,18 @@ function processMutationCallbacks(node: HTMLElement): void {
 }
 
 async function handleUpsaleDialog(ogPath: string) {
-  toggleInvisible(upsaleDialogSelector, true);
+  const {selectors} = await (await getSettingsManager()).getState()
+  toggleInvisible(selectors.upsaleDialogSelector, true);
   createMutationCallback(
-    (newNode) => newNode.querySelector(upsaleDialogSelector),
+    (newNode) => newNode.querySelector(selectors.upsaleDialogSelector),
     (dialog) => {
       (
         dialog.querySelector(
-          `a[href="${buyIntoUpsaleHref}"] + button`
+          `a[href="${selectors.buyIntoUpsaleHref}"] + button`
         ) as HTMLButtonElement
       ).click();
       dialog.remove();
-      toggleInvisible(upsaleDialogSelector, false);
+      toggleInvisible(selectors.upsaleDialogSelector, false);
     }
   );
 
@@ -72,7 +67,7 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
     if (location.pathname !== currentPath) {
       settings = await (await getSettingsManager()).getState();
       if (
-        location.pathname.endsWith(upsalePathname) &&
+        location.pathname.endsWith(settings.selectors.upsalePathname) &&
         settings.hideSubscriptionOffers
       ) {
         await handleUpsaleDialog(currentPath);
@@ -84,7 +79,7 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node instanceof HTMLElement) {
-            const userNames = node.querySelectorAll(userNameSelector);
+            const userNames = node.querySelectorAll(settings.selectors.userNameSelector);
             userNames.forEach((userName) =>
               processUsername(userName as HTMLElement)
             );
