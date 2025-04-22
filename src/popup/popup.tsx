@@ -18,92 +18,16 @@ import {
   Divider,
   SelectChangeEvent,
 } from "@mui/material";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { ExtensionSettings, PromotedContentAction } from "./types";
 
-// Create a reusable theme toggle component
-const ThemeToggle: React.FC<{
-  theme: "light" | "dark";
-  onToggle: () => void;
-}> = ({ theme, onToggle }) => (
-  <IconButton onClick={onToggle} color="inherit" aria-label="toggle theme">
-    {theme === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
-  </IconButton>
-);
+import { ExtensionSettings, PromotedContentAction } from "../types";
+import Header from "./components/header";
+import InfoSection from "./components/info-section";
+import PromotedContentSelector from "./components/promoted-content-selector";
+import ToggleSwitch from "./components/toggle-switch";
 
-// Create a reusable header component
-const Header: React.FC<{
-  title: string;
-  theme: "light" | "dark";
-  onThemeToggle: () => void;
-}> = ({ title, theme, onThemeToggle }) => (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      mb: 3,
-    }}
-  >
-    <Typography variant="h5" component="h1" color="primary">
-      {title}
-    </Typography>
-    <ThemeToggle theme={theme} onToggle={onThemeToggle} />
-  </Box>
-);
 
-// Create a reusable toggle component
-const ToggleSwitch: React.FC<{
-  enabled: boolean;
-  onChange: (checked: boolean) => void;
-  label: string;
-}> = ({ enabled, onChange, label }) => (
-  <FormControlLabel
-    control={
-      <Switch
-        checked={enabled}
-        onChange={(e) => onChange(e.target.checked)}
-        color="primary"
-      />
-    }
-    label={label}
-  />
-);
 
-// Create a reusable promoted content selection component
-const PromotedContentSelector: React.FC<{
-  value: PromotedContentAction;
-  onChange: (value: PromotedContentAction) => void;
-}> = ({ value, onChange }) => (
-  <FormControl fullWidth sx={{ mt: 2 }}>
-    <FormLabel>Promoted Content</FormLabel>
-    <Select
-      value={value}
-      onChange={(e: SelectChangeEvent) =>
-        onChange(e.target.value as PromotedContentAction)
-      }
-      size="small"
-      sx={{ mt: 1 }}
-    >
-      <MenuItem value="nothing">Do nothing</MenuItem>
-      <MenuItem value="hide">Hide</MenuItem>
-      <MenuItem value="block">Block</MenuItem>
-    </Select>
-  </FormControl>
-);
 
-// Create a reusable info section component
-const InfoSection: React.FC = () => (
-  <Box sx={{ mt: 3 }}>
-    <Typography variant="body2" color="text.secondary" paragraph>
-      Click the Mute/Block buttons next to usernames to take action.
-    </Typography>
-    <Typography variant="body2" color="text.secondary">
-      Hold Ctrl and click to apply to all visible users.
-    </Typography>
-  </Box>
-);
 
 const Popup: React.FC = () => {
   const [state, setState] = useState<ExtensionSettings>({

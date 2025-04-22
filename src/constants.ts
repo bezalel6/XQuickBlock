@@ -10,7 +10,7 @@ const SELECTORS = {
     `aside:has( a[href="/i/premium_sign_up"])`,
     `a[href="/i/premium_sign_up"]`,
     `div [data-testid="super-upsell-UpsellCardRenderProperties"]`,
-    `div [data-testid="inlinePrompt"] a[href^=/i/premium_sign_up]`,
+    `div [data-testid="inlinePrompt"] a[href^="/i/premium_sign_up"]`,
   ].join(", "),
   upsaleDialogSelector: '[data-testid="sheetDialog"]',
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
