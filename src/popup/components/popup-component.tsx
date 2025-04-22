@@ -87,7 +87,7 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{ width: 300, maxWidth: "none" }}>
+      <Container sx={{ width: 300 }}>
         <Paper
           elevation={3}
           sx={{
