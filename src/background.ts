@@ -1,6 +1,10 @@
 import { ExtensionMessage, ExtensionSettings, UpdatePolicy } from "./types";
 import { getSettingsManager } from "./content_script/settings-manager";
 import { handleManualUpdate, handleStateUpdate } from "./message-handler";
+
+const makeUpdateURL = (build) =>
+  `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/main/public/data/constants.json`;
+
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
   try {

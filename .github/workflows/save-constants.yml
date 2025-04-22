@@ -3,7 +3,7 @@ name: Save Constants as JSON
 on:
   push:
     branches:
-      - main
+      - "**" # This will trigger on all branches
 
 jobs:
   save-constants:
