@@ -6,9 +6,11 @@ import {
 } from "./types";
 import { getSettingsManager } from "./content_script/settings-manager";
 import { handleManualUpdate, handleStateUpdate } from "./message-handler";
+import { Selectors } from "./constants";
 
 const makeUpdateURL = (source: Source = Source.MAIN) =>
   `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/${source}/public/data/constants.json`;
+
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
   try {
@@ -16,19 +18,35 @@ async function fetchAndUpdateJson() {
     const settingsManager = await getSettingsManager();
     const currentSettings = settingsManager.getState();
     console.log("Background setting:", currentSettings);
-    const update = await fetch(makeUpdateURL(currentSettings.source)).then(
+    const update = (await fetch(makeUpdateURL(currentSettings.source)).then(
       (res) => res.json()
-    );
-    // Update the settings with the current timestamp
+    )) as Selectors;
+
+    // Compare old and new selectors
+    const oldSelectors = currentSettings.selectors;
+    const newSelectors = update;
+
+    // Count added and removed selectors
+    const oldKeys = new Set(Object.keys(oldSelectors));
+    const newKeys = new Set(Object.keys(newSelectors));
+
+    const added = [...newKeys].filter((key) => !oldKeys.has(key)).length;
+    const removed = [...oldKeys].filter((key) => !newKeys.has(key)).length;
+
+    const diff = added - removed;
+    console.log(`[XQuickBlock] Selector diff: +${added} -${removed} = ${diff}`);
+
+    // Update settings
     settingsManager.update({
       lastUpdatedSeleectors: Date.now(),
-      ...currentSettings, // Preserve existing settings
-      ...update,
+      selectors: update,
     });
 
     console.log("[XQuickBlock] Successfully updated settings");
+    return diff;
   } catch (error) {
     console.error("[XQuickBlock] Error updating settings:", error);
+    return 0;
   }
 }
 
@@ -85,7 +103,7 @@ chrome.runtime.onMessage.addListener(
       }
       case "manualUpdate": {
         fetchAndUpdateJson()
-          .then(() => sendResponse({ success: true }))
+          .then((diff) => sendResponse({ success: true, diff }))
           .catch((error) =>
             sendResponse({ success: false, error: error.message })
           );

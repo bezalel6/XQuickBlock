@@ -1,5 +1,5 @@
 import { Box, Typography, Tooltip, Fade, Zoom } from "@mui/material";
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Button from "./button";
 import { sendMessageToBackground } from "../../message-handler";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,21 +7,55 @@ import UpdateIcon from "@mui/icons-material/Update";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import InfoIcon from "@mui/icons-material/Info";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import SyncIcon from "@mui/icons-material/Sync";
+import { getSettingsManager } from "../../content_script/settings-manager";
 
 const ManualUpdateSection: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [diff, setDiff] = useState<number | null>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    const setupSettingsSubscription = async () => {
+      const settingsManager = await getSettingsManager();
+      unsubscribe = settingsManager.subscribe(
+        ["lastUpdatedSeleectors"],
+        (state) => {
+          console.log(state);
+          if (state.lastUpdatedSeleectors) {
+            const date = new Date(state.lastUpdatedSeleectors);
+            setLastUpdateTime(date.toLocaleString());
+          }
+        }
+      );
+    };
+
+    setupSettingsSubscription();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   const handleUpdate = async () => {
     setIsUpdating(true);
     setUpdateStatus("idle");
+    setDiff(null);
     try {
-      await sendMessageToBackground({ type: "manualUpdate" });
+      const { diff, success } = await sendMessageToBackground({
+        type: "manualUpdate",
+      });
+      setDiff(diff);
       setUpdateStatus("success");
-      setLastUpdateTime(new Date().toLocaleTimeString());
     } catch (error) {
       console.error("Error triggering manual update:", error);
       setUpdateStatus("error");
@@ -31,14 +65,31 @@ const ManualUpdateSection: React.FC = () => {
   };
 
   const StatusIcon = () => {
-    switch (updateStatus) {
-      case "success":
-        return <CheckCircleIcon color="success" />;
-      case "error":
-        return <ErrorIcon color="error" />;
-      default:
-        return <InfoIcon color="info" />;
-    }
+    if (updateStatus === "error") return <ErrorIcon color="error" />;
+    if (diff === 0) return <SyncIcon color="action" />;
+    if (diff && diff > 0) return <AddIcon color="success" />;
+    if (diff && diff < 0) return <RemoveIcon color="warning" />;
+    return <InfoIcon color="info" />;
+  };
+
+  const getStatusMessage = () => {
+    if (updateStatus === "error") return "Update failed";
+    if (diff === 0) return "Already up to date";
+    if (diff && diff > 0)
+      return `Added ${diff} new selector${diff === 1 ? "" : "s"}`;
+    if (diff && diff < 0)
+      return `Removed ${Math.abs(diff)} selector${
+        Math.abs(diff) === 1 ? "" : "s"
+      }`;
+    return "Update successful!";
+  };
+
+  const getStatusColor = () => {
+    if (updateStatus === "error") return "error.main";
+    if (diff === 0) return "text.secondary";
+    if (diff && diff > 0) return "success.main";
+    if (diff && diff < 0) return "warning.main";
+    return "success.main";
   };
 
   return (
@@ -104,15 +155,8 @@ const ManualUpdateSection: React.FC = () => {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <StatusIcon />
-                  <Typography
-                    variant="body2"
-                    color={
-                      updateStatus === "success" ? "success.main" : "error.main"
-                    }
-                  >
-                    {updateStatus === "success"
-                      ? "Update successful!"
-                      : "Update failed"}
+                  <Typography variant="body2" color={getStatusColor()}>
+                    {getStatusMessage()}
                   </Typography>
                 </Box>
               </motion.div>
