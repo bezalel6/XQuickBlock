@@ -10,7 +10,7 @@ export interface ExtensionSettings {
   hideUserSubscriptions: boolean;
   lastUpdatedSeleectors?:number;
   selectors:Selectors
-
+  automaticUpdatePolicy:UpdatePolicy
 }
 
 export interface ExtensionMessage {
@@ -19,3 +19,5 @@ export interface ExtensionMessage {
 }
 
 export type Action = "block" | "mute";
+
+export type UpdatePolicy = "daily"|"weekly"|"monthly"|"never"

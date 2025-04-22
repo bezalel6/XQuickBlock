@@ -1,33 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
 import {
-  Box,
   Container,
-  Typography,
-  Switch,
-  FormControlLabel,
-  IconButton,
-  Paper,
-  ThemeProvider,
   createTheme,
   CssBaseline,
-  FormControl,
-  Select,
-  MenuItem,
-  FormLabel,
   Divider,
-  SelectChangeEvent,
+  Paper,
+  ThemeProvider,
 } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
 
-import { ExtensionSettings, PromotedContentAction } from "../types";
+import { ExtensionSettings } from "../types";
 import Header from "./components/header";
 import InfoSection from "./components/info-section";
 import PromotedContentSelector from "./components/promoted-content-selector";
 import ToggleSwitch from "./components/toggle-switch";
-
-
-
-
+import AutomaticPolicySelector from "./components/update-policy-selector";
 
 const Popup: React.FC = () => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -38,6 +25,7 @@ const Popup: React.FC = () => {
     promotedContentAction: "hide",
     hideSubscriptionOffers: true,
     hideUserSubscriptions: true,
+    automaticUpdatePolicy: "weekly",
   });
 
   useEffect(() => {
@@ -68,21 +56,10 @@ const Popup: React.FC = () => {
       return updatedState;
     });
   };
-
-  const handleToggleChange = (checked: boolean) => {
-    updateState({ isBlockMuteEnabled: checked });
-  };
-
-  const handlePromotedContentChange = (action: PromotedContentAction) => {
-    updateState({ promotedContentAction: action });
-  };
-
-  const handleSubscriptionOffersChange = (checked: boolean) => {
-    updateState({ hideSubscriptionOffers: checked });
-  };
-
-  const handleUserSubscriptionsChange = (checked: boolean) => {
-    updateState({ hideUserSubscriptions: checked });
+  const makeOnChange = <K extends keyof ExtensionSettings>(k: K) => {
+    return (value: ExtensionSettings[K]) => {
+      updateState({ [k]: value });
+    };
   };
 
   const toggleTheme = () => {
@@ -127,7 +104,7 @@ const Popup: React.FC = () => {
           />
           <ToggleSwitch
             enabled={state.isBlockMuteEnabled}
-            onChange={handleToggleChange}
+            onChange={makeOnChange("isBlockMuteEnabled")}
             label={
               state.isBlockMuteEnabled
                 ? "Block/Mute Buttons Enabled"
@@ -135,18 +112,23 @@ const Popup: React.FC = () => {
             }
           />
           <Divider sx={{ my: 2 }} />
+
+          <AutomaticPolicySelector
+            value={state.automaticUpdatePolicy}
+            onChange={makeOnChange("automaticUpdatePolicy")}
+          />
           <PromotedContentSelector
             value={state.promotedContentAction}
-            onChange={handlePromotedContentChange}
+            onChange={makeOnChange("promotedContentAction")}
           />
           <ToggleSwitch
             enabled={state.hideSubscriptionOffers}
-            onChange={handleSubscriptionOffersChange}
+            onChange={makeOnChange("hideSubscriptionOffers")}
             label="Hide Subscription Offers"
           />
           <ToggleSwitch
             enabled={state.hideUserSubscriptions}
-            onChange={handleUserSubscriptionsChange}
+            onChange={makeOnChange("hideUserSubscriptions")}
             label="Hide User Subscriptions"
           />
           <InfoSection />

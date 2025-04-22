@@ -197,7 +197,8 @@ export async function getCurrentState(): Promise<ExtensionSettings> {
         promotedContentAction: "hide",
         hideSubscriptionOffers: true,
         hideUserSubscriptions: true,
-        selectors:default_selectors
+        selectors:default_selectors,
+        automaticUpdatePolicy:"weekly"
       };
 
       const finalState = {
