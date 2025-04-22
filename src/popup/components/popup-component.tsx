@@ -1,13 +1,17 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Container,
   createTheme,
   CssBaseline,
   Divider,
   Paper,
   ThemeProvider,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-
+import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { ExtensionSettings, Source } from "../../types";
 import Header from "../components/header";
 import InfoSection from "../components/info-section";
@@ -83,7 +87,7 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{ minWidth: 300 }}>
+      <Container sx={{ width: 300, maxWidth: "none" }}>
         <Paper
           elevation={3}
           sx={{
@@ -108,21 +112,26 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
             }
           />
           <Divider sx={{ my: 2 }} />
-          {showAdvanced && (
-            <Advanced>
-              <SourceSelector
-                value={state.source || Source.MAIN}
-                onChange={makeOnChange("source")}
-              ></SourceSelector>
-              <Button
-                onClick={() => {
-                  chrome.storage.sync.clear().then(() => alert("Done"));
-                }}
-              >
-                Reset Saved Settings
-              </Button>
-            </Advanced>
-          )}
+          <Accordion defaultExpanded={showAdvanced}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Advanced Settings</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Advanced>
+                <SourceSelector
+                  value={state.source || Source.MAIN}
+                  onChange={makeOnChange("source")}
+                ></SourceSelector>
+                <Button
+                  onClick={() => {
+                    chrome.storage.sync.clear().then(() => alert("Done"));
+                  }}
+                >
+                  Reset Saved Settings
+                </Button>
+              </Advanced>
+            </AccordionDetails>
+          </Accordion>
           <AutomaticPolicySelector
             value={state.automaticUpdatePolicy}
             onChange={makeOnChange("automaticUpdatePolicy")}

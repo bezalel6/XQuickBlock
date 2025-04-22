@@ -9,7 +9,6 @@ import { handleManualUpdate, handleStateUpdate } from "./message-handler";
 
 const makeUpdateURL = (source: Source = Source.MAIN) =>
   `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/${source}/public/data/constants.json`;
-
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
   try {
