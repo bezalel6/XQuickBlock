@@ -1,3 +1,5 @@
+import  { type Selectors } from "./constants";
+
 export type PromotedContentAction = "nothing" | "hide" | "block";
 
 export interface ExtensionSettings {
@@ -6,6 +8,8 @@ export interface ExtensionSettings {
   promotedContentAction: PromotedContentAction;
   hideSubscriptionOffers: boolean;
   hideUserSubscriptions: boolean;
+  selectors:Selectors
+  
 }
 
 export interface ExtensionMessage {

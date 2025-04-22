@@ -1,4 +1,4 @@
-import { userMenuSelector, confirmDialogConfirmSelector } from "../constants";
+import {default as default_selectors} from "../constants";
 import { Action, ExtensionSettings } from "../types";
 
 /**
@@ -140,7 +140,6 @@ export function isUserOwnAccount(element: HTMLElement): boolean {
     ?.replace("/", "");
   return currentUsername === elementUsername;
 }
-
 /**
  * Perform action on a user (block/mute) with improved error handling
  */
@@ -148,10 +147,11 @@ export async function dispatch(
   nameElement: HTMLElement,
   action: Action
 ): Promise<void> {
+  const {selectors} = await getCurrentState()
   try {
-    toggleInvisible(userMenuSelector, true);
+    toggleInvisible(selectors.userMenuSelector, true);
     const moreButton = getTweet(nameElement)?.querySelector(
-      userMenuSelector
+      selectors.userMenuSelector
     ) as HTMLElement;
     if (!moreButton) {
       console.warn("More button not found for user");
@@ -177,11 +177,11 @@ export async function dispatch(
     button.click();
     if (action === "mute") return;
 
-    await waitFor(confirmDialogConfirmSelector).then((e) => e.click());
+    await waitFor(selectors.confirmDialogConfirmSelector).then((e) => e.click());
   } catch (error) {
     console.error(`Error performing ${action} action:`, error);
   } finally {
-    toggleInvisible(userMenuSelector, false);
+    toggleInvisible(selectors.userMenuSelector, false);
   }
 }
 
@@ -197,6 +197,7 @@ export async function getCurrentState(): Promise<ExtensionSettings> {
         promotedContentAction: "hide",
         hideSubscriptionOffers: true,
         hideUserSubscriptions: true,
+        selectors:default_selectors
       };
 
       const finalState = {
