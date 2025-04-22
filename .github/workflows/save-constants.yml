@@ -10,49 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
+          node-version: '20'
+          
       - name: Install dependencies
         run: npm install
-
+        
+      - name: Create constants directory
+        run: mkdir -p public/data
+        
       - name: Generate constants JSON
         run: |
-          node -e `
+          node -e "
+          const constants = require('./src/constants').default;
           const fs = require('fs');
-          const path = require('path');
-
-          // Read the constants file
-          const constantsFile = fs.readFileSync('./src/constants.ts', 'utf8');
-
-          // Extract the SELECTORS object
-          const selectorsMatch = constantsFile.match(/const SELECTORS = ({[\s\S]*?}) as const;/);
-          if (!selectorsMatch) {
-            console.error('Could not find SELECTORS object');
-            process.exit(1);
-          }
-
-          // Convert the object to JSON
-          const selectorsStr = selectorsMatch[1]
-            .replace(/'/g, '"')  // Replace single quotes with double quotes
-            .replace(/,(\s*})/g, '$1')  // Remove trailing commas
-            .replace(/,(\s*])/g, '$1');  // Remove trailing commas in arrays
-
-          try {
-            const selectors = JSON.parse(selectorsStr);
-            fs.writeFileSync(
-              './public/data/constants.json',
-              JSON.stringify(selectors, null, 2)
-            );
-          } catch (e) {
-            console.error('Error parsing SELECTORS:', e);
-            process.exit(1);
-          }
-          `
-
+          fs.writeFileSync(
+            './public/data/constants.json',
+            JSON.stringify(constants, null, 2)
+          );
+          "
+          
       - name: Commit and push if changed
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
