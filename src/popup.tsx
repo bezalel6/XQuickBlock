@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { ExtensionState, PromotedContentAction } from "./types";
+import { ExtensionSettings, PromotedContentAction } from "./types";
 
 // Create a reusable theme toggle component
 const ThemeToggle: React.FC<{
@@ -106,7 +106,7 @@ const InfoSection: React.FC = () => (
 );
 
 const Popup: React.FC = () => {
-  const [state, setState] = useState<ExtensionState>({
+  const [state, setState] = useState<ExtensionSettings>({
     isBlockMuteEnabled: false,
     themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
@@ -119,7 +119,7 @@ const Popup: React.FC = () => {
   useEffect(() => {
     chrome.storage.sync.get(
       Object.keys(state),
-      (data: Partial<ExtensionState>) => {
+      (data: Partial<ExtensionSettings>) => {
         setState((prev) => ({
           ...prev,
           ...data,
@@ -128,7 +128,7 @@ const Popup: React.FC = () => {
     );
   }, []);
 
-  const updateState = (newState: Partial<ExtensionState>) => {
+  const updateState = (newState: Partial<ExtensionSettings>) => {
     setState((prev) => {
       const updatedState = { ...prev, ...newState };
       chrome.storage.sync.set(updatedState, () => {

@@ -1,5 +1,5 @@
 import { userMenuSelector, confirmDialogConfirmSelector } from "../constants";
-import { Action, ExtensionState } from "../types";
+import { Action, ExtensionSettings } from "../types";
 
 /**
  * Sleep for a specified number of milliseconds
@@ -188,10 +188,10 @@ export async function dispatch(
 /**
  * Get the current extension state from storage with defaults
  */
-export async function getCurrentState(): Promise<ExtensionState> {
+export async function getCurrentState(): Promise<ExtensionSettings> {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(null, (data: Partial<ExtensionState>) => {
-      const defaultState: ExtensionState = {
+    chrome.storage.sync.get(null, (data: Partial<ExtensionSettings>) => {
+      const defaultState: ExtensionSettings = {
         isBlockMuteEnabled: true,
         themeOverride: "dark",
         promotedContentAction: "hide",

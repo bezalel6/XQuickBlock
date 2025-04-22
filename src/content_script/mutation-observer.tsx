@@ -5,7 +5,7 @@ import {
   upsalePathname,
   userNameSelector,
 } from "../constants";
-import { ExtensionState } from "../types";
+import { ExtensionSettings } from "../types";
 import { getSettingsManager } from "./settings-manager";
 import { getCurrentState, toggleInvisible } from "./utils";
 
@@ -64,7 +64,7 @@ let observer: MutationObserver | null = null;
 /**
  * Observe DOM changes and add buttons to new user names
  */
-export async function observeDOMChanges(settings: ExtensionState) {
+export async function observeDOMChanges(settings: ExtensionSettings) {
   const targetNode = document.body;
   const config = { childList: true, subtree: true };
   let currentPath = location.pathname;

@@ -1,4 +1,4 @@
-import { ExtensionState } from "types";
+import { ExtensionSettings } from "types";
 import { getCurrentState } from "./utils";
 
 type Callback<T> = (newValue: T) => void;
@@ -88,10 +88,10 @@ class StateManager<T extends object> {
     return { ...this.previousState };
   }
 }
-class SettingsManager extends StateManager<ExtensionState> {
+class SettingsManager extends StateManager<ExtensionSettings> {
   private static instance: SettingsManager | null = null;
 
-  private constructor(initialState: ExtensionState) {
+  private constructor(initialState: ExtensionSettings) {
     super(initialState);
   }
 

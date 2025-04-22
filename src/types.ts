@@ -1,6 +1,6 @@
 export type PromotedContentAction = "nothing" | "hide" | "block";
 
-export interface ExtensionState {
+export interface ExtensionSettings {
   isBlockMuteEnabled: boolean;
   themeOverride: "light" | "dark";
   promotedContentAction: PromotedContentAction;
@@ -10,7 +10,7 @@ export interface ExtensionState {
 
 export interface ExtensionMessage {
   type: "stateUpdate";
-  payload: ExtensionState;
+  payload: ExtensionSettings;
 }
 
 export type Action = "block" | "mute";

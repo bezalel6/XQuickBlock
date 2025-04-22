@@ -1,5 +1,5 @@
 import { upsaleSelectors, userMenuSelector, userNameSelector, subscribeToButtonSelector } from "../constants";
-import { ExtensionMessage, ExtensionState } from "../types";
+import { ExtensionMessage, ExtensionSettings } from "../types";
 import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
 import { observeDOMChanges, resetObserver } from "./mutation-observer";
@@ -87,7 +87,7 @@ export async function processUsername(userNameElement: HTMLElement) {
     );
 }
 
-async function applySettings(state: ExtensionState) {
+async function applySettings(state: ExtensionSettings) {
     if (!state.isBlockMuteEnabled) {
         cleanup();
         return;
