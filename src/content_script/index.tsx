@@ -9,6 +9,7 @@ import {
   hasAdSpan,
   isUserOwnAccount,
   sleep,
+  toggleCSSRule,
   toggleInvisible,
 } from "./utils";
 
@@ -96,6 +97,12 @@ async function applySettings(state: ExtensionSettings) {
   console.log(state);
   const settings = await getSettingsManager();
   setTimeout(() => {
+    settings.subscribe(["selectors"], ({ selectors }) =>
+      console.log(selectors.debug)
+    );
+    if (state.selectors.debug) {
+      toggleCSSRule(state.selectors.debug, "background", "aqua", true);
+    }
     settings.subscribe(
       ["hideSubscriptionOffers"],
       ({ hideSubscriptionOffers, selectors }) =>
