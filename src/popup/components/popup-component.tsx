@@ -18,6 +18,8 @@ import AutomaticPolicySelector from "../components/update-policy-selector";
 import { processPopupUpdate } from "../../message-handler";
 import SELECTORS from "../../constants";
 import SourceSelector from "../components/source-selector";
+import Advanced from "./advanced-settings";
+import Button from "./button";
 type PopupProps = { showAdvanced?: boolean };
 const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -107,10 +109,19 @@ const Popup: React.FC<PopupProps> = ({ showAdvanced }) => {
           />
           <Divider sx={{ my: 2 }} />
           {showAdvanced && (
-            <SourceSelector
-              value={state.source || Source.MAIN}
-              onChange={makeOnChange("source")}
-            ></SourceSelector>
+            <Advanced>
+              <SourceSelector
+                value={state.source || Source.MAIN}
+                onChange={makeOnChange("source")}
+              ></SourceSelector>
+              <Button
+                onClick={() => {
+                  chrome.storage.sync.clear().then(() => alert("Done"));
+                }}
+              >
+                Reset Saved Settings
+              </Button>
+            </Advanced>
           )}
           <AutomaticPolicySelector
             value={state.automaticUpdatePolicy}

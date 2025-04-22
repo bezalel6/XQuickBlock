@@ -105,4 +105,8 @@ class SettingsManager extends StateManager<ExtensionSettings> {
 }
 
 // Export a function to get the singleton instance
-export const getSettingsManager = () => SettingsManager.getInstance();
+export const getSettingsManager = () =>
+  SettingsManager.getInstance().catch((e) => {
+    console.error("Error getting the settings manager:", e);
+    throw e;
+  });

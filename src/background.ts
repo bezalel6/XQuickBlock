@@ -1,9 +1,14 @@
-import { ExtensionMessage, ExtensionSettings, UpdatePolicy } from "./types";
+import {
+  ExtensionMessage,
+  ExtensionSettings,
+  Source,
+  UpdatePolicy,
+} from "./types";
 import { getSettingsManager } from "./content_script/settings-manager";
 import { handleManualUpdate, handleStateUpdate } from "./message-handler";
 
-const makeUpdateURL = (build) =>
-  `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/main/public/data/constants.json`;
+const makeUpdateURL = (source: Source = Source.MAIN) =>
+  `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/${source}/public/data/constants.json`;
 
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
@@ -12,11 +17,14 @@ async function fetchAndUpdateJson() {
     const settingsManager = await getSettingsManager();
     const currentSettings = settingsManager.getState();
     console.log("Background setting:", currentSettings);
-
+    const update = await fetch(makeUpdateURL(currentSettings.source)).then(
+      (res) => res.json()
+    );
     // Update the settings with the current timestamp
     settingsManager.update({
       lastUpdatedSeleectors: Date.now(),
       ...currentSettings, // Preserve existing settings
+      ...update,
     });
 
     console.log("[XQuickBlock] Successfully updated settings");

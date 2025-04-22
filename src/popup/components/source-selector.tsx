@@ -20,8 +20,10 @@ const SourceSelector: React.FC<{
       size="small"
       sx={{ mt: 1 }}
     >
-      {Object.keys(Source).map((src) => (
-        <MenuItem key={src}>{src}</MenuItem>
+      {Object.values(Source).map((src) => (
+        <MenuItem key={src} value={src}>
+          {src}
+        </MenuItem>
       ))}
     </Select>
   </FormControl>
