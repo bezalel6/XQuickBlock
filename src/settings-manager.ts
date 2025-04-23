@@ -4,6 +4,12 @@ import {
   sendMessageToBackground,
   sendMessageToContentScript,
 } from "./message-handler";
+
+// Add logging utility
+const log = (context: string, message: string, data?: any) => {
+  console.log(`[SettingsManager:${context}] ${message}`, data ? data : "");
+};
+
 type Callback<T> = (newValue: T) => void;
 type KeyCallbackMap<T> = Map<keyof T, Set<Callback<T>>>;
 type MessageHandler = (
@@ -18,6 +24,7 @@ class StateManager<T extends object> {
   private previousState: Partial<T> = {};
 
   constructor(initialState: T) {
+    log("StateManager", "Initializing with state", initialState);
     this.state = { ...initialState };
     this.previousState = { ...initialState };
   }
@@ -29,6 +36,7 @@ class StateManager<T extends object> {
    * @returns Unsubscribe function
    */
   subscribe(keys: (keyof T)[], callback: Callback<T>): () => void {
+    log("StateManager", `Subscribing to keys: ${keys.join(", ")}`);
     keys.forEach((key) => {
       if (!this.callbacks.has(key)) {
         this.callbacks.set(key, new Set());
@@ -37,6 +45,7 @@ class StateManager<T extends object> {
     });
     callback(this.getState());
     return () => {
+      log("StateManager", `Unsubscribing from keys: ${keys.join(", ")}`);
       keys.forEach((key) => {
         const callbacks = this.callbacks.get(key);
         if (callbacks) {
@@ -49,8 +58,10 @@ class StateManager<T extends object> {
     };
   }
   subscribeToAnyUpdates(callback: Callback<T>) {
+    log("StateManager", "Subscribing to any updates");
     const l = this.anyChangeCallbacks.push(callback);
     return () => {
+      log("StateManager", "Unsubscribing from any updates");
       this.anyChangeCallbacks = this.anyChangeCallbacks.filter(
         (_, i) => i !== l - 1
       );
@@ -61,6 +72,7 @@ class StateManager<T extends object> {
    * @param newState Partial state update
    */
   async update(newState: Partial<T>) {
+    log("StateManager", "Updating state", newState);
     const changedKeys = new Set<keyof T>();
 
     // Update state and track changed keys
@@ -71,8 +83,9 @@ class StateManager<T extends object> {
         changedKeys.add(typedKey);
       }
     });
-    console.log("Chenged keys:", [...changedKeys]);
+    log("StateManager", "Changed keys", [...changedKeys]);
     if (changedKeys.size >= 1) {
+      log("StateManager", "Notifying any-change callbacks");
       this.anyChangeCallbacks.forEach((cb) => cb(this.state));
     }
     // Notify callbacks for changed keys
@@ -128,18 +141,24 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
 
   private constructor(initialState: ExtensionSettings, readonly end: End) {
     super(initialState);
+    log("SettingsManager", `Initializing for end: ${end}`);
     this.startListening();
   }
   async update(
     newState: Partial<ExtensionSettings>,
     shouldUpdateOtehrs = true
   ) {
+    log("SettingsManager", "Updating settings", {
+      newState,
+      shouldUpdateOtehrs,
+    });
     super.update(newState);
     await this.sync(shouldUpdateOtehrs);
     return this;
   }
   // Called SECOND after firing callbacks
   protected async sync(shouldUpdateOtehrs = true) {
+    log("SettingsManager", "Syncing settings to storage");
     // Update chrome storage
     await chrome.storage.sync.set(this.getState()); //    <==2ND
     if (shouldUpdateOtehrs) await this.updateOthers(); // <==3RD
@@ -150,48 +169,97 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
       type: "stateUpdate",
       payload: this.getState(),
     };
+    log("SettingsManager", "Sending update to other ends", msg);
     return Promise.all(
       this.getOtherEnds()
         .map((e) => endMessageCallbacks[e])
         .map((cb) =>
           cb(msg).catch((err) => {
-            console.log(err);
+            log("SettingsManager", "Error updating other end", err);
             return "";
           })
         )
     );
   }
   private startListening() {
+    log("SettingsManager", "Starting message listener");
     chrome.runtime.onMessage.addListener(
-      async (message: ExtensionMessage, sender, sendResponse) => {
-        console.log(`${this.end} got message: ${message}`);
+      (message: ExtensionMessage, sender, sendResponse) => {
+        log("SettingsManager", `Received message: ${message.type}`, message);
 
-        // Handle state updates internally
-        if (message.type === "stateUpdate") {
-          await this.update(message.payload, false);
-          sendResponse({ message: "State updated successfully" });
-          return true;
-        }
-
-        // Handle registered message handlers
-        const handler = this.messageHandlers.get(message.type);
-        if (handler) {
+        const handleMessage = async () => {
           try {
-            const result = await handler(message, sender, sendResponse);
-            sendResponse({ success: true, result });
-          } catch (error) {
-            console.error(`Error handling message ${message.type}:`, error);
-            sendResponse({ success: false, error: error.message });
-          }
-          return true;
-        }
+            if (message.type === "stateUpdate") {
+              log("SettingsManager", "Processing state update message");
+              await this.update(message.payload, false);
+              return { message: "State updated successfully" };
+            }
 
-        return false;
+            const handler = this.messageHandlers.get(message.type);
+            if (handler) {
+              try {
+                log(
+                  "SettingsManager",
+                  `Executing handler for message type: ${message.type}`
+                );
+                const result = await handler(message, sender, sendResponse);
+                log(
+                  "SettingsManager",
+                  `Handler completed for ${message.type}`,
+                  result
+                );
+                return { success: true, result };
+              } catch (error) {
+                log(
+                  "SettingsManager",
+                  `Error handling message ${message.type}`,
+                  error
+                );
+                return { success: false, error: error.message };
+              }
+            } else {
+              log(
+                "SettingsManager",
+                `No handler found for message type: ${message.type}`
+              );
+              return {
+                success: false,
+                error: "No handler found for message type",
+              };
+            }
+          } catch (error) {
+            log(
+              "SettingsManager",
+              `Unexpected error in message handling`,
+              error
+            );
+            return { success: false, error: error.message };
+          }
+        };
+
+        // Execute the handler and send response
+        handleMessage()
+          .then((response) => {
+            log(
+              "SettingsManager",
+              `Sending response for ${message.type}`,
+              response
+            );
+            sendResponse(response);
+          })
+          .catch((error) => {
+            log("SettingsManager", `Critical error in message handling`, error);
+            sendResponse({ success: false, error: error.message });
+          });
+
+        // Return true to indicate we will send a response asynchronously
+        return true;
       }
     );
   }
   static async getInstance<T extends End>(end: T): Promise<SettingsManager<T>> {
     if (!SettingsManager.instance) {
+      log("SettingsManager", `Creating new instance for end: ${end}`);
       console.log(
         `initializing a new settings manager instance @${Date.now()} on: ${end}`
       );
@@ -201,19 +269,22 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
     return SettingsManager.instance;
   }
   private static async fetchSettings(): Promise<ExtensionSettings> {
+    log("SettingsManager", "Fetching settings from storage");
     return new Promise((resolve) => {
       chrome.storage.sync.get(null, (data: Partial<ExtensionSettings>) => {
         const finalState = {
           ...defaultSettings,
           ...data,
         };
-
+        log("SettingsManager", "Fetched settings", finalState);
         resolve(finalState);
       });
     });
   }
   getOtherEnds() {
-    return otherEndsMap[this.end];
+    const ends = otherEndsMap[this.end];
+    log("SettingsManager", `Getting other ends for ${this.end}`, ends);
+    return ends;
   }
 
   /**
@@ -225,6 +296,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
     type: ExtensionMessage["type"],
     handler: MessageHandler
   ) {
+    log("SettingsManager", `Registering handler for message type: ${type}`);
     this.messageHandlers.set(type, handler);
     return this;
   }
@@ -234,6 +306,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
    * @param type The message type to remove handler for
    */
   unregisterMessageHandler(type: ExtensionMessage["type"]) {
+    log("SettingsManager", `Unregistering handler for message type: ${type}`);
     this.messageHandlers.delete(type);
     return this;
   }

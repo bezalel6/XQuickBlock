@@ -16,7 +16,6 @@ async function fetchAndUpdateJson() {
     // Get the settings manager instance
     const settingsManager = await getSettingsManager("background");
     const currentSettings = settingsManager.getState();
-    console.log("Background setting:", currentSettings);
     const update = (await fetch(makeUpdateURL(currentSettings.source)).then(
       (res) => res.json()
     )) as Selectors;
@@ -82,18 +81,15 @@ async function init() {
   const settingsManager = await getSettingsManager("background");
   settingsManager.registerMessageHandler(
     "manualUpdate",
-    (_, __, sendResponse) => {
-      return new Promise((resolve) => {
-        fetchAndUpdateJson()
-          .then((diff) => {
-            sendResponse({ success: true, diff });
-            resolve(true);
-          })
-          .catch((error) => {
-            sendResponse({ success: false, error: error.message });
-            resolve(false);
-          });
-      });
+    async (_, __, sendResponse) => {
+      fetchAndUpdateJson()
+        .then((diff) => {
+          sendResponse({ success: true, diff });
+        })
+        .catch((error) => {
+          sendResponse({ success: false, error: error.message });
+        });
+      return true;
     }
   );
   const settings = settingsManager.getState();
@@ -109,7 +105,7 @@ async function init() {
 }
 init();
 // Initialize the alarm when the extension starts
-chrome.runtime.onInstalled.addListener(async () => {});
+// chrome.runtime.onInstalled.addListener(async () => {});
 
 // Function to convert update policy to minutes
 function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
