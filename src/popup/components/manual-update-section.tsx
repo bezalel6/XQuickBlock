@@ -51,9 +51,19 @@ const ManualUpdateSection: React.FC = () => {
     setUpdateStatus("idle");
     setDiff(null);
     try {
-      const res = await sendMessageToBackground({
+      const updatePromise = sendMessageToBackground({
         type: "manualUpdate",
       });
+
+      // Create a minimum delay of 1 second
+      const minDelayPromise = new Promise((resolve) =>
+        setTimeout(resolve, 1000)
+      );
+
+      // Wait for both the update and minimum delay to complete
+      const res = await Promise.all([updatePromise, minDelayPromise]).then(
+        ([result]) => result
+      );
 
       console.log("Background:", res);
       const { diff, success } = res;
@@ -139,7 +149,23 @@ const ManualUpdateSection: React.FC = () => {
               <Button
                 onClick={handleUpdate}
                 loading={isUpdating}
-                startIcon={<UpdateIcon />}
+                startIcon={
+                  <UpdateIcon
+                    sx={{
+                      animation: isUpdating
+                        ? "spin 1s linear infinite"
+                        : "none",
+                      "@keyframes spin": {
+                        "0%": {
+                          transform: "rotate(0deg)",
+                        },
+                        "100%": {
+                          transform: "rotate(360deg)",
+                        },
+                      },
+                    }}
+                  />
+                }
                 variant="contained"
                 color="primary"
                 sx={{
