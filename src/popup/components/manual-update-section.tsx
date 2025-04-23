@@ -10,7 +10,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SyncIcon from "@mui/icons-material/Sync";
-import { getSettingsManager } from "../../content_script/settings-manager";
+import { getSettingsManager } from "../../settings-manager";
 
 const ManualUpdateSection: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -24,7 +24,7 @@ const ManualUpdateSection: React.FC = () => {
     let unsubscribe: (() => void) | undefined;
 
     const setupSettingsSubscription = async () => {
-      const settingsManager = await getSettingsManager();
+      const settingsManager = await getSettingsManager("popup");
       unsubscribe = settingsManager.subscribe(
         ["lastUpdatedSeleectors"],
         (state) => {
