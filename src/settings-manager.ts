@@ -157,6 +157,9 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
     await this.sync(shouldUpdateOtehrs);
     return this;
   }
+  async resetToDefault() {
+    return this.update(defaultSettings);
+  }
   // Called SECOND after firing callbacks
   protected async sync(shouldUpdateOtehrs = true) {
     log("SettingsManager", "Syncing settings to storage");
@@ -254,8 +257,8 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
   }
   static async getInstance<T extends End>(end: T): Promise<SettingsManager<T>> {
     if (!SettingsManager.instance) {
-      log("SettingsManager", `Creating new instance for end: ${end}`);
-      console.log(
+      log(
+        "SettingsManager",
         `initializing a new settings manager instance @${Date.now()} on: ${end}`
       );
       const initialState = await this.fetchSettings();

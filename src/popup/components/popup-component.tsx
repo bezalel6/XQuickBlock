@@ -157,10 +157,12 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
                 ></SourceSelector>
                 <Button
                   onClick={() => {
-                    chrome.storage.sync.clear().then(() => alert("Done"));
+                    getSettingsManager("popup")
+                      .then((sett) => sett.resetToDefault())
+                      .then(() => alert("Settings reset"));
                   }}
                 >
-                  Reset Extension Storage
+                  Reset to default
                 </Button>
               </Advanced>
             </AccordionDetails>
