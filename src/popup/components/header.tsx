@@ -17,6 +17,7 @@ const Header: React.FC<{
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      style={{ position: "sticky", top: 0, zIndex: 99999 }}
     >
       <Box
         sx={{
@@ -36,6 +37,10 @@ const Header: React.FC<{
             theme === "dark"
               ? "0 4px 20px rgba(0, 0, 0, 0.3)"
               : "0 4px 20px rgba(0, 0, 0, 0.1)",
+          border:
+            theme === "dark"
+              ? "1px solid rgba(255, 255, 255, 0.1)"
+              : "1px solid rgba(0, 0, 0, 0.1)",
           userSelect: "none",
         }}
       >
