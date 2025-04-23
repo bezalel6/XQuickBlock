@@ -68,7 +68,6 @@ const Footer = () => {
             aria-label="Buy me a coffee"
             sx={{
               backgroundColor: "#FFDD00",
-              border: "2px solid #000000",
               borderRadius: "50%",
               padding: "6px",
               width: "48px",
@@ -77,11 +76,12 @@ const Footer = () => {
               justifyContent: "center",
               alignItems: "center",
               "&:hover": {
-                backgroundColor: "#FFE44D",
+                backgroundColor:
+                  theme.palette.mode === "dark" ? "#FFE44D" : "#FFC800",
               },
             }}
           >
-            <span style={{ fontSize: "24px" }}>☕</span>
+            <span style={{ fontSize: "24px", color: "black" }}>☕</span>
           </IconButton>
         </Tooltip>
       </Box>

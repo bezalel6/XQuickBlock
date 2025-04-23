@@ -48,6 +48,8 @@ const Header: React.FC<{
           <motion.img
             src="icon128.png"
             alt="XQuickBlock Logo"
+            draggable="false"
+            onDragStart={(e) => e.preventDefault()}
             style={{
               width: "100%",
               height: "auto",
