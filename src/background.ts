@@ -94,7 +94,6 @@ async function init() {
         .finally(() => {
           console.log("finished fetching and updating selectors");
         });
-      return true;
     }
   );
   const settings = settingsManager.getState();

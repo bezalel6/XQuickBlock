@@ -126,8 +126,15 @@ const ManualUpdateSection: React.FC = () => {
           updates.
         </Typography>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Tooltip title="Check for updates" arrow>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Tooltip title="Check for updates" placement="top" arrow>
             <span>
               <Button
                 onClick={handleUpdate}
