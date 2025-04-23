@@ -191,7 +191,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
         const handleMessage = async () => {
           try {
             if (message.type === "stateUpdate") {
-              log("SettingsManager", "Processing state update message");
+              // log("SettingsManager", "Processing state update message");
               await this.update(message.payload, false);
               return { message: "State updated successfully" };
             }
@@ -203,13 +203,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
                   "SettingsManager",
                   `Executing handler for message type: ${message.type}`
                 );
-                const result = await handler(message, sender, sendResponse);
-                log(
-                  "SettingsManager",
-                  `Handler completed for ${message.type}`,
-                  result
-                );
-                return { success: true, result };
+                return handler(message, sender, sendResponse);
               } catch (error) {
                 log(
                   "SettingsManager",

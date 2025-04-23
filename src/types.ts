@@ -8,7 +8,7 @@ export interface ExtensionSettings {
   promotedContentAction: PromotedContentAction;
   hideSubscriptionOffers: boolean;
   hideUserSubscriptions: boolean;
-  lastUpdatedSeleectors?: number;
+  lastUpdatedSelectors?: number;
   selectors: Selectors;
   automaticUpdatePolicy: UpdatePolicy;
   source?: Source;

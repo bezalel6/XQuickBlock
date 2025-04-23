@@ -36,6 +36,7 @@ const Header: React.FC<{
             theme === "dark"
               ? "0 4px 20px rgba(0, 0, 0, 0.3)"
               : "0 4px 20px rgba(0, 0, 0, 0.1)",
+          userSelect: "none",
         }}
       >
         <Box sx={{ width: { xs: "96px", sm: "96px" } }}>
@@ -46,6 +47,7 @@ const Header: React.FC<{
               width: "100%",
               height: "auto",
               borderRadius: 4,
+              userSelect: "none",
             }}
             whileHover={{ rotate: 360, scale: 1 }}
             whileTap={{ scale: 1.3 }}
@@ -53,7 +55,9 @@ const Header: React.FC<{
           />
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <Box
+          sx={{ display: "flex", justifyContent: "center", userSelect: "none" }}
+        >
           <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }}>
             <Typography
               variant={isMobile ? "h4" : "h4"}
@@ -68,6 +72,7 @@ const Header: React.FC<{
                     : "linear-gradient(45deg, #1976D2 30%, #2196F3 90%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                userSelect: "none",
               }}
             >
               {title}
@@ -80,6 +85,7 @@ const Header: React.FC<{
             width: { xs: "64px", sm: "96px" },
             display: "flex",
             justifyContent: "flex-end",
+            userSelect: "none",
           }}
         >
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>

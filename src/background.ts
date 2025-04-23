@@ -33,9 +33,12 @@ async function fetchAndUpdateJson() {
 
     const diff = added - removed;
     console.log(`[XQuickBlock] Selector diff: +${added} -${removed} = ${diff}`);
-
-    console.log("[XQuickBlock] Successfully updated settings");
-    return diff;
+    return await settingsManager
+      .update({
+        lastUpdatedSelectors: Date.now(),
+        selectors: update,
+      })
+      .then(() => diff);
   } catch (error) {
     console.error("[XQuickBlock] Error updating settings:", error);
     return 0;
@@ -44,11 +47,10 @@ async function fetchAndUpdateJson() {
 
 // Function to check if we need to fetch new data
 async function checkAndFetchIfNeeded(alarm = false) {
-  const { lastUpdatedSeleectors, automaticUpdatePolicy } = (
-    await getSettingsManager("background")
-  ).getState();
+  const { lastUpdatedSelectors: lastUpdatedSelectors, automaticUpdatePolicy } =
+    (await getSettingsManager("background")).getState();
 
-  if ((!lastUpdatedSeleectors && automaticUpdatePolicy !== "never") || alarm) {
+  if ((!lastUpdatedSelectors && automaticUpdatePolicy !== "never") || alarm) {
     await fetchAndUpdateJson();
   }
 }
@@ -82,12 +84,15 @@ async function init() {
   settingsManager.registerMessageHandler(
     "manualUpdate",
     async (_, __, sendResponse) => {
-      fetchAndUpdateJson()
+      return await fetchAndUpdateJson()
         .then((diff) => {
           sendResponse({ success: true, diff });
         })
         .catch((error) => {
           sendResponse({ success: false, error: error.message });
+        })
+        .finally(() => {
+          console.log("finished fetching and updating selectors");
         });
       return true;
     }

@@ -26,11 +26,11 @@ const ManualUpdateSection: React.FC = () => {
     const setupSettingsSubscription = async () => {
       const settingsManager = await getSettingsManager("popup");
       unsubscribe = settingsManager.subscribe(
-        ["lastUpdatedSeleectors"],
+        ["lastUpdatedSelectors"],
         (state) => {
           console.log(state);
-          if (state.lastUpdatedSeleectors) {
-            const date = new Date(state.lastUpdatedSeleectors);
+          if (state.lastUpdatedSelectors) {
+            const date = new Date(state.lastUpdatedSelectors);
             setLastUpdateTime(date.toLocaleString());
           }
         }
@@ -51,9 +51,12 @@ const ManualUpdateSection: React.FC = () => {
     setUpdateStatus("idle");
     setDiff(null);
     try {
-      const { diff, success } = await sendMessageToBackground({
+      const res = await sendMessageToBackground({
         type: "manualUpdate",
       });
+
+      console.log("Background:", res);
+      const { diff, success } = res;
       setDiff(diff);
       setUpdateStatus("success");
     } catch (error) {
