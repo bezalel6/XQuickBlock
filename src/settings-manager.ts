@@ -60,6 +60,7 @@ class StateManager<T extends object> {
   subscribeToAnyUpdates(callback: Callback<T>) {
     log("StateManager", "Subscribing to any updates");
     const l = this.anyChangeCallbacks.push(callback);
+    callback(this.getState());
     return () => {
       log("StateManager", "Unsubscribing from any updates");
       this.anyChangeCallbacks = this.anyChangeCallbacks.filter(
