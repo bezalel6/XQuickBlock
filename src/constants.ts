@@ -14,6 +14,7 @@ const SELECTORS = {
   ].join(", "),
   upsaleDialogSelector: '[data-testid="sheetDialog"]',
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
+  test: "h1",
 } as const;
 
 export type Selectors = typeof SELECTORS & { [name: string]: string };

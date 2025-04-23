@@ -98,8 +98,7 @@ async function applySettings(state: ExtensionSettings) {
   const settings = await getSettingsManager("content");
   setTimeout(() => {
     settings.subscribe(["selectors"], ({ selectors }) => {
-      if (selectors.debug)
-        toggleCSSRule(selectors.debug, "color", "aqua", true);
+      if (selectors.test) toggleCSSRule(selectors.test, "color", "aqua", true);
     });
     settings.subscribe(
       ["hideSubscriptionOffers"],
