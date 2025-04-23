@@ -1,12 +1,7 @@
 import { processUsername } from "./script";
 import { ExtensionSettings } from "../types";
-import { getSettingsManager } from "./settings-manager";
-import {
-  getCurrentState,
-  isMessedWith,
-  setMessedWith,
-  toggleInvisible,
-} from "./utils";
+import { getSettingsManager } from "../settings-manager";
+import { isMessedWith, setMessedWith, toggleInvisible } from "./utils";
 import Reminder from "./reminder";
 
 type Falsy = false | 0 | "" | null | undefined;

@@ -1,5 +1,5 @@
 import { Action } from "../types";
-import { getSettingsManager } from "./settings-manager";
+import { getSettingsManager } from "../settings-manager";
 import { toggleInvisible, sleep, dispatch } from "./utils";
 
 /**
@@ -44,7 +44,9 @@ export default function Button(
   button.addEventListener("mousemove", handleHover);
 
   button.addEventListener("click", async (e) => {
-    const {selectors:{confirmDialogSelector,userNameSelector}} = await (await getSettingsManager()).getState()
+    const {
+      selectors: { confirmDialogSelector, userNameSelector },
+    } = await (await getSettingsManager("content")).getState();
     try {
       toggleInvisible(confirmDialogSelector, true);
       if (e.ctrlKey) {

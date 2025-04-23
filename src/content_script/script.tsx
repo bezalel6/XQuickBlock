@@ -2,7 +2,7 @@ import { ExtensionMessage, ExtensionSettings } from "../types";
 import AdPlaceholder, { adPlaceHolderClassName } from "./ad-placeholder";
 import Button from "./dispatch-btn";
 import { observeDOMChanges, resetObserver } from "./mutation-observer";
-import { getSettingsManager } from "./settings-manager";
+import { getSettingsManager } from "../settings-manager";
 import {
   dispatch,
   getTweet,
@@ -19,7 +19,7 @@ import {
  * Add mute and block buttons to user names, as well as applying current Ad policy
  */
 export async function processUsername(userNameElement: HTMLElement) {
-  const settings = await getSettingsManager();
+  const settings = await getSettingsManager("content");
   const tweet = getTweet(userNameElement)!;
   await sleep(100);
   const moreBtn = tweet.querySelector(
@@ -95,9 +95,7 @@ export async function processUsername(userNameElement: HTMLElement) {
 }
 
 async function applySettings(state: ExtensionSettings) {
-  console.log("Applying:");
-  console.log(state);
-  const settings = await getSettingsManager();
+  const settings = await getSettingsManager("content");
   setTimeout(() => {
     settings.subscribe(["selectors"], ({ selectors }) => {
       if (selectors.debug)
@@ -141,19 +139,9 @@ function cleanup({ selectors }: ExtensionSettings): void {
     });
 }
 
-// Listen for messages to update the shared state
-chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, sender, sendResponse) => {
-    if (message.type === "stateUpdate") {
-      getSettingsManager().then((m) => m.update(message.payload));
-      sendResponse({ message: "State updated successfully" });
-    }
-    return true;
-  }
-);
 export default async function init() {
   console.log("[XQuickBlock] DOM content loaded, starting initialization...");
-  const state = (await getSettingsManager()).getState();
+  const state = (await getSettingsManager("content")).getState();
   applySettings(state);
   console.log("[XQuickBlock] Initialized with settings:", state);
 }

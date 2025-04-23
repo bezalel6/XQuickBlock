@@ -1,5 +1,6 @@
 import { default as default_selectors } from "../constants";
 import { Action, ExtensionSettings, Source } from "../types";
+import { getSettingsManager } from "../settings-manager";
 
 /**
  * Sleep for a specified number of milliseconds
@@ -151,7 +152,7 @@ export async function dispatch(
   nameElement: HTMLElement,
   action: Action
 ): Promise<void> {
-  const { selectors } = await getCurrentState();
+  const { selectors } = (await getSettingsManager("content")).getState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
     const moreButton = getTweet(nameElement)?.querySelector(
@@ -196,30 +197,4 @@ export function isMessedWith(node: Element) {
 export function setMessedWith(node: Element, messedWith = true) {
   if (messedWith) return node.setAttribute("messedWith", "true");
   node.removeAttribute("messedWith");
-}
-/**
- * Get the current extension state from storage with defaults
- */
-export async function getCurrentState(): Promise<ExtensionSettings> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(null, (data: Partial<ExtensionSettings>) => {
-      const defaultState: ExtensionSettings = {
-        isBlockMuteEnabled: true,
-        themeOverride: "dark",
-        promotedContentAction: "hide",
-        hideSubscriptionOffers: true,
-        hideUserSubscriptions: true,
-        selectors: default_selectors,
-        automaticUpdatePolicy: "weekly",
-        source: Source.MAIN,
-      };
-
-      const finalState = {
-        ...defaultState,
-        ...data,
-      };
-
-      resolve(finalState);
-    });
-  });
 }

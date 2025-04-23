@@ -19,11 +19,11 @@ import ManualUpdateSection from "../components/manual-update-section";
 import PromotedContentSelector from "../components/promoted-content-selector";
 import ToggleSwitch from "../components/toggle-switch";
 import AutomaticPolicySelector from "../components/update-policy-selector";
-import { processPopupUpdate } from "../../message-handler";
 import SELECTORS from "../../constants";
 import SourceSelector from "../components/source-selector";
 import Advanced from "./advanced-settings";
 import Button from "./button";
+import { getSettingsManager } from "../../settings-manager";
 type PopupProps = { optionsPage?: boolean };
 const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -40,20 +40,26 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   });
 
   useEffect(() => {
-    chrome.storage.sync.get(
-      Object.keys(state),
-      (data: Partial<ExtensionSettings>) => {
-        setState((prev) => ({
-          ...prev,
-          ...data,
-        }));
+    let unsubscribe: (() => void) | undefined;
+
+    async function subscribe() {
+      const settingsManager = await getSettingsManager("popup");
+      unsubscribe = settingsManager.subscribeToAnyUpdates((s) => setState(s));
+    }
+
+    subscribe();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
-    );
+    };
   }, []);
 
-  const updateState = (newState: Partial<ExtensionSettings>) => {
+  const updateState = async (newState: Partial<ExtensionSettings>) => {
     const settings = { ...state, ...newState };
-    processPopupUpdate(settings);
+    const settingsManager = await getSettingsManager("popup");
+    await settingsManager.update(settings);
     setState(settings);
   };
   const makeOnChange = <K extends keyof ExtensionSettings>(k: K) => {

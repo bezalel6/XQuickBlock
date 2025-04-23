@@ -1,12 +1,11 @@
+import { Selectors } from "./constants";
+import { getSettingsManager } from "./settings-manager";
 import {
   ExtensionMessage,
   ExtensionSettings,
   Source,
   UpdatePolicy,
 } from "./types";
-import { getSettingsManager } from "./content_script/settings-manager";
-import { handleManualUpdate, handleStateUpdate } from "./message-handler";
-import { Selectors } from "./constants";
 
 const makeUpdateURL = (source: Source = Source.MAIN) =>
   `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/${source}/public/data/constants.json`;
@@ -15,7 +14,7 @@ const makeUpdateURL = (source: Source = Source.MAIN) =>
 async function fetchAndUpdateJson() {
   try {
     // Get the settings manager instance
-    const settingsManager = await getSettingsManager();
+    const settingsManager = await getSettingsManager("background");
     const currentSettings = settingsManager.getState();
     console.log("Background setting:", currentSettings);
     const update = (await fetch(makeUpdateURL(currentSettings.source)).then(
@@ -36,12 +35,6 @@ async function fetchAndUpdateJson() {
     const diff = added - removed;
     console.log(`[XQuickBlock] Selector diff: +${added} -${removed} = ${diff}`);
 
-    // Update settings
-    settingsManager.update({
-      lastUpdatedSeleectors: Date.now(),
-      selectors: update,
-    });
-
     console.log("[XQuickBlock] Successfully updated settings");
     return diff;
   } catch (error) {
@@ -53,7 +46,7 @@ async function fetchAndUpdateJson() {
 // Function to check if we need to fetch new data
 async function checkAndFetchIfNeeded(alarm = false) {
   const { lastUpdatedSeleectors, automaticUpdatePolicy } = (
-    await getSettingsManager()
+    await getSettingsManager("background")
   ).getState();
 
   if ((!lastUpdatedSeleectors && automaticUpdatePolicy !== "never") || alarm) {
@@ -85,39 +78,24 @@ async function settingsUpdated(settings: ExtensionSettings) {
     await chrome.alarms.clear(ALARM_NAME);
   }
 }
-
-// Listen for messages from content script or popup
-chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, sender, sendResponse) => {
-    console.log("[XQuickBlock] Received message:", message);
-
-    switch (message.type) {
-      case "stateUpdate": {
-        handleStateUpdate(message.payload)
-          .then(settingsUpdated)
-          .then(() => sendResponse({ success: true }))
-          .catch((error) =>
-            sendResponse({ success: false, error: error.message })
-          );
-        break;
-      }
-      case "manualUpdate": {
+async function init() {
+  const settingsManager = await getSettingsManager("background");
+  settingsManager.registerMessageHandler(
+    "manualUpdate",
+    (_, __, sendResponse) => {
+      return new Promise((resolve) => {
         fetchAndUpdateJson()
-          .then((diff) => sendResponse({ success: true, diff }))
-          .catch((error) =>
-            sendResponse({ success: false, error: error.message })
-          );
-        break;
-      }
+          .then((diff) => {
+            sendResponse({ success: true, diff });
+            resolve(true);
+          })
+          .catch((error) => {
+            sendResponse({ success: false, error: error.message });
+            resolve(false);
+          });
+      });
     }
-
-    return true; // Keep the message channel open for the async response
-  }
-);
-
-// Initialize the alarm when the extension starts
-chrome.runtime.onInstalled.addListener(async () => {
-  const settingsManager = await getSettingsManager();
+  );
   const settings = settingsManager.getState();
   const periodInMinutes = getUpdatePolicyInMinutes(
     settings.automaticUpdatePolicy
@@ -128,7 +106,10 @@ chrome.runtime.onInstalled.addListener(async () => {
       periodInMinutes,
     });
   }
-});
+}
+init();
+// Initialize the alarm when the extension starts
+chrome.runtime.onInstalled.addListener(async () => {});
 
 // Function to convert update policy to minutes
 function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {

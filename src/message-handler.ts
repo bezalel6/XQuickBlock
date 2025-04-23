@@ -1,5 +1,4 @@
-import { ExtensionMessage, ExtensionSettings } from "./types";
-import { getSettingsManager } from "./content_script/settings-manager";
+import { ExtensionMessage } from "./types";
 
 /**
  * Send a message to the background script
@@ -18,36 +17,6 @@ export async function sendMessageToBackground(
       }
     });
   });
-}
-/**
- * Handle settings changes from the popup
- * @param settings The updated settings
- */
-export async function handleSettingsChange(
-  settings: ExtensionSettings
-): Promise<void> {
-  await chrome.storage.sync.set(settings);
-  const message = {
-    type: "stateUpdate",
-    payload: settings,
-  } as const;
-  await Promise.all([
-    sendMessageToContentScript(message).catch(() =>
-      console.log("content script is not available atm")
-    ),
-    sendMessageToBackground(message),
-  ]);
-}
-
-/**
- * Process settings update from popup
- * @param payload The settings payload from popup
- */
-export async function processPopupUpdate(
-  payload: ExtensionSettings
-): Promise<void> {
-  // Update local storage and propagate changes
-  await handleSettingsChange(payload);
 }
 
 /**
@@ -79,27 +48,5 @@ export async function sendMessageToContentScript(
     )
       .then(resolve)
       .catch(reject);
-  });
-}
-
-/**
- * Handle state updates in the content script
- * @param payload The new state to apply
- */
-export async function handleStateUpdate(
-  payload: ExtensionSettings
-): Promise<ExtensionSettings> {
-  const settingsManager = await getSettingsManager();
-  settingsManager.update(payload);
-  return settingsManager.getState();
-}
-
-/**
- * Handle manual update requests
- */
-export async function handleManualUpdate(): Promise<void> {
-  const settingsManager = await getSettingsManager();
-  settingsManager.update({
-    lastUpdatedSeleectors: Date.now(),
   });
 }
