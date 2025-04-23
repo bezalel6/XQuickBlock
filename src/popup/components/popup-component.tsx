@@ -2,10 +2,12 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
   Container,
   createTheme,
   CssBaseline,
   Divider,
+  IconButton,
   Paper,
   ThemeProvider,
   Typography,
@@ -24,6 +26,7 @@ import SourceSelector from "../components/source-selector";
 import Advanced from "./advanced-settings";
 import Button from "./button";
 import { getSettingsManager } from "../../settings-manager";
+import Footer from "./footer";
 type PopupProps = { optionsPage?: boolean };
 const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -168,6 +171,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             </AccordionDetails>
           </Accordion>
           <Divider sx={{ my: 2 }} />
+          <Footer></Footer>
         </Paper>
       </Container>
     </ThemeProvider>
