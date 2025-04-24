@@ -64,11 +64,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-async function settingsUpdated(settings: ExtensionSettings) {
+async function applyPolicy(policy: UpdatePolicy) {
   // Set up periodic checking based on user's update policy
-  const periodInMinutes = getUpdatePolicyInMinutes(
-    settings.automaticUpdatePolicy
-  );
+  const periodInMinutes = getUpdatePolicyInMinutes(policy);
 
   if (periodInMinutes) {
     await chrome.alarms.create(ALARM_NAME, {
@@ -96,20 +94,15 @@ async function init() {
         });
     }
   );
-  const settings = settingsManager.getState();
-  const periodInMinutes = getUpdatePolicyInMinutes(
-    settings.automaticUpdatePolicy
+  settingsManager.subscribe(
+    ["automaticUpdatePolicy"],
+    ({ automaticUpdatePolicy }) => applyPolicy(automaticUpdatePolicy)
   );
-
-  if (periodInMinutes) {
-    await chrome.alarms.create(ALARM_NAME, {
-      periodInMinutes,
-    });
-  }
 }
 init();
-// Initialize the alarm when the extension starts
-// chrome.runtime.onInstalled.addListener(async () => {});
+// chrome.runtime.onInstalled.addListener(async (p) => {
+// chrome.action.setBadgeText({ text: "10+" });
+// });
 
 // Function to convert update policy to minutes
 function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
@@ -124,7 +117,6 @@ function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
       return null;
   }
 }
-// background.js (or your service worker file)
 //@ts-ignore
 self.update = function () {
   return fetchAndUpdateJson();
