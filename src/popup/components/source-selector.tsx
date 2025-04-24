@@ -13,7 +13,7 @@ const SourceSelector: React.FC<{
   onChange: (value: Source) => void;
 }> = ({ value, onChange }) => (
   <FormControl fullWidth sx={{ mt: 2 }}>
-    <FormLabel>Source</FormLabel>
+    <FormLabel>Settings Source</FormLabel>
     <Select
       value={value}
       onChange={(e: SelectChangeEvent) => onChange(e.target.value as Source)}

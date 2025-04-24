@@ -124,3 +124,8 @@ function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
       return null;
   }
 }
+// background.js (or your service worker file)
+//@ts-ignore
+self.update = function () {
+  return fetchAndUpdateJson();
+};

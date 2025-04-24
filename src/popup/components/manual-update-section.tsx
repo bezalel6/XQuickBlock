@@ -11,40 +11,23 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SyncIcon from "@mui/icons-material/Sync";
 import { getSettingsManager } from "../../settings-manager";
+import { ExtensionSettings } from "types";
 
-const ManualUpdateSection: React.FC = () => {
+const ManualUpdateSection: React.FC<{
+  lastUpdatedSelectors: ExtensionSettings["lastUpdatedSelectors"];
+}> = ({ lastUpdatedSelectors }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
   const [diff, setDiff] = useState<number | null>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
-
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-
-    const setupSettingsSubscription = async () => {
-      const settingsManager = await getSettingsManager("popup");
-      unsubscribe = settingsManager.subscribe(
-        ["lastUpdatedSelectors"],
-        (state) => {
-          console.log(state);
-          if (state.lastUpdatedSelectors) {
-            const date = new Date(state.lastUpdatedSelectors);
-            setLastUpdateTime(date.toLocaleString());
-          }
-        }
-      );
-    };
-
-    setupSettingsSubscription();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, []);
+    if (lastUpdatedSelectors) {
+      const date = new Date(lastUpdatedSelectors);
+      setLastUpdateTime(date.toLocaleString());
+    }
+  }, [lastUpdatedSelectors]);
 
   const handleUpdate = async () => {
     setIsUpdating(true);

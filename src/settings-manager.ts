@@ -176,10 +176,10 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
     log("SettingsManager", "Sending update to other ends", msg);
     return Promise.all(
       this.getOtherEnds()
-        .map((e) => endMessageCallbacks[e])
-        .map((cb) =>
-          cb(msg).catch((err) => {
-            log("SettingsManager", "Error updating other end", err);
+        .map((e) => ({ callback: endMessageCallbacks[e], end: e }))
+        .map((data) =>
+          data.callback(msg).catch((err) => {
+            log("SettingsManager", `Error updating ${data.end}`, err);
             return "";
           })
         )

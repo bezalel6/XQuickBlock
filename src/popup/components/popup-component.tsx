@@ -16,7 +16,6 @@ import React, { useEffect, useState } from "react";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { ExtensionSettings, Source } from "../../types";
 import Header from "../components/header";
-import InfoSection from "../components/info-section";
 import ManualUpdateSection from "../components/manual-update-section";
 import PromotedContentSelector from "../components/promoted-content-selector";
 import ToggleSwitch from "../components/toggle-switch";
@@ -118,7 +117,14 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
                 : "Block/Mute Buttons Disabled"
             }
           />
-          <InfoSection />
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Click the Mute/Block buttons next to usernames to take action.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Hold Ctrl and click to apply to all visible users.
+            </Typography>
+          </Box>
 
           <Divider sx={{ my: 2 }} />
 
@@ -144,7 +150,9 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             value={state.automaticUpdatePolicy}
             onChange={makeOnChange("automaticUpdatePolicy")}
           />
-          <ManualUpdateSection />
+          <ManualUpdateSection
+            lastUpdatedSelectors={state.lastUpdatedSelectors}
+          />
           <Divider sx={{ my: 2 }} />
 
           {/* Advanced Settings */}
