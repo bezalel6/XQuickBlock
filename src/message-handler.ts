@@ -1,21 +1,19 @@
-import { ExtensionMessage } from "./types";
+import { ExtensionMessage, InternalExtensionMessage } from "./types";
 
-/**
- * Send a message to the background script
- * @param message The message to send
- * @returns Promise that resolves with the response
- */
 export async function sendMessageToBackground(
-  message: ExtensionMessage
+  message: Omit<InternalExtensionMessage, "sentTo">
 ): Promise<any> {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(response);
+    chrome.runtime.sendMessage(
+      { ...message, sentTo: "background" } as InternalExtensionMessage,
+      (response) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(response);
+        }
       }
-    });
+    );
   });
 }
 
@@ -25,7 +23,7 @@ export async function sendMessageToBackground(
  * @returns Promise that resolves with the response
  */
 export async function sendMessageToContentScript(
-  message: ExtensionMessage
+  message: InternalExtensionMessage
 ): Promise<any> {
   const tabs = await chrome.tabs.query({ active: true });
   if (!tabs.length) {

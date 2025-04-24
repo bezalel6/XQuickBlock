@@ -36,11 +36,12 @@ const ManualUpdateSection: React.FC<{
     try {
       const updatePromise = sendMessageToBackground({
         type: "manualUpdate",
+        sentFrom: "popup",
       });
 
       // Create a minimum delay of 1 second
       const minDelayPromise = new Promise((resolve) =>
-        setTimeout(resolve, 1000)
+        setTimeout(resolve, 500)
       );
 
       // Wait for both the update and minimum delay to complete

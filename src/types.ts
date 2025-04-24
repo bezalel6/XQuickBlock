@@ -1,3 +1,4 @@
+import { End } from "settings-manager";
 import { type Selectors } from "./constants";
 
 export type PromotedContentAction = "nothing" | "hide" | "block";
@@ -17,6 +18,10 @@ export interface ExtensionSettings {
 export interface ExtensionMessage {
   type: "stateUpdate" | "forceUpdate" | "manualUpdate";
   payload?: ExtensionSettings;
+}
+export interface InternalExtensionMessage extends ExtensionMessage {
+  sentFrom: End;
+  sentTo: End;
 }
 
 export type Action = "block" | "mute";

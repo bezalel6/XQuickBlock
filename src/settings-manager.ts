@@ -1,4 +1,9 @@
-import { ExtensionMessage, ExtensionSettings, Source } from "./types";
+import {
+  ExtensionMessage,
+  ExtensionSettings,
+  InternalExtensionMessage,
+  Source,
+} from "./types";
 import { default as default_selectors } from "./constants";
 import {
   sendMessageToBackground,
@@ -122,7 +127,7 @@ class StateManager<T extends object> {
     return { ...this.previousState };
   }
 }
-type End = "content" | "popup" | "background";
+export type End = "content" | "popup" | "background";
 
 const otherEndsMap = {
   background: ["popup", "content"],
@@ -135,6 +140,7 @@ const endMessageCallbacks = {
   background: sendMessageToBackground,
   popup: sendMessageToBackground,
 };
+const NOT_INTENDED_RECIPIENT = "NOT_INTENDED_RECIPIENT" as const;
 class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
   private static instance: SettingsManager<any> | null = null;
   private messageHandlers: Map<ExtensionMessage["type"], MessageHandler> =
@@ -169,16 +175,18 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
     return this;
   }
   async updateOthers() {
-    const msg: ExtensionMessage = {
+    const msg: InternalExtensionMessage = {
       type: "stateUpdate",
       payload: this.getState(),
+      sentFrom: this.end,
+      sentTo: null,
     };
     log("SettingsManager", "Sending update to other ends", msg);
     return Promise.all(
       this.getOtherEnds()
         .map((e) => ({ callback: endMessageCallbacks[e], end: e }))
         .map((data) =>
-          data.callback(msg).catch((err) => {
+          data.callback({ ...msg, sentTo: data.end }).catch((err) => {
             log("SettingsManager", `Error updating ${data.end}`, err);
             return "";
           })
@@ -188,16 +196,18 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
   private startListening() {
     log("SettingsManager", "Starting message listener");
     chrome.runtime.onMessage.addListener(
-      (message: ExtensionMessage, sender, sendResponse) => {
+      (message: InternalExtensionMessage, sender, sendResponse) => {
         log("SettingsManager", `Received message: ${message.type}`, message);
 
-        const handleMessage = async () => {
+        const handleMessage = async (notMyCircus: boolean) => {
           try {
             if (message.type === "stateUpdate") {
-              // log("SettingsManager", "Processing state update message");
               await this.update(message.payload, false);
+              if (notMyCircus) return NOT_INTENDED_RECIPIENT;
               return { message: "State updated successfully" };
             }
+
+            if (notMyCircus) return NOT_INTENDED_RECIPIENT;
 
             const handler = this.messageHandlers.get(message.type);
             if (handler) {
@@ -234,10 +244,11 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
             return { success: false, error: error.message };
           }
         };
-
+        const isMyCircus = message.sentTo === this.end;
         // Execute the handler and send response
-        handleMessage()
+        handleMessage(!isMyCircus)
           .then((response) => {
+            if (response === NOT_INTENDED_RECIPIENT) return;
             log(
               "SettingsManager",
               `Sending response for ${message.type}`,
@@ -251,7 +262,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
           });
 
         // Return true to indicate we will send a response asynchronously
-        return true;
+        return isMyCircus;
       }
     );
   }
