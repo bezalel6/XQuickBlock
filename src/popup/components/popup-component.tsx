@@ -123,12 +123,12 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             }
           />
           <Box sx={{ mt: 1 }}>
-            <Typography variant="body2" color="text.secondary" paragraph>
+            <Typography variant="body2" color="text.secondary" component="p">
               Click the Mute/Block buttons next to usernames to take action.
             </Typography>
             <Experimental>
               <Typography variant="body2" color="text.secondary">
-                Hold Ctrl and click to apply to all visible users.
+                Hold Ctrl and click an action to apply it to all visible users.
               </Typography>
             </Experimental>
           </Box>
