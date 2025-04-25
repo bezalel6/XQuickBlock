@@ -102,6 +102,7 @@ const Header: React.FC<{
                   : "0 2px 8px rgba(25, 118, 210, 0.2)",
               px: 2,
               mx: -2,
+              userSelect: "none",
             }}
           >
             {title}
