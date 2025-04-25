@@ -26,6 +26,8 @@ import Advanced from "./advanced-settings";
 import Button from "./button";
 import { getSettingsManager } from "../../settings-manager";
 import Footer from "./footer";
+import Experimental from "./experimental";
+import BuyMeACoffee from "./buy-me-a-coffee";
 type PopupProps = { optionsPage?: boolean };
 const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -95,7 +97,11 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{ ...(optionsPage ? { width: 600 } : { width: 300 }) }}>
+      <Container
+        sx={{
+          ...(optionsPage ? { width: 600 } : { width: "100%" }),
+        }}
+      >
         <Paper
           elevation={3}
           sx={{
@@ -106,7 +112,6 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
           }}
         >
           <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />
-
           {/* Core Functionality */}
           <ToggleSwitch
             enabled={state.isBlockMuteEnabled}
@@ -121,9 +126,11 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             <Typography variant="body2" color="text.secondary" paragraph>
               Click the Mute/Block buttons next to usernames to take action.
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Hold Ctrl and click to apply to all visible users.
-            </Typography>
+            <Experimental>
+              <Typography variant="body2" color="text.secondary">
+                Hold Ctrl and click to apply to all visible users.
+              </Typography>
+            </Experimental>
           </Box>
 
           <Divider sx={{ my: 2 }} />

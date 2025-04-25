@@ -12,93 +12,110 @@ const Header: React.FC<{
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
 
+  // Theme configurations
+  const themeConfig = {
+    background:
+      theme === "dark"
+        ? "linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%)"
+        : "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
+    divider:
+      theme === "dark" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.1)",
+    titleGradient:
+      theme === "dark"
+        ? "linear-gradient(45deg, #4facfe 0%, #00f2fe 100%)"
+        : "linear-gradient(45deg, #1976d2 0%, #2196f3 100%)",
+    shadow:
+      theme === "dark"
+        ? "0 8px 32px rgba(0, 0, 0, 0.4)"
+        : "0 8px 32px rgba(0, 0, 0, 0.1)",
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      style={{ position: "sticky", top: 0, zIndex: 99999 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 99999,
+      }}
     >
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
           alignItems: "center",
-          gap: { xs: 2, sm: 0 },
-          mb: 3,
-          p: 2,
-          borderRadius: 2,
-          background:
-            theme === "dark"
-              ? "linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%)"
-              : "linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)",
-          boxShadow:
-            theme === "dark"
-              ? "0 4px 20px rgba(0, 0, 0, 0.3)"
-              : "0 4px 20px rgba(0, 0, 0, 0.1)",
-          border:
-            theme === "dark"
-              ? "1px solid rgba(255, 255, 255, 0.1)"
-              : "1px solid rgba(0, 0, 0, 0.1)",
-          userSelect: "none",
+          justifyContent: "space-between",
+          px: isMobile ? 2 : 3,
+          py: 2,
+          background: themeConfig.background,
+          boxShadow: themeConfig.shadow,
+          position: "relative",
+          borderBottom: `2px solid ${themeConfig.divider}`,
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: "-2px",
+            left: 0,
+            right: 0,
+            height: "2px",
+            background: themeConfig.background,
+            zIndex: 1,
+          },
         }}
       >
-        <Box sx={{ width: { xs: "96px", sm: "96px" } }}>
-          <motion.img
+        {/* Logo */}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          style={{ display: "flex", alignItems: "center" }}
+        >
+          <img
             src="icon128.png"
             alt="XQuickBlock Logo"
             draggable="false"
-            onDragStart={(e) => e.preventDefault()}
             style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: 4,
-              userSelect: "none",
+              width: isMobile ? 40 : 48,
+              height: isMobile ? 40 : 48,
+              borderRadius: 8,
+              cursor: "pointer",
+              boxShadow:
+                theme === "dark"
+                  ? "0 2px 8px rgba(0,0,0,0.3)"
+                  : "0 2px 8px rgba(0,0,0,0.1)",
             }}
-            whileHover={{ rotate: 360, scale: 1 }}
-            whileTap={{ scale: 1.3 }}
-            transition={{ duration: 0.5 }}
           />
-        </Box>
+        </motion.div>
 
-        <Box
-          sx={{ display: "flex", justifyContent: "center", userSelect: "none" }}
-        >
-          <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }}>
-            <Typography
-              variant={isMobile ? "h4" : "h4"}
-              component="h1"
-              color="primary"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: "0.5px",
-                background:
-                  theme === "dark"
-                    ? "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)"
-                    : "linear-gradient(45deg, #1976D2 30%, #2196F3 90%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                userSelect: "none",
-              }}
-            >
-              {title}
-            </Typography>
-          </motion.div>
-        </Box>
+        {/* Title */}
+        <motion.div whileHover={{ scale: 1.02 }}>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+              textShadow:
+                theme === "dark"
+                  ? "0 2px 8px rgba(74, 144, 226, 0.3)"
+                  : "0 2px 8px rgba(25, 118, 210, 0.2)",
+              px: 2,
+              mx: -2,
+            }}
+          >
+            {title}
+          </Typography>
+        </motion.div>
 
-        <Box
-          sx={{
-            width: { xs: "64px", sm: "96px" },
-            display: "flex",
-            justifyContent: "flex-end",
-            userSelect: "none",
-          }}
+        {/* Theme Toggle */}
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400 }}
         >
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <ThemeToggle theme={theme} onToggle={onThemeToggle} />
-          </motion.div>
-        </Box>
+          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+        </motion.div>
       </Box>
     </motion.div>
   );

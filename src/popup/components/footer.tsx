@@ -1,5 +1,6 @@
 import { Box, IconButton, useTheme, Tooltip, Button } from "@mui/material";
 import React from "react";
+import BuyMeACoffee from "./buy-me-a-coffee";
 
 const Footer = () => {
   const theme = useTheme();
@@ -59,31 +60,7 @@ const Footer = () => {
             />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Buy me a coffee" placement="bottom">
-          <IconButton
-            component="a"
-            href="https://www.buymeacoffee.com/RNDev"
-            target="_blank"
-            disableRipple
-            aria-label="Buy me a coffee"
-            sx={{
-              backgroundColor: "#FFDD00",
-              borderRadius: "50%",
-              padding: "6px",
-              width: "48px",
-              height: "48px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              "&:hover": {
-                backgroundColor:
-                  theme.palette.mode === "dark" ? "#FFE44D" : "#FFC800",
-              },
-            }}
-          >
-            <span style={{ fontSize: "24px", color: "black" }}>☕</span>
-          </IconButton>
-        </Tooltip>
+        <BuyMeACoffee></BuyMeACoffee>
       </Box>
     </Box>
   );
