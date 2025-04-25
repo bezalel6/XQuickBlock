@@ -100,17 +100,8 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
       <Container
         sx={{
           ...(optionsPage ? { width: 600 } : { width: "100%" }),
-          overflow: "auto",
-          "&::-webkit-scrollbar": {
-            width: "8px",
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "transparent",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: theme.palette.mode === "dark" ? "#4a4a4a" : "#c1c1c1",
-            borderRadius: "4px",
-          },
+          height: "100%",
+          position: "relative",
         }}
       >
         <Paper
@@ -120,6 +111,16 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             mt: 2,
             mb: 2,
             borderRadius: 2,
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: theme.palette.mode === "dark" ? "#4a4a4a" : "#c1c1c1",
+              borderRadius: "4px",
+            },
           }}
         >
           <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />

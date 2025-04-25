@@ -46,7 +46,7 @@ const Header: React.FC<{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          // px: isMobile ? 2 : 3,
+          px: isMobile ? 2 : 3,
           py: 2,
           background: themeConfig.background,
           boxShadow: themeConfig.shadow,
