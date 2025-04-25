@@ -90,123 +90,125 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
       },
     },
     typography: {
-      fontFamily: "Arial, sans-serif",
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     },
   });
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container
-        sx={{
-          ...(optionsPage ? { width: 600 } : { width: "100%" }),
-          height: "100%",
-          position: "relative",
-        }}
-      >
-        <Paper
-          elevation={3}
+    <Box sx={{ minWidth: 400 }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Container
           sx={{
-            p: 1,
-            mt: 2,
-            mb: 2,
-            borderRadius: 2,
-            "&::-webkit-scrollbar": {
-              width: "8px",
-            },
-            "&::-webkit-scrollbar-track": {
-              background: "transparent",
-            },
-            "&::-webkit-scrollbar-thumb": {
-              background: theme.palette.mode === "dark" ? "#4a4a4a" : "#c1c1c1",
-              borderRadius: "4px",
-            },
+            ...(optionsPage ? { width: 600 } : { width: "100%" }),
+            height: "100%",
+            position: "relative",
           }}
         >
-          <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />
-          {/* Core Functionality */}
-          <ToggleSwitch
-            enabled={state.isBlockMuteEnabled}
-            onChange={makeOnChange("isBlockMuteEnabled")}
-            label={
-              state.isBlockMuteEnabled
-                ? "Block/Mute Buttons Enabled"
-                : "Block/Mute Buttons Disabled"
-            }
-          />
-          <Box sx={{ mt: 1 }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              component="p"
-              mb={1}
-            >
-              Click the Mute/Block buttons next to usernames to take action.
-            </Typography>
-            <Experimental>
-              <Typography variant="body2" color="text.secondary">
-                Hold Ctrl and click an action to apply it to all visible users.
+          <Paper
+            elevation={3}
+            sx={{
+              p: 1,
+              mt: 2,
+              mb: 2,
+              borderRadius: 2,
+              "&::-webkit-scrollbar-track": {
+                background: "transparent",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background:
+                  theme.palette.mode === "dark" ? "#4a4a4a" : "#c1c1c1",
+                borderRadius: "4px",
+              },
+            }}
+          >
+            <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />
+            {/* Core Functionality */}
+            <ToggleSwitch
+              enabled={state.isBlockMuteEnabled}
+              onChange={makeOnChange("isBlockMuteEnabled")}
+              label={
+                state.isBlockMuteEnabled
+                  ? "Block/Mute Buttons Enabled"
+                  : "Block/Mute Buttons Disabled"
+              }
+            />
+            <Box sx={{ mt: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                component="p"
+                mb={1}
+              >
+                Click the Mute/Block buttons next to usernames to take action.
               </Typography>
-            </Experimental>
-          </Box>
+              <Experimental>
+                <Typography variant="body2" color="text.secondary">
+                  Hold Ctrl and click an action to apply it to all visible
+                  users.
+                </Typography>
+              </Experimental>
+            </Box>
 
-          <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2 }} />
 
-          {/* Content Filtering */}
-          <PromotedContentSelector
-            value={state.promotedContentAction}
-            onChange={makeOnChange("promotedContentAction")}
-          />
-          <ToggleSwitch
-            enabled={state.hideSubscriptionOffers}
-            onChange={makeOnChange("hideSubscriptionOffers")}
-            label="Hide Subscription Offers"
-          />
-          <ToggleSwitch
-            enabled={state.hideUserSubscriptions}
-            onChange={makeOnChange("hideUserSubscriptions")}
-            label="Hide User Subscriptions"
-          />
-          <Divider sx={{ my: 2 }} />
+            {/* Content Filtering */}
+            <PromotedContentSelector
+              value={state.promotedContentAction}
+              onChange={makeOnChange("promotedContentAction")}
+            />
+            <ToggleSwitch
+              enabled={state.hideSubscriptionOffers}
+              onChange={makeOnChange("hideSubscriptionOffers")}
+              label="Hide Subscription Offers"
+            />
+            <ToggleSwitch
+              enabled={state.hideUserSubscriptions}
+              onChange={makeOnChange("hideUserSubscriptions")}
+              label="Hide User Subscriptions"
+            />
+            <Divider sx={{ my: 2 }} />
 
-          {/* Update Settings */}
-          <AutomaticPolicySelector
-            value={state.automaticUpdatePolicy}
-            onChange={makeOnChange("automaticUpdatePolicy")}
-          />
-          <ManualUpdateSection
-            lastUpdatedSelectors={state.lastUpdatedSelectors}
-          />
-          <Divider sx={{ my: 2 }} />
+            {/* Update Settings */}
+            <AutomaticPolicySelector
+              value={state.automaticUpdatePolicy}
+              onChange={makeOnChange("automaticUpdatePolicy")}
+            />
+            <ManualUpdateSection
+              lastUpdatedSelectors={state.lastUpdatedSelectors}
+            />
+            <Divider sx={{ my: 2 }} />
 
-          {/* Advanced Settings */}
-          <Accordion defaultExpanded={optionsPage}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Advanced Settings</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Advanced>
-                <SourceSelector
-                  value={state.source || Source.MAIN}
-                  onChange={makeOnChange("source")}
-                ></SourceSelector>
-                <Button
-                  onClick={() => {
-                    getSettingsManager("popup")
-                      .then((sett) => sett.resetToDefault())
-                      .then(() => alert("Settings reset"));
-                  }}
-                >
-                  Reset to default
-                </Button>
-              </Advanced>
-            </AccordionDetails>
-          </Accordion>
-          <Divider sx={{ my: 2 }} />
-          <Footer></Footer>
-        </Paper>
-      </Container>
-    </ThemeProvider>
+            {/* Advanced Settings */}
+            <Accordion defaultExpanded={optionsPage}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Advanced Settings</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Advanced>
+                  <SourceSelector
+                    value={state.source || Source.MAIN}
+                    onChange={makeOnChange("source")}
+                  ></SourceSelector>
+                  <Button
+                    onClick={() => {
+                      getSettingsManager("popup")
+                        .then((sett) => sett.resetToDefault())
+                        .then(() => alert("Settings reset"));
+                    }}
+                  >
+                    Reset to default
+                  </Button>
+                </Advanced>
+              </AccordionDetails>
+            </Accordion>
+            <Divider sx={{ my: 2 }} />
+            <Footer></Footer>
+          </Paper>
+        </Container>
+      </ThemeProvider>
+    </Box>
   );
 };
 export default Popup;
