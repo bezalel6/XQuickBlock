@@ -21,6 +21,22 @@ const Button = styled.a`
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 `;
+const STEAM_RISE_DISTANCE = -12;
+const STEAM_DURATION = 1.5; // seconds
+const STEAM_DELAY = 0.4; // seconds
+const Steam: React.FC<React.SVGProps<SVGPathElement> & { offset: number }> = ({
+  offset,
+  ...props
+}) => (
+  <path
+    d={`M${6 + 4 * offset} 1V4`}
+    stroke="currentColor"
+    strokeWidth="1"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  />
+);
 
 const CoffeeIcon = () => (
   <svg
@@ -50,55 +66,40 @@ const CoffeeIcon = () => (
     />
 
     {/* <!-- Steam lines with staggered animation --> */}
-    {/* <!-- First steam line --> */}
-    <path
-      d="M6 1V4"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <animate
-        attributeName="d"
-        values="M6 1V4; M6 0V3; M6 1V4"
-        dur="2s"
+    {/* First steam line */}
+    <Steam offset={0}>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values={`0,0; 0,${STEAM_RISE_DISTANCE}`}
+        dur={`${STEAM_DURATION}s`}
         repeatCount="indefinite"
       />
-    </path>
+    </Steam>
 
-    {/* <!-- Second steam line (delayed start) --> */}
-    <path
-      d="M10 1V4"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <animate
-        attributeName="d"
-        values="M10 1V4; M10 0V3; M10 1V4"
-        dur="1s"
-        begin="0.7s"
+    {/* Second steam line */}
+    <Steam offset={1}>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values={`0,0; 0,${STEAM_RISE_DISTANCE}`}
+        dur={`${STEAM_DURATION}s`}
+        begin={`${STEAM_DELAY * 2}s`}
         repeatCount="indefinite"
       />
-    </path>
+    </Steam>
 
-    {/* <!-- Third steam line (more delayed start) --> */}
-    <path
-      d="M14 1V4"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <animate
-        attributeName="d"
-        values="M14 1V4; M14 0V3; M14 1V4"
-        dur="1s"
-        begin="1.4s"
+    {/* Third steam line */}
+    <Steam offset={2}>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values={`0,0; 0,${STEAM_RISE_DISTANCE}`}
+        dur={`${STEAM_DURATION}s`}
+        begin={`${STEAM_DELAY}s`}
         repeatCount="indefinite"
       />
-    </path>
+    </Steam>
   </svg>
 );
 
@@ -106,6 +107,7 @@ const BuyMeACoffee = () => {
   return (
     <Tooltip title="Buy me a coffee">
       <Button
+        style={{ overflow: "hidden" }}
         href="https://www.buymeacoffee.com/RNDev"
         target="_blank"
         rel="noopener noreferrer"

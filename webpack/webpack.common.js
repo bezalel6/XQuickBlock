@@ -37,7 +37,6 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: ".", to: "./", context: "public" },
-                { from: "./src/bmc.js", to: "js/bmc.js" }
             ],
             options: {},
         }),

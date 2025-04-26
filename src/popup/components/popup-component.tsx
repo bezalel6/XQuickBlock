@@ -181,7 +181,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
             <Divider sx={{ my: 2 }} />
 
             {/* Advanced Settings */}
-            <Accordion defaultExpanded={optionsPage}>
+            <Accordion defaultExpanded={false}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>Advanced Settings</Typography>
               </AccordionSummary>
