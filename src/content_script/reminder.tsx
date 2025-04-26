@@ -1,7 +1,7 @@
 import { render } from "../lit";
 import { html } from "../lit";
 
-const reminderClassName = "xquickblock-reminder";
+const reminderClassName = "xterminate-reminder";
 
 const Reminder = () => {
   const container = document.createElement("div");

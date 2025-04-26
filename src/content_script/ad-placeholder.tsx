@@ -2,7 +2,7 @@ import { html, render } from "../lit";
 import { Action } from "../types";
 import { dispatch, extractUserDetails } from "./utils";
 
-export const adPlaceHolderClassName = "xquickblock-notification";
+export const adPlaceHolderClassName = "xterminate-notification";
 
 export default function AdPlaceholder(userNameElement: HTMLElement) {
   const container = document.createElement("div");

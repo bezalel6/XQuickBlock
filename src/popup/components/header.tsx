@@ -82,7 +82,7 @@ const Header: React.FC<{
             style={{
               width: isMobile ? 48 : 64,
               height: isMobile ? 48 : 64,
-              borderRadius: 1,
+              borderRadius: 12,
               backgroundColor:
                 theme === "dark"
                   ? "rgba(255, 255, 255, 0.1)"

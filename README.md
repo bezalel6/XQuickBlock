@@ -28,7 +28,7 @@
 
 1. **Download from Chrome Web Store:**
 
-   - Visit the [Chrome Web Store page](https://chromewebstore.google.com/detail/xquickblock/fkcppikhgboddjlcoapmibcpcnlhepko)
+   - Visit the [Chrome Web Store page](https://chromewebstore.google.com/detail/xterminate/fkcppikhgboddjlcoapmibcpcnlhepko)
    - Click "Add to Chrome"
 
 2. **Install from Source:**
