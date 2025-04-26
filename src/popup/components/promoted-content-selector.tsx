@@ -13,7 +13,7 @@ const PromotedContentSelector: React.FC<{
   value: PromotedContentAction;
   onChange: (value: PromotedContentAction) => void;
 }> = ({ value, onChange }) => (
-  <FormControl fullWidth sx={{ mt: 2 }}>
+  <FormControl fullWidth sx={{}}>
     <FormLabel>Promoted Content</FormLabel>
     <Select
       value={value}

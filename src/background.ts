@@ -8,7 +8,7 @@ import {
 } from "./types";
 
 const makeUpdateURL = (source: Source = Source.MAIN) =>
-  `https://raw.githubusercontent.com/bezalel6/XQuickBlock/refs/heads/${source}/public/data/constants.json`;
+  `https://raw.githubusercontent.com/bezalel6/XTerminator/refs/heads/${source}/public/data/constants.json`;
 
 // Function to fetch and update JSON data
 async function fetchAndUpdateJson() {
@@ -32,7 +32,7 @@ async function fetchAndUpdateJson() {
     const removed = [...oldKeys].filter((key) => !newKeys.has(key)).length;
 
     const diff = added - removed;
-    console.log(`[XQuickBlock] Selector diff: +${added} -${removed} = ${diff}`);
+    console.log(`[XTerminator] Selector diff: +${added} -${removed} = ${diff}`);
     return await settingsManager
       .update({
         lastUpdatedSelectors: Date.now(),
@@ -40,7 +40,7 @@ async function fetchAndUpdateJson() {
       })
       .then(() => diff);
   } catch (error) {
-    console.error("[XQuickBlock] Error updating settings:", error);
+    console.error("[XTerminator] Error updating settings:", error);
     return 0;
   }
 }

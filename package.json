@@ -1,7 +1,7 @@
 {
   "name": "x-quick-block",
   "version": "1.0.1",
-  "description": "XQuickBlock",
+  "description": "XTerminator",
   "main": "index.js",
   "scripts": {
     "watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",

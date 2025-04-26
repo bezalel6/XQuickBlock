@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest",
   "manifest_version": 3,
-  "name": "XQuickBlock",
-  "version": "1.5.5",
+  "name": "XTerminator",
+  "version": "1.6.5",
   "description": "Quickly mute or block users on X with a single click, Automatically block advertisers, and more...",
   "permissions": [
     "storage",
@@ -33,7 +33,9 @@
     "type": "module"
   },
   "icons": {
-    "48": "icon.png",
-    "128": "icon128.png"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }

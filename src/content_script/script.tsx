@@ -139,8 +139,8 @@ function cleanup({ selectors }: ExtensionSettings): void {
 }
 
 export default async function init() {
-  console.log("[XQuickBlock] DOM content loaded, starting initialization...");
+  console.log("[XTerminator] DOM content loaded, starting initialization...");
   const state = (await getSettingsManager("content")).getState();
   applySettings(state);
-  console.log("[XQuickBlock] Initialized with settings:", state);
+  console.log("[XTerminator] Initialized with settings:", state);
 }

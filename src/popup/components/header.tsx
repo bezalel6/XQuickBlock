@@ -3,12 +3,11 @@ import React from "react";
 import ThemeToggle from "./theme-toggle";
 import { motion } from "framer-motion";
 
-const title = "XQuickBlock";
+const title = "Terminator";
 
 const Header: React.FC<{
   theme: "light" | "dark";
-  onThemeToggle: () => void;
-}> = ({ theme, onThemeToggle }) => {
+}> = ({ theme }) => {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
 
@@ -45,12 +44,12 @@ const Header: React.FC<{
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          px: isMobile ? 2 : 3,
-          py: 2,
+          justifyContent: "center",
+          py: 3,
           background: themeConfig.background,
           boxShadow: themeConfig.shadow,
           position: "relative",
+          gap: 2,
           borderBottom: `2px solid ${themeConfig.divider}`,
           "&::after": {
             content: '""',
@@ -64,59 +63,52 @@ const Header: React.FC<{
           },
         }}
       >
-        {/* Logo */}
+        {/* Logo and Title Container */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          style={{ display: "flex", alignItems: "center" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            cursor: "pointer",
+          }}
         >
           <img
-            src="icon128.png"
-            alt="XQuickBlock Logo"
+            src="icons/icon.png"
+            alt="XTerminator Logo"
             draggable="false"
             style={{
-              width: isMobile ? 40 : 48,
-              height: isMobile ? 40 : 48,
-              borderRadius: 8,
-              cursor: "pointer",
+              width: isMobile ? 48 : 64,
+              height: isMobile ? 48 : 64,
+              borderRadius: 1,
+              backgroundColor:
+                theme === "dark"
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
               boxShadow:
                 theme === "dark"
-                  ? "0 2px 8px rgba(0,0,0,0.3)"
-                  : "0 2px 8px rgba(0,0,0,0.1)",
+                  ? "0 4px 12px rgba(0,0,0,0.3)"
+                  : "0 4px 12px rgba(0,0,0,0.1)",
             }}
           />
         </motion.div>
-
-        {/* Title */}
-        <motion.div whileHover={{ scale: 1.02 }}>
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              textShadow:
-                theme === "dark"
-                  ? "0 2px 8px rgba(74, 144, 226, 0.3)"
-                  : "0 2px 8px rgba(25, 118, 210, 0.2)",
-              px: 2,
-              mx: -2,
-              userSelect: "none",
-            }}
-          >
-            {title}
-          </Typography>
-        </motion.div>
-
-        {/* Theme Toggle */}
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400 }}
+        <Typography
+          variant={isMobile ? "h4" : "h3"}
+          component="h1"
+          sx={{
+            fontWeight: 800,
+            letterSpacing: "0.1em",
+            textShadow:
+              theme === "dark"
+                ? "0 2px 8px rgba(74, 144, 226, 0.3)"
+                : "0 2px 8px rgba(25, 118, 210, 0.2)",
+            userSelect: "none",
+          }}
         >
-          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
-        </motion.div>
+          {title}
+        </Typography>
       </Box>
     </motion.div>
   );

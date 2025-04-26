@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { ExtensionSettings, Source } from "../../types";
 import Header from "../components/header";
-import ManualUpdateSection from "../components/manual-update-section";
+import UpdateSection from "./updates";
 import PromotedContentSelector from "../components/promoted-content-selector";
 import ToggleSwitch from "../components/toggle-switch";
 import AutomaticPolicySelector from "../components/update-policy-selector";
@@ -28,6 +28,8 @@ import { getSettingsManager } from "../../settings-manager";
 import Footer from "./footer";
 import Experimental from "./experimental";
 import BuyMeACoffee from "./buy-me-a-coffee";
+import ThemeToggle from "./theme-toggle";
+import { motion } from "framer-motion";
 type PopupProps = { optionsPage?: boolean };
 const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -123,17 +125,35 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
               },
             }}
           >
-            <Header theme={state.themeOverride} onThemeToggle={toggleTheme} />
+            <Header theme={state.themeOverride} />
             {/* Core Functionality */}
-            <ToggleSwitch
-              enabled={state.isBlockMuteEnabled}
-              onChange={makeOnChange("isBlockMuteEnabled")}
-              label={
-                state.isBlockMuteEnabled
-                  ? "Block/Mute Buttons Enabled"
-                  : "Block/Mute Buttons Disabled"
-              }
-            />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <ToggleSwitch
+                enabled={state.isBlockMuteEnabled}
+                onChange={makeOnChange("isBlockMuteEnabled")}
+                label={
+                  state.isBlockMuteEnabled
+                    ? "Block/Mute Buttons Enabled"
+                    : "Block/Mute Buttons Disabled"
+                }
+              />
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <ThemeToggle
+                  theme={state.themeOverride}
+                  onToggle={toggleTheme}
+                />
+              </motion.div>
+            </Box>
             <Box sx={{ mt: 1 }}>
               <Typography
                 variant="body2"
@@ -169,17 +189,14 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
               label="Hide User Subscriptions"
             />
             <Divider sx={{ my: 2 }} />
-
-            {/* Update Settings */}
-            <AutomaticPolicySelector
-              value={state.automaticUpdatePolicy}
-              onChange={makeOnChange("automaticUpdatePolicy")}
-            />
-            <ManualUpdateSection
+            <UpdateSection
+              policyProps={{
+                onChange: makeOnChange("automaticUpdatePolicy"),
+                value: state.automaticUpdatePolicy,
+              }}
               lastUpdatedSelectors={state.lastUpdatedSelectors}
             />
             <Divider sx={{ my: 2 }} />
-
             {/* Advanced Settings */}
             <Accordion defaultExpanded={false}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>

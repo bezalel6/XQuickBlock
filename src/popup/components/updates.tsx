@@ -12,10 +12,13 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import SyncIcon from "@mui/icons-material/Sync";
 import { getSettingsManager } from "../../settings-manager";
 import { ExtensionSettings } from "types";
-
-const ManualUpdateSection: React.FC<{
+import AutomaticPolicySelector, {
+  PolicySelectorProps,
+} from "./update-policy-selector";
+const UpdateSection: React.FC<{
   lastUpdatedSelectors: ExtensionSettings["lastUpdatedSelectors"];
-}> = ({ lastUpdatedSelectors }) => {
+  policyProps: PolicySelectorProps;
+}> = ({ lastUpdatedSelectors, policyProps }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "success" | "error"
@@ -97,7 +100,6 @@ const ManualUpdateSection: React.FC<{
     >
       <Box
         sx={{
-          mt: 2,
           p: 2,
           borderRadius: 2,
           bgcolor: "background.paper",
@@ -108,13 +110,18 @@ const ManualUpdateSection: React.FC<{
           },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <UpdateIcon sx={{ mr: 1, mb: "0.35em", color: "primary.main" }} />
           <Typography variant="h6" color="primary" gutterBottom>
-            Manual Update
+            Updates
           </Typography>
         </Box>
-
+        <Typography variant="body2" color="info.dark">
+          We do not collect any information. Updates are only used to keep up
+          with X's UI changes.
+        </Typography>
+        {/* Update Settings */}
+        <AutomaticPolicySelector {...policyProps} />
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Click the button below to manually check for and apply any available
           updates.
@@ -200,4 +207,4 @@ const ManualUpdateSection: React.FC<{
   );
 };
 
-export default ManualUpdateSection;
+export default UpdateSection;
