@@ -17,35 +17,62 @@ export function toggleInvisible(selector: string, hide: boolean): void {
 }
 
 /**
- * Toggle a CSS rule in a style sheet
+ * Toggle a CSS rule in a dedicated style sheet
  */
 export function toggleCSSRule(
-  selector: string,
+  _selector: string,
   property: string,
   value: string,
   enable: boolean
 ): void {
-  const styleSheet = document.styleSheets[0];
-  const rules = styleSheet.cssRules;
+  // Get or create our dedicated stylesheet
+  const stylesheetId = "toggle-css-utility-stylesheet";
+  let styleSheet = document.getElementById(stylesheetId) as HTMLStyleElement;
+
+  if (!styleSheet) {
+    // Create new stylesheet if it doesn't exist
+    styleSheet = document.createElement("style");
+    styleSheet.id = stylesheetId;
+    document.head.appendChild(styleSheet);
+  }
+
+  const selector = normalizeCss(_selector);
+  const sheet = styleSheet.sheet as CSSStyleSheet;
+  const rules = sheet.cssRules;
   let ruleIndex = -1;
 
+  // Find if the rule already exists in our sheet
   for (let i = 0; i < rules.length; i++) {
     const rule = rules[i] as CSSStyleRule;
-    if (rule.selectorText === selector) {
-      ruleIndex = i;
-      break;
+    const currentNormalized = normalizeCss(rule.selectorText);
+    if (currentNormalized === selector) {
+      // Check if this rule controls the same property
+      if (rule.style.getPropertyValue(property) !== "") {
+        ruleIndex = i;
+        break;
+      }
     }
   }
 
   if (enable) {
+    const cssRule = `${selector} { ${property}: ${value}; }`;
+
     if (ruleIndex === -1) {
-      styleSheet.insertRule(
-        `${selector} { ${property}: ${value}; }`,
-        rules.length
-      );
+      // Add new rule if it doesn't exist
+      sheet.insertRule(cssRule, rules.length);
+    } else {
+      // Update existing rule
+      sheet.deleteRule(ruleIndex);
+      sheet.insertRule(cssRule, rules.length);
     }
   } else if (ruleIndex !== -1) {
-    styleSheet.deleteRule(ruleIndex);
+    // Remove rule if disable requested
+    sheet.deleteRule(ruleIndex);
+  }
+
+  // Helper function for normalizing CSS selectors
+  function normalizeCss(cssSelector: string): string {
+    return cssSelector.trim().replace(/\s+/g, " ");
   }
 }
 
