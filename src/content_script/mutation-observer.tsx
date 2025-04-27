@@ -9,28 +9,37 @@ type Truthy<T> = T extends Falsy ? never : T;
 
 type MutationCallback<T> = {
   condition: (newNode: HTMLElement) => T;
-  callback: (value: Truthy<T>) => void;
+  callback?: (value: Truthy<T>) => void;
+  resolve: (value: Truthy<T>) => void;
 };
-function createMutationCallback<T>(
-  condition: (newNode: HTMLElement) => T,
-  callback: (value: Truthy<T>) => void
-): MutationCallback<T> {
-  // @ts-ignore
-  return mutationCallbacks.push({ condition, callback });
-}
 
-const mutationCallbacks: MutationCallback<HTMLElement>[] = [];
+const mutationCallbacks: MutationCallback<unknown>[] = [];
+
+export function createMutationCallback<T>(
+  condition: (newNode: HTMLElement) => T,
+  callback?: (value: Truthy<T>) => void
+): Promise<Truthy<T>> {
+  return new Promise((resolve) => {
+    const mutationCallback: MutationCallback<T> = {
+      condition,
+      callback,
+      resolve,
+    };
+    mutationCallbacks.push(mutationCallback as MutationCallback<unknown>);
+  });
+}
 
 /**
  * Process mutation callbacks for a given node, removing callbacks after they're executed
  */
 function processMutationCallbacks(node: HTMLElement): void {
   for (let i = mutationCallbacks.length - 1; i >= 0; i--) {
-    const { condition, callback } = mutationCallbacks[i];
+    const { condition, callback, resolve } = mutationCallbacks[i];
     const result = condition(node);
 
     if (result) {
-      callback(result as Truthy<typeof result>);
+      if (callback) callback(result as Truthy<typeof result>);
+      resolve(result as Truthy<typeof result>);
       mutationCallbacks.splice(i, 1);
     }
   }
