@@ -35,8 +35,14 @@ export type Setting<K extends keyof ExtensionSettings> = {
   onChange: (v: ExtensionSettings[K]) => void;
   className: string;
 };
-type PopupProps = { optionsPage?: boolean };
-const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
+type PopupProps = {
+  optionsPage?: boolean;
+  highlight?: keyof ExtensionSettings;
+};
+const Popup: React.FC<PopupProps> = ({
+  optionsPage,
+  highlight: highlightProp,
+}) => {
   const [state, setState] = useState<ExtensionSettings>({
     isBlockMuteEnabled: false,
     themeOverride: window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -52,7 +58,39 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlight =
+      highlightProp ||
+      (urlParams.get("highlight") as keyof ExtensionSettings | null);
+    console.log("Highlight:", highlight);
+    if (highlight) {
+      const element = document.querySelector(`.${highlight}`) as HTMLElement;
+      if (element) {
+        // Add a highlight effect to the element
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
 
+          // Apply a pulsing highlight animation
+          const highlightAnimation = element.animate(
+            [
+              { backgroundColor: "rgba(29, 161, 242, 0.3)" },
+              { backgroundColor: "rgba(29, 161, 242, 0.1)" },
+              { backgroundColor: "rgba(29, 161, 242, 0.3)" },
+            ],
+            {
+              duration: 1500,
+              iterations: 3,
+              easing: "ease-in-out",
+            }
+          );
+
+          // Clean up after animation completes
+          highlightAnimation.onfinish = () => {
+            element.style.backgroundColor = "";
+          };
+        }, 300);
+      }
+    }
     async function subscribe() {
       const settingsManager = await getSettingsManager("popup");
       unsubscribe = settingsManager.subscribeToAnyUpdates((s) => setState(s));

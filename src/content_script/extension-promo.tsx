@@ -73,7 +73,11 @@ function injectPromo() {
   actionButtons.insertBefore(promo, actionButtons.firstChild);
 }
 function onClick() {
-  sendMessageToBackground({ sentFrom: "popup", type: "options" })
+  sendMessageToBackground({
+    sentFrom: "popup",
+    type: "options",
+    payload: { highlight: "hideSubscriptionOffers" },
+  })
     .then(console.log)
     .catch(console.error);
 }

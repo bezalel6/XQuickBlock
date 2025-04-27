@@ -203,7 +203,7 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
         const handleMessage = async (notMyCircus: boolean) => {
           try {
             if (message.type === "stateUpdate") {
-              await this.update(message.payload, false);
+              await this.update(message.payload as ExtensionSettings, false);
               if (notMyCircus) return NOT_INTENDED_RECIPIENT;
               return { message: "State updated successfully" };
             }

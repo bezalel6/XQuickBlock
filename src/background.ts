@@ -94,10 +94,18 @@ async function init() {
         });
     }
   );
-  settingsManager.registerMessageHandler("options", async (_, __, res) => {
-    const options = chrome.runtime.getURL("options.html");
-    return chrome.tabs.create({ url: options }).then(res);
-  });
+  settingsManager.registerMessageHandler(
+    "options",
+    async (message, __, res) => {
+      const options = chrome.runtime.getURL("options.html");
+      let highlight = "";
+      if ("highlight" in message.payload) {
+        highlight = message.payload.highlight;
+      }
+      const url = highlight ? `${options}?highlight=${highlight}` : options;
+      return chrome.tabs.create({ url }).then(res);
+    }
+  );
   settingsManager.subscribe(
     ["automaticUpdatePolicy"],
     ({ automaticUpdatePolicy }) => applyPolicy(automaticUpdatePolicy)
