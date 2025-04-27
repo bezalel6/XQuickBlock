@@ -1,3 +1,4 @@
+import { sendMessageToBackground } from "../message-handler";
 import { html, render } from "../lit";
 
 export const extensionPromoClassName = "xterminate-promo";
@@ -71,12 +72,17 @@ function injectPromo() {
   const promo = ExtensionPromo();
   actionButtons.insertBefore(promo, actionButtons.firstChild);
 }
+function onClick() {
+  sendMessageToBackground({ sentFrom: "popup", type: "options" })
+    .then(console.log)
+    .catch(console.error);
+}
 export default function ExtensionPromo() {
   ensureStyles();
   const container = document.createElement("div");
 
   const template = html`
-    <div class="${extensionPromoClassName}" @click=${() => {}}>
+    <div class="${extensionPromoClassName}" @click=${onClick}>
       <img
         class="promo-icon"
         src="${chrome.runtime.getURL("icons/icon.png")}"

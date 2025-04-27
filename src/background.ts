@@ -94,6 +94,10 @@ async function init() {
         });
     }
   );
+  settingsManager.registerMessageHandler("options", async (_, __, res) => {
+    const options = chrome.runtime.getURL("options.html");
+    return chrome.tabs.create({ url: options }).then(res);
+  });
   settingsManager.subscribe(
     ["automaticUpdatePolicy"],
     ({ automaticUpdatePolicy }) => applyPolicy(automaticUpdatePolicy)
@@ -121,3 +125,4 @@ function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
 self.update = function () {
   return fetchAndUpdateJson();
 };
+(self as any).options = function () {};

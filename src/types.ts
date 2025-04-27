@@ -16,7 +16,7 @@ export interface ExtensionSettings {
 }
 
 export interface ExtensionMessage {
-  type: "stateUpdate" | "forceUpdate" | "manualUpdate";
+  type: "stateUpdate" | "forceUpdate" | "manualUpdate" | "options";
   payload?: ExtensionSettings;
 }
 export interface InternalExtensionMessage extends ExtensionMessage {
