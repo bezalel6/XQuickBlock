@@ -6,11 +6,7 @@ const SELECTORS = {
   upsalePathname: "i/verified-get-verified",
   buyIntoUpsaleHref: "/i/premium_sign_up",
   upsaleSelectors: [
-    '[data-testid="verified_profile_upsell"]',
-    `aside:has( a[href="/i/premium_sign_up"])`,
-    `a[href="/i/premium_sign_up"]`,
-    `div [data-testid="super-upsell-UpsellCardRenderProperties"]`,
-    `div [data-testid="inlinePrompt"] a[href^="/i/premium_sign_up"]`,
+    '[data-testid="verified_profile_upsell"], aside:has( a[href="/i/premium_sign_up"]), a[href="/i/premium_sign_up"], div [data-testid="super-upsell-UpsellCardRenderProperties"], div [data-testid="inlinePrompt"] a[href^="/i/premium_sign_up"], [data-testid="cellInnerDiv"]:has([data-testid="inlinePrompt"])',
   ].join(", "),
   upsaleDialogSelector: '[data-testid="sheetDialog"]',
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
