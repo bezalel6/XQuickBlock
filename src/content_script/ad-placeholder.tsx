@@ -1,6 +1,6 @@
 import { html, render } from "../lit";
 import { Action } from "../types";
-import { dispatch, extractUserDetails } from "./utils";
+import { dispatch, extractUserDetails, getTweet } from "./utils";
 
 export const adPlaceHolderClassName = "xterminate-notification";
 
@@ -78,6 +78,31 @@ function ensureStyles() {
       font-weight: 600;
       color: #1DA1F2;
     }
+    .hidden-tweet {
+      overflow: hidden;
+      height: 0px;
+      transition: height 0.3s ease;
+    }
+    .toggle-button {
+      background: transparent;
+      color: #1DA1F2;
+      border: none;
+      padding: 4px 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .toggle-button:hover {
+      text-decoration: underline;
+    }
+    .toggle-button svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -90,13 +115,18 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
   const handleAction = async (action: Action) => {
     try {
       await dispatch(userNameElement, action);
-      // container.style.opacity = "0";
-      // setTimeout(() => container.remove(), 300);
     } catch (error) {
       console.error(`Error performing ${action} action:`, error);
     }
   };
-
+  const toggleVisible = () => {
+    const tweet = getTweet(userNameElement);
+    let expanded = !!tweet.getAttribute("expanded");
+    tweet.style.height = expanded ? "0px" : `${tweet.scrollHeight}px`;
+    expanded = !expanded;
+    if (expanded) tweet.setAttribute("expanded", "true");
+    else tweet.removeAttribute("expanded");
+  };
   const template = html`
     <div class="${adPlaceHolderClassName}">
       <div class="notification-content">
@@ -121,6 +151,9 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
             </button>
             them.
           </p>
+          <button class="toggle-button" @click=${() => toggleVisible()}>
+            Toggle Visible
+          </button>
         </div>
       </div>
     </div>
