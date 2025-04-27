@@ -13,7 +13,8 @@ function ensureStyles() {
   const style = document.createElement("style");
   style.setAttribute("data-xterminate-styles", "");
   style.textContent = `
-    .${adPlaceHolderClassName} {
+
+      div:has(> div > .${adPlaceHolderClassName}) {
       background: rgba(29, 161, 242, 0.08);
       border: 1px solid rgba(29, 161, 242, 0.2);
       border-radius: 12px;
@@ -23,6 +24,7 @@ function ensureStyles() {
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       transition: all 0.2s ease;
+      position: relative;
     }
     .${adPlaceHolderClassName}:hover {
       background: rgba(29, 161, 242, 0.12);
@@ -93,10 +95,14 @@ function ensureStyles() {
       overflow: hidden;
       height: 0px;
       transition: height 0.05s ease;
+      position: relative;
+      z-index: 1;
     }
     .visible-tweet {
       overflow: hidden;
       transition: height 0.3s ease;
+      position: relative;
+      z-index: 1;
     }
     .toggle-button {
       background: transparent;
@@ -197,7 +203,7 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
     if (toggleText) {
       toggleText.textContent = isContentVisible
         ? "Hide content"
-        : "Show content";
+        : "Show sponsored content";
     }
   };
 
@@ -230,8 +236,20 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
             <svg viewBox="0 0 24 24">
               <path d="M7 10l5 5 5-5z" />
             </svg>
-            <span class="toggle-text">Show content</span>
+            <span class="toggle-text">Show sponsored content</span>
           </button>
+          <p style="margin-top: 8px; font-size: 13px; color: #657786;">
+            You can adjust the settings at any time in the
+            <button
+              class="inline-button"
+              @click=${() =>
+                window
+                  .open(chrome.runtime.getURL("options.html"), "_blank")
+                  .focus()}
+            >
+              settings
+            </button>
+          </p>
         </div>
       </div>
     </div>
