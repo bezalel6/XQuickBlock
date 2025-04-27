@@ -20,6 +20,7 @@ import {
   toggleInvisible,
   waitFor,
 } from "./utils";
+import { injectPromo } from "./extension-promo";
 const BTNS = "BUTTONS_WRAPPER";
 const AD = "AD";
 
@@ -140,6 +141,7 @@ async function applySettings(state: ExtensionSettings) {
       });
     }
   );
+  (window as any).injectPromo = injectPromo;
   observeDOMChanges(state);
 }
 

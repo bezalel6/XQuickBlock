@@ -107,11 +107,8 @@ export function getTweet(nameElement: HTMLElement): HTMLElement | null {
  * Check if an element has an ad span
  */
 export function hasAdSpan(parentElement: HTMLElement): boolean {
-  return (
-    Math.random() > 0.5 ||
-    !!Array.from(parentElement.querySelectorAll("span")).find(
-      (s) => s.textContent === "Ad"
-    )
+  return !!Array.from(parentElement.querySelectorAll("span")).find(
+    (s) => s.textContent === "Ad"
   );
 }
 
