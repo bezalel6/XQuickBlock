@@ -84,7 +84,8 @@ class StateManager<T extends object> {
     // Update state and track changed keys
     Object.entries(newState).forEach(([key, value]) => {
       const typedKey = key as keyof T;
-      if (this.state[typedKey] !== value) {
+      // Use JSON.stringify for deep equality comparison
+      if (JSON.stringify(this.state[typedKey]) !== JSON.stringify(value)) {
         this.state[typedKey] = value as T[keyof T];
         changedKeys.add(typedKey);
       }
