@@ -13,7 +13,7 @@ export function sleep(ms: number): Promise<void> {
  * Toggle visibility of elements matching a selector, using {@link toggleCSSRule}
  */
 export function toggleInvisible(selector: string, hide: boolean): void {
-  toggleCSSRule(selector, "display", hide ? "none" : "", hide);
+  toggleCSSRule(selector, "display", hide ? "none !important" : "", hide);
 }
 
 /**

@@ -14,7 +14,7 @@ import {
   toggleCSSRule,
   toggleInvisible,
 } from "./utils";
-
+const BTNS = "BUTTONS_WRAPPER";
 /**
  * Add mute and block buttons to user names, as well as applying current Ad policy
  */
@@ -65,6 +65,7 @@ export async function processUsername(userNameElement: HTMLElement) {
     );
   }
   const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add(BTNS);
   buttonContainer.style.display = "inline-flex";
   buttonContainer.style.alignItems = "center";
   buttonContainer.style.marginLeft = "4px";
@@ -74,25 +75,7 @@ export async function processUsername(userNameElement: HTMLElement) {
     Button("Block", "block", userNameElement),
   ];
   btns.forEach((btn) => buttonContainer.appendChild(btn));
-
-  const unsubscribe = settings.subscribe(
-    ["isBlockMuteEnabled"],
-    ({ isBlockMuteEnabled }) => {
-      if (isBlockMuteEnabled) {
-        userNameElement.parentElement?.parentElement?.appendChild(
-          buttonContainer
-        );
-      } else {
-        try {
-          userNameElement.parentElement?.parentElement?.removeChild(
-            buttonContainer
-          );
-        } catch (e) {
-          // unsubscribe();
-        }
-      }
-    }
-  );
+  userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
 }
 
 async function applySettings(state: ExtensionSettings) {
@@ -115,10 +98,22 @@ async function applySettings(state: ExtensionSettings) {
         );
       }
     );
-    const userNames = document.querySelectorAll(
-      settings.getState().selectors.userNameSelector
-    );
-    userNames.forEach((userName) => processUsername(userName as HTMLElement));
+    settings.subscribe(["isBlockMuteEnabled"], ({ isBlockMuteEnabled }) => {
+      toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
+      if (isBlockMuteEnabled) {
+        const userNames = document.querySelectorAll(
+          settings.getState().selectors.userNameSelector
+        );
+        userNames.forEach((userName) =>
+          processUsername(userName as HTMLElement)
+        );
+      } else {
+        document.querySelectorAll(`.${BTNS}`).forEach((b) => {
+          b.remove();
+        });
+      }
+    });
+
     observeDOMChanges(state);
   }, 1000);
 }
