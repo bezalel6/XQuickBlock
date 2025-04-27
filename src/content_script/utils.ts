@@ -194,10 +194,20 @@ export async function dispatch(
     toggleInvisible(selectors.userMenuSelector, false);
   }
 }
+/**
+ * Find the closest ancestor element that has been messed with
+ * @param element The element to start searching from
+ * @returns The closest ancestor with messedWith attribute, or null if none found
+ */
+export function closestMessedWith(element: Element): Element | null {
+  return element.closest('[messedWith="true"]');
+}
+
 export function isMessedWith(node: Element) {
   return node.getAttribute("messedWith");
 }
 export function setMessedWith(node: Element, messedWith = true) {
+  if (!node) return false;
   if (messedWith) return node.setAttribute("messedWith", "true");
   node.removeAttribute("messedWith");
 }

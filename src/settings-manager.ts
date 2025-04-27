@@ -327,7 +327,9 @@ export const getSettingsManager = (end: End) =>
     console.error("Error getting the settings manager:", e);
     throw e;
   });
-
+export type SettingsManger = Awaited<
+  ReturnType<typeof SettingsManager.getInstance>
+>;
 const defaultSettings: ExtensionSettings = {
   isBlockMuteEnabled: true,
   themeOverride: "dark",
