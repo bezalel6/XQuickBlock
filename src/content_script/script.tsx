@@ -50,9 +50,10 @@ export async function processUsername(userNameElement: HTMLElement) {
           case "nothing":
             break;
           case "hide": {
+            tweet.classList.add("hidden-tweet");
             const notification = AdPlaceholder(userNameElement);
             tweet.parentNode?.insertBefore(notification, tweet);
-            tweet.style.height = "0";
+            // tweet.style.height = "0";
             break;
           }
           case "block": {
