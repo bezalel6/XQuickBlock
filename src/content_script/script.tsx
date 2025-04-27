@@ -35,6 +35,7 @@ function processAd(
   if (existingNotification) {
     existingNotification.remove();
   }
+  tweet.classList.add(AD);
   tweet.style.height = "";
 
   // Then apply new effects based on the new setting
@@ -107,25 +108,37 @@ async function applySettings(state: ExtensionSettings) {
         );
       }
     );
-    settings.subscribe(["isBlockMuteEnabled"], ({ isBlockMuteEnabled }) => {
-      toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
-      if (isBlockMuteEnabled) {
-        const userNames = document.querySelectorAll(
-          settings.getState().selectors.userNameSelector
-        );
-        userNames.forEach((userName) =>
-          processUsername(userName as HTMLElement)
-        );
-      } else {
-        document.querySelectorAll(`.${BTNS}`).forEach((b) => {
-          setMessedWith(closestMessedWith(b), false);
-          b.remove();
+    settings.subscribe(
+      ["isBlockMuteEnabled"],
+      ({ isBlockMuteEnabled, selectors: { userNameSelector } }) => {
+        toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
+        if (isBlockMuteEnabled) {
+          const userNames = document.querySelectorAll(userNameSelector);
+          userNames.forEach((userName) =>
+            processUsername(userName as HTMLElement)
+          );
+        } else {
+          document.querySelectorAll(`.${BTNS}`).forEach((b) => {
+            setMessedWith(closestMessedWith(b), false);
+            b.remove();
+          });
+        }
+      }
+    );
+    settings.subscribe(
+      ["promotedContentAction"],
+      ({ promotedContentAction, selectors: { userNameSelector } }) => {
+        document.querySelectorAll(`.${AD}`).forEach((ad) => {
+          processAd(
+            ad as HTMLElement,
+            ad.querySelector(userNameSelector),
+            settings
+          );
         });
       }
-    });
-
-    observeDOMChanges(state);
+    );
   }, 1000);
+  observeDOMChanges(state);
 }
 
 function cleanup({ selectors }: ExtensionSettings): void {
