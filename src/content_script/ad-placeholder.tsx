@@ -4,78 +4,88 @@ import { dispatch, extractUserDetails } from "./utils";
 
 export const adPlaceHolderClassName = "xterminate-notification";
 
+// Function to ensure styles are loaded
+function ensureStyles() {
+  // Check if our style tag already exists
+  const existingStyle = document.querySelector(`style[data-xterminate-styles]`);
+  if (existingStyle) return;
+
+  const style = document.createElement("style");
+  style.setAttribute("data-xterminate-styles", "");
+  style.textContent = `
+    .${adPlaceHolderClassName} {
+      background: rgba(29, 161, 242, 0.1);
+      border: 1px solid rgba(29, 161, 242, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .${adPlaceHolderClassName}:hover {
+      background: rgba(29, 161, 242, 0.15);
+      border-color: rgba(29, 161, 242, 0.3);
+    }
+    .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .notification-icon {
+      width: 24px;
+      height: 24px;
+      fill: #1DA1F2;
+      flex-shrink: 0;
+    }
+    .notification-text {
+      flex: 1;
+    }
+    .notification-text p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: #657786;
+      line-height: 1.4;
+    }
+    .inline-button {
+      background: transparent;
+      color: #1DA1F2;
+      border: none;
+      border-radius: 4px;
+      padding: 0;
+      font-size: inherit;
+      font-weight: inherit;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: inline;
+      margin: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .inline-button:hover {
+      background: transparent;
+      outline: 2px solid #1DA1F2;
+      outline-offset: 1.5px;
+      text-decoration: none;
+    }
+    .inline-button.secondary {
+      color: #1DA1F2;
+    }
+    .inline-button.secondary:hover {
+      background: transparent;
+    }
+    .user-info {
+      font-weight: 600;
+      color: #1DA1F2;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function AdPlaceholder(userNameElement: HTMLElement) {
+  ensureStyles();
   const container = document.createElement("div");
   const { fullName, username } = extractUserDetails(userNameElement);
-  const style = document.createElement("style");
-  style.textContent = `
-      .${adPlaceHolderClassName} {
-        background: rgba(29, 161, 242, 0.1);
-        border: 1px solid rgba(29, 161, 242, 0.2);
-        border-radius: 12px;
-        padding: 16px;
-        margin: 16px 0;
-        width: 100%;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      }
-      .${adPlaceHolderClassName}:hover {
-        background: rgba(29, 161, 242, 0.15);
-        border-color: rgba(29, 161, 242, 0.3);
-      }
-      .notification-content {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .notification-icon {
-        width: 24px;
-        height: 24px;
-        fill: #1DA1F2;
-        flex-shrink: 0;
-      }
-      .notification-text {
-        flex: 1;
-      }
-      .notification-text p {
-        margin: 4px 0 0;
-        font-size: 14px;
-        color: #657786;
-        line-height: 1.4;
-      }
-      .inline-button {
-        background: transparent;
-        color: #1DA1F2;
-        border: none;
-        border-radius: 4px;
-        padding: 0;
-        font-size: inherit;
-        font-weight: inherit;
-        cursor: pointer;
-        transition: all 0.1s;
-        display: inline;
-        margin: 0;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
-      .inline-button:hover {
-        background: transparent;
-        outline: 2px solid #1DA1F2;
-        outline-offset: 1.5px;
-        text-decoration: none;
-      }
-      .inline-button.secondary {
-        color: #1DA1F2;
-      }
-      .inline-button.secondary:hover {
-        background: transparent;
-      }
-      .user-info {
-        font-weight: 600;
-        color: #1DA1F2;
-      }
-    `;
-  document.head.appendChild(style);
 
   const handleAction = async (action: Action) => {
     try {
