@@ -27,6 +27,7 @@ const ToggleSwitch = <K extends BooleanSettings>({
       <Switch checked={value} onChange={(e) => onChange(e.target.checked)} />
     }
     label={label}
+    sx={{ m: 0 }}
   />
 );
 
