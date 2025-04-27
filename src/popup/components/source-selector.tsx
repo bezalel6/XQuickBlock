@@ -7,15 +7,17 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Source } from "../../types";
+import { Setting } from "./popup-component";
 
-const SourceSelector: React.FC<{
-  value: Source;
-  onChange: (value: Source) => void;
-}> = ({ value, onChange }) => (
-  <FormControl fullWidth sx={{ mt: 2 }}>
+const SourceSelector: React.FC<Setting<"source">> = ({
+  value,
+  onChange,
+  className,
+}) => (
+  <FormControl className={className} fullWidth sx={{ mt: 2 }}>
     <FormLabel>Settings Source</FormLabel>
     <Select
-      value={value}
+      value={value || Source.MAIN}
       onChange={(e: SelectChangeEvent) => onChange(e.target.value as Source)}
       size="small"
       sx={{ mt: 1 }}

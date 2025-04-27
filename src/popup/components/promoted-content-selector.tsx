@@ -7,13 +7,15 @@ import {
 } from "@mui/material";
 import React from "react";
 import { PromotedContentAction } from "types";
+import { Setting } from "./popup-component";
 
 // Create a reusable promoted content selection component
-const PromotedContentSelector: React.FC<{
-  value: PromotedContentAction;
-  onChange: (value: PromotedContentAction) => void;
-}> = ({ value, onChange }) => (
-  <FormControl fullWidth sx={{}}>
+const PromotedContentSelector: React.FC<Setting<"promotedContentAction">> = ({
+  value,
+  className,
+  onChange,
+}) => (
+  <FormControl className={className} fullWidth sx={{}}>
     <FormLabel>Promoted Content</FormLabel>
     <Select
       value={value}

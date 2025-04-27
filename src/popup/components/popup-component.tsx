@@ -30,6 +30,11 @@ import Experimental from "./experimental";
 import BuyMeACoffee from "./buy-me-a-coffee";
 import ThemeToggle from "./theme-toggle";
 import { motion } from "framer-motion";
+export type Setting<K extends keyof ExtensionSettings> = {
+  value: ExtensionSettings[K];
+  onChange: (v: ExtensionSettings[K]) => void;
+  className: string;
+};
 type PopupProps = { optionsPage?: boolean };
 const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
   const [state, setState] = useState<ExtensionSettings>({
@@ -68,9 +73,13 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
     await settingsManager.update(settings);
     setState(settings);
   };
-  const makeOnChange = <K extends keyof ExtensionSettings>(k: K) => {
-    return (value: ExtensionSettings[K]) => {
-      updateState({ [k]: value });
+  const settingField = <K extends keyof ExtensionSettings>(
+    k: K
+  ): Setting<K> => {
+    return {
+      className: k,
+      onChange: (v) => updateState({ [k]: v }),
+      value: state[k],
     };
   };
 
@@ -135,12 +144,11 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
               }}
             >
               <ToggleSwitch
-                enabled={state.isBlockMuteEnabled}
-                onChange={makeOnChange("isBlockMuteEnabled")}
+                {...settingField("isBlockMuteEnabled")}
                 label={
                   state.isBlockMuteEnabled
-                    ? "Block/Mute Buttons Enabled"
-                    : "Block/Mute Buttons Disabled"
+                    ? "Block/Mute Buttons: Enabled"
+                    : "Block/Mute Buttons: Disabled"
                 }
               />
               <motion.div
@@ -175,25 +183,19 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
 
             {/* Content Filtering */}
             <PromotedContentSelector
-              value={state.promotedContentAction}
-              onChange={makeOnChange("promotedContentAction")}
+              {...settingField("promotedContentAction")}
             />
             <ToggleSwitch
-              enabled={state.hideSubscriptionOffers}
-              onChange={makeOnChange("hideSubscriptionOffers")}
+              {...settingField("hideSubscriptionOffers")}
               label="Hide Subscription Offers"
             />
             <ToggleSwitch
-              enabled={state.hideUserSubscriptions}
-              onChange={makeOnChange("hideUserSubscriptions")}
+              {...settingField("hideUserSubscriptions")}
               label="Hide User Subscriptions"
             />
             <Divider sx={{ my: 2 }} />
             <UpdateSection
-              policyProps={{
-                onChange: makeOnChange("automaticUpdatePolicy"),
-                value: state.automaticUpdatePolicy,
-              }}
+              policyProps={settingField("automaticUpdatePolicy")}
               lastUpdatedSelectors={state.lastUpdatedSelectors}
             />
             <Divider sx={{ my: 2 }} />
@@ -204,10 +206,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage }) => {
               </AccordionSummary>
               <AccordionDetails>
                 <Advanced>
-                  <SourceSelector
-                    value={state.source || Source.MAIN}
-                    onChange={makeOnChange("source")}
-                  ></SourceSelector>
+                  <SourceSelector {...settingField("source")}></SourceSelector>
                   <Button
                     onClick={() => {
                       getSettingsManager("popup")

@@ -12,12 +12,12 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import SyncIcon from "@mui/icons-material/Sync";
 import { getSettingsManager } from "../../settings-manager";
 import { ExtensionSettings } from "types";
-import AutomaticPolicySelector, {
-  PolicySelectorProps,
-} from "./update-policy-selector";
+import AutomaticPolicySelector from "./update-policy-selector";
+import { Setting } from "./popup-component";
+
 const UpdateSection: React.FC<{
   lastUpdatedSelectors: ExtensionSettings["lastUpdatedSelectors"];
-  policyProps: PolicySelectorProps;
+  policyProps: Setting<"automaticUpdatePolicy">;
 }> = ({ lastUpdatedSelectors, policyProps }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<

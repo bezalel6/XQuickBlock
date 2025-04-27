@@ -7,15 +7,14 @@ import {
 } from "@mui/material";
 import React from "react";
 import { UpdatePolicy } from "types";
-export type PolicySelectorProps = {
-  value: UpdatePolicy;
-  onChange: (value: UpdatePolicy) => void;
-};
-const AutomaticPolicySelector: React.FC<PolicySelectorProps> = ({
+import { Setting } from "./popup-component";
+
+const AutomaticPolicySelector: React.FC<Setting<"automaticUpdatePolicy">> = ({
   value,
   onChange,
+  className,
 }) => (
-  <FormControl fullWidth sx={{}}>
+  <FormControl className={className} fullWidth sx={{}}>
     <FormLabel>Automatic Update Policy</FormLabel>
     <Select
       value={value}
