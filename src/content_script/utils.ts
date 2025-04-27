@@ -199,8 +199,8 @@ export async function dispatch(
  * @param element The element to start searching from
  * @returns The closest ancestor with messedWith attribute, or null if none found
  */
-export function closestMessedWith(element: Element): Element | null {
-  return element.closest('[messedWith="true"]');
+export function closestMessedWith(element: HTMLElement): Element | null {
+  return element.parentElement.querySelector('[messedWith="true"]');
 }
 
 export function isMessedWith(node: Element) {

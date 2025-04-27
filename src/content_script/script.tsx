@@ -18,6 +18,7 @@ import {
   sleep,
   toggleCSSRule,
   toggleInvisible,
+  waitFor,
 } from "./utils";
 const BTNS = "BUTTONS_WRAPPER";
 const AD = "AD";
@@ -61,9 +62,8 @@ function processAd(
 export async function processUsername(userNameElement: HTMLElement) {
   const settings = await getSettingsManager("content");
   const tweet = getTweet(userNameElement)!;
-  const moreBtn = await createMutationCallback((e) =>
-    e.querySelector(settings.getState().selectors.userMenuSelector)
-  );
+  const selector = settings.getState().selectors.userMenuSelector;
+  const moreBtn = await waitFor(selector);
   if (
     !moreBtn ||
     isMessedWith(userNameElement) ||
@@ -90,54 +90,56 @@ export async function processUsername(userNameElement: HTMLElement) {
 
 async function applySettings(state: ExtensionSettings) {
   const settings = await getSettingsManager("content");
-  setTimeout(() => {
-    settings.subscribe(["selectors"], ({ selectors }) => {
-      if (selectors.test) toggleCSSRule(selectors.test, "color", "aqua", true);
-    });
-    settings.subscribe(
-      ["hideSubscriptionOffers"],
-      ({ hideSubscriptionOffers, selectors }) =>
-        toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers)
-    );
-    settings.subscribe(
-      ["hideUserSubscriptions"],
-      ({ hideUserSubscriptions, selectors }) => {
-        toggleInvisible(
-          selectors.subscribeToButtonSelector,
-          hideUserSubscriptions
-        );
-      }
-    );
-    settings.subscribe(
-      ["isBlockMuteEnabled"],
-      ({ isBlockMuteEnabled, selectors: { userNameSelector } }) => {
-        toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
-        if (isBlockMuteEnabled) {
-          const userNames = document.querySelectorAll(userNameSelector);
-          userNames.forEach((userName) =>
-            processUsername(userName as HTMLElement)
-          );
-        } else {
-          document.querySelectorAll(`.${BTNS}`).forEach((b) => {
-            setMessedWith(closestMessedWith(b), false);
-            b.remove();
-          });
-        }
-      }
-    );
-    settings.subscribe(
-      ["promotedContentAction"],
-      ({ promotedContentAction, selectors: { userNameSelector } }) => {
-        document.querySelectorAll(`.${AD}`).forEach((ad) => {
-          processAd(
-            ad as HTMLElement,
-            ad.querySelector(userNameSelector),
-            settings
-          );
+  settings.subscribe(["selectors"], ({ selectors }) => {
+    if (selectors.test) toggleCSSRule(selectors.test, "color", "aqua", true);
+  });
+  settings.subscribe(
+    ["hideSubscriptionOffers"],
+    ({ hideSubscriptionOffers, selectors }) =>
+      toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers)
+  );
+  settings.subscribe(
+    ["hideUserSubscriptions"],
+    ({ hideUserSubscriptions, selectors }) => {
+      toggleInvisible(
+        selectors.subscribeToButtonSelector,
+        hideUserSubscriptions
+      );
+    }
+  );
+  settings.subscribe(
+    ["isBlockMuteEnabled"],
+    ({ isBlockMuteEnabled, selectors: { userNameSelector } }) => {
+      toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
+      if (isBlockMuteEnabled) {
+        const userNames = document.querySelectorAll(userNameSelector);
+        userNames.forEach((userName) => {
+          // console.log("[XTerminator] Processing username element:", userName);
+          processUsername(userName as HTMLElement);
+        });
+      } else {
+        const buttons = document.querySelectorAll(`.${BTNS}`);
+        // console.log("[XTerminator] Found buttons to remove:", buttons.length);
+        buttons.forEach((b) => {
+          const parent = closestMessedWith(b as HTMLElement);
+          setMessedWith(parent, false);
+          b.remove();
         });
       }
-    );
-  }, 1000);
+    }
+  );
+  settings.subscribe(
+    ["promotedContentAction"],
+    ({ promotedContentAction, selectors: { userNameSelector } }) => {
+      document.querySelectorAll(`.${AD}`).forEach((ad) => {
+        processAd(
+          ad as HTMLElement,
+          ad.querySelector(userNameSelector),
+          settings
+        );
+      });
+    }
+  );
   observeDOMChanges(state);
 }
 
