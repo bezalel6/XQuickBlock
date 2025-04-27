@@ -83,6 +83,10 @@ function ensureStyles() {
       height: 0px;
       transition: height 0.3s ease;
     }
+    .visible-tweet {
+      overflow: hidden;
+      transition: height 0.3s ease;
+    }
     .toggle-button {
       background: transparent;
       color: #1DA1F2;
@@ -119,14 +123,51 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
       console.error(`Error performing ${action} action:`, error);
     }
   };
+
   const toggleVisible = () => {
     const tweet = getTweet(userNameElement);
-    let expanded = !!tweet.getAttribute("expanded");
-    tweet.style.height = expanded ? "0px" : `${tweet.scrollHeight}px`;
-    expanded = !expanded;
-    if (expanded) tweet.setAttribute("expanded", "true");
-    else tweet.removeAttribute("expanded");
+    const expanded = tweet.hasAttribute("expanded");
+
+    if (expanded) {
+      // Collapsing: First get the current height, then animate to zero
+      tweet.style.height = `${tweet.offsetHeight}px`;
+      // Force reflow to ensure the height is set before changing it
+      void tweet.offsetHeight;
+
+      // Now set height to 0 to animate collapsing
+      tweet.style.height = "0px";
+      tweet.classList.remove("visible-tweet");
+      tweet.classList.add("hidden-tweet");
+      tweet.removeAttribute("expanded");
+    } else {
+      // Expanding: First make sure the content is laid out so we can measure it
+      tweet.classList.remove("hidden-tweet");
+      tweet.classList.add("visible-tweet");
+
+      // Temporarily remove transition to get accurate scrollHeight
+      const originalTransition = tweet.style.transition;
+      tweet.style.transition = "none";
+      tweet.style.height = "auto";
+      const expandedHeight = tweet.scrollHeight;
+      tweet.style.height = "0px";
+
+      // Force reflow to ensure height is reset before animation starts
+      void tweet.offsetHeight;
+
+      // Restore transition and set target height
+      tweet.style.transition = originalTransition;
+      tweet.style.height = `${expandedHeight}px`;
+      tweet.setAttribute("expanded", "true");
+
+      // Optional: Once animation completes, set height to auto to handle content changes
+      setTimeout(() => {
+        if (tweet.hasAttribute("expanded")) {
+          tweet.style.height = "auto";
+        }
+      }, 300); // Match your transition duration (0.3s = 300ms)
+    }
   };
+
   const template = html`
     <div class="${adPlaceHolderClassName}">
       <div class="notification-content">
