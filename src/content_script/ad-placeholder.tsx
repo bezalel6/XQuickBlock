@@ -238,18 +238,6 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
             </svg>
             <span class="toggle-text">Show sponsored content</span>
           </button>
-          <p style="margin-top: 8px; font-size: 13px; color: #657786;">
-            You can adjust the settings at any time in the
-            <button
-              class="inline-button"
-              @click=${() =>
-                window
-                  .open(chrome.runtime.getURL("options.html"), "_blank")
-                  .focus()}
-            >
-              settings
-            </button>
-          </p>
         </div>
       </div>
     </div>
