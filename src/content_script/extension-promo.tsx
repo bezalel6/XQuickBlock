@@ -52,6 +52,12 @@ function ensureStyles() {
       color: #1DA1F2;
       font-weight: 500;
     }
+    .promo-text .settings-note {
+      font-size: 13px;
+      color: #71767B;
+      margin-top: 4px;
+      display: block;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -93,9 +99,11 @@ export default function ExtensionPromo() {
         alt="X-Terminator"
       />
       <div class="promo-text">
-        <strong>X-Terminator</strong> can
+        <strong>X-Terminator</strong> will
         <span class="highlight">hide this dialog</span> and others like it
-        permanently
+        <span class="settings-note"
+          >You can always change this in the settings</span
+        >
       </div>
     </div>
   `;
