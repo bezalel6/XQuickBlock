@@ -20,16 +20,16 @@ class Query {
     return this.root as HTMLElement;
   }
 
-  query<R extends HTMLElement>(selectors: QueryProps): NullableResult<R> {
-    return Query.res<R>(this.root.querySelector(selectors));
+  query<R extends HTMLElement>(selector: QueryProps): NullableResult<R> {
+    return Query.res<R>(this.root.querySelector(selector));
   }
 
-  queryAll<R extends HTMLElement>(selectors: QueryProps): QueryResult<R>[] {
-    return Array.from(this.root.querySelectorAll(selectors)).map(el => Query.res<R>(el));
+  queryAll<R extends HTMLElement>(selector: QueryProps): QueryResult<R>[] {
+    return Array.from(this.root.querySelectorAll(selector)).map(el => Query.res<R>(el));
   }
 
-  closest<R extends HTMLElement>(selectors: QueryProps): NullableResult<R> {
-    return Query.res<R>(this.src.closest(selectors));
+  closest<R extends HTMLElement>(selector: QueryProps): NullableResult<R> {
+    return Query.res<R>(this.src.closest(selector));
   }
 
   // Map a query result object
@@ -50,7 +50,7 @@ class Query {
   }
 }
 interface QueryFunc {
-  <R extends HTMLElement>(selectors: QueryProps): NullableResult<R>;
+  <R extends HTMLElement>(selector: QueryProps): NullableResult<R>;
 }
 // For TypeScript to properly understand the callable functionality
 // Add this interface declaration
