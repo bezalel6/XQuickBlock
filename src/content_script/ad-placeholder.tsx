@@ -1,3 +1,4 @@
+import Query from "lib/css++";
 import { html, render } from "../lit";
 import { Action } from "../types";
 import { dispatch, extractUserDetails, getTweet } from "./utils";
@@ -7,7 +8,7 @@ export const adPlaceHolderClassName = "xterminate-notification";
 // Function to ensure styles are loaded
 function ensureStyles() {
   // Check if our style tag already exists
-  const existingStyle = document.querySelector(`style[data-xterminate-styles]`);
+  const existingStyle = Query.from(document).query(`style[data-xterminate-styles]`);
   if (existingStyle) return;
 
   const style = document.createElement("style");
@@ -153,8 +154,8 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
   const toggleVisible = () => {
     const tweet = getTweet(userNameElement);
     const expanded = tweet.hasAttribute("expanded");
-    const toggleButton = container.querySelector(".toggle-button");
-    const toggleText = toggleButton?.querySelector(".toggle-text");
+    const toggleButton = Query.from(container).query(".toggle-button");
+    const toggleText = Query.from(toggleButton).query(".toggle-text");
 
     if (expanded) {
       // Collapsing: First get the current height, then animate to zero

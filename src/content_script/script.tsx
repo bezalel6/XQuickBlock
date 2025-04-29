@@ -21,6 +21,7 @@ import {
   waitFor,
 } from "./utils";
 import { injectPromo } from "./extension-promo";
+import Query from "lib/css++";
 const BTNS = "BUTTONS_WRAPPER";
 const AD = "AD";
 
@@ -31,7 +32,7 @@ function processAd(
 ) {
   const { promotedContentAction } = settings.getState();
   // First, clean up any previous hide effects
-  const existingNotification = tweet.parentNode?.querySelector(
+  const existingNotification = Query.from(tweet.parentNode).query(
     `.${adPlaceHolderClassName}`
   );
   if (existingNotification) {
@@ -135,7 +136,7 @@ async function applySettings(state: ExtensionSettings) {
       document.querySelectorAll(`.${AD}`).forEach((ad) => {
         processAd(
           ad as HTMLElement,
-          ad.querySelector(userNameSelector),
+          Query.from(ad).query(userNameSelector),
           settings
         );
       });

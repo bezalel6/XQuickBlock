@@ -1,12 +1,13 @@
 import { sendMessageToBackground } from "../message-handler";
 import { html, render } from "../lit";
+import Query from "../lib/css++";
 
 export const extensionPromoClassName = "xterminate-promo";
 
 // Function to ensure styles are loaded
 function ensureStyles() {
   // Check if our style tag already exists
-  const existingStyle = document.querySelector(
+  const existingStyle = Query.from(document).query(
     `style[data-xterminate-promo-styles]`
   );
   if (existingStyle) return;
@@ -65,11 +66,11 @@ function ensureStyles() {
 // Function to inject the promo into the subscription dialog
 function injectPromo() {
   // Find the subscription dialog
-  const dialog = document.querySelector('[role="dialog"]');
+  const dialog = Query.from(document).query('[role="dialog"]');
   if (!dialog) return;
 
   // Find the action buttons container
-  const actionButtons = dialog.querySelector(
+  const actionButtons = Query.from(dialog).query(
     `div:has(> a[href="https://x.com/i/premium_sign_up"])`
   );
   if (!actionButtons) return;

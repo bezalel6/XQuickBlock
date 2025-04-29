@@ -1,6 +1,7 @@
 import { default as default_selectors } from "../constants";
 import { Action, ExtensionSettings, Source } from "../types";
 import { getSettingsManager } from "../settings-manager";
+import Query from "lib/css++";
 
 /**
  * Sleep for a specified number of milliseconds
@@ -85,7 +86,7 @@ export async function waitFor(
   delay = 50
 ): Promise<HTMLElement> {
   for (let i = 0; i < maxAttempts; i++) {
-    const element = document.querySelector(selector);
+    const element = Query.from(document).query(selector);
     if (element) return element as HTMLElement;
     await sleep(delay);
   }
@@ -120,11 +121,10 @@ export function extractUserDetails(userNameElement: HTMLElement): {
   username: string;
 } {
   const fullName =
-    userNameElement.querySelector("a div span span")?.textContent?.trim() ||
+    Query.from(userNameElement).query("a div span span")?.textContent?.trim() ||
     "Unknown";
   const username =
-    userNameElement
-      .querySelector('a[href^="/"]')
+    Query.from(userNameElement).query('a[href^="/"]')
       ?.getAttribute("href")
       ?.replace("/", "") || "unknown";
   return { fullName, username };
@@ -138,14 +138,14 @@ let cachedUsername: string | null = null;
 function getCurrentUsername(): string | null {
   if (cachedUsername) return cachedUsername;
 
-  const accountSwitcher = document.querySelector(
+  const accountSwitcher = Query.from(document).query(
     '[data-testid="SideNav_AccountSwitcher_Button"]'
   );
   if (!accountSwitcher) {
     return null;
   }
 
-  const userAvatarContainer = accountSwitcher.querySelector(
+  const userAvatarContainer = Query.from(accountSwitcher).query(
     '[data-testid^="UserAvatar-Container-"]'
   );
   if (!userAvatarContainer) {
@@ -164,10 +164,9 @@ function getCurrentUsername(): string | null {
 export function isUserOwnAccount(element: HTMLElement): boolean {
   const currentUsername = getCurrentUsername();
   if (!currentUsername) return false;
-
-  const elementUsername = element
+  const elementUsername = Query.from(element)
     .closest('[data-testid="User-Name"]')
-    ?.querySelector('a[href^="/"]')
+    ?.query('a[href^="/"]')
     ?.getAttribute("href")
     ?.replace("/", "");
   return currentUsername === elementUsername;
@@ -182,7 +181,7 @@ export async function dispatch(
   const { selectors } = (await getSettingsManager("content")).getState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
-    const moreButton = getTweet(nameElement)?.querySelector(
+    const moreButton = Query.from(getTweet(nameElement)).query(
       selectors.userMenuSelector
     ) as HTMLElement;
     if (!moreButton) {
@@ -224,7 +223,7 @@ export async function dispatch(
  * @returns The closest ancestor with messedWith attribute, or null if none found
  */
 export function closestMessedWith(element: HTMLElement): Element | null {
-  return element.parentElement.querySelector('[messedWith="true"]');
+  return Query.from(element.parentElement).query('[messedWith="true"]');
 }
 
 export function isMessedWith(node: Element) {

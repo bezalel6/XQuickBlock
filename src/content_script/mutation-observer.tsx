@@ -3,6 +3,7 @@ import { ExtensionSettings } from "../types";
 import { getSettingsManager } from "../settings-manager";
 import { isMessedWith, setMessedWith, toggleInvisible } from "./utils";
 import Reminder from "./reminder";
+import Query from "lib/css++";
 
 type Falsy = false | 0 | "" | null | undefined;
 type Truthy<T> = T extends Falsy ? never : T;
@@ -51,22 +52,19 @@ async function handleUpsaleDialog(
 ) {
   toggleInvisible(selectors.upsaleDialogSelector, hideSubscriptionOffers);
   createMutationCallback(
-    (newNode) => newNode.querySelector(selectors.upsaleDialogSelector),
+    (newNode) => Query.from(newNode).query(selectors.upsaleDialogSelector),
     (dialog) => {
       if (isMessedWith(dialog)) return;
       setMessedWith(dialog);
       if (hideSubscriptionOffers) {
         (
-          dialog.querySelector(
+          Query.from(dialog).query(
             `a[href="${selectors.buyIntoUpsaleHref}"] + button`
-          ) as HTMLButtonElement
+          )
         ).click();
         dialog.remove();
       } else {
-        const btns = Array.from(
-          dialog.querySelectorAll(`a[href="${selectors.buyIntoUpsaleHref}"]`)
-        ) as HTMLAnchorElement[];
-        console.log(btns);
+        Query.from(dialog).queryAll(`a[href='${selectors.buyIntoUpsaleHref}']`).forEach(console.log)
         // btns.style.backgroundColor = "aqua";
       }
       toggleInvisible(selectors.upsaleDialogSelector, false);

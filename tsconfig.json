@@ -8,11 +8,10 @@
         "outDir": "dist/js",
         "noEmitOnError": true,
         "jsx": "react",
-        "baseUrl": ".",
+        "baseUrl": "src",
         "paths": {
             "*": [
-                "node_modules/*",
-                "src/*"
+                "*"
             ]
         },
         "typeRoots": [
