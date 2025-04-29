@@ -108,11 +108,10 @@ export function getTweet(nameElement: HTMLElement): HTMLElement | null {
  * Check if an element has an ad span
  */
 export function hasAdSpan(parentElement: HTMLElement): boolean {
-  return !!Array.from(parentElement.querySelectorAll("span")).find(
+  return !!Query.from(parentElement).queryAll("span").find(
     (s) => s.textContent === "Ad"
   );
 }
-
 /**
  * Extract user details from a user name element
  */
@@ -193,7 +192,7 @@ export async function dispatch(
 
     let button: HTMLElement | null = null;
     if (action === "mute") {
-      button = Array.from(document.querySelectorAll('[role="menuitem"]')).find(
+      button = Query.from((document)).queryAll('[role="menuitem"]').find(
         (item) => item.textContent?.includes("Mute @")
       ) as HTMLElement;
     } else {

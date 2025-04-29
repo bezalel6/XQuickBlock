@@ -114,13 +114,13 @@ async function applySettings(state: ExtensionSettings) {
     ({ isBlockMuteEnabled, selectors: { userNameSelector } }) => {
       toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
       if (isBlockMuteEnabled) {
-        const userNames = document.querySelectorAll(userNameSelector);
+        const userNames = Query.from(document).queryAll(userNameSelector);
         userNames.forEach((userName) => {
           // console.log("[XTerminator] Processing username element:", userName);
           processUsername(userName as HTMLElement);
         });
       } else {
-        const buttons = document.querySelectorAll(`.${BTNS}`);
+        const buttons = Query.from(document).queryAll(`.${BTNS}`);
         // console.log("[XTerminator] Found buttons to remove:", buttons.length);
         buttons.forEach((b) => {
           const parent = closestMessedWith(b as HTMLElement);
@@ -133,7 +133,7 @@ async function applySettings(state: ExtensionSettings) {
   settings.subscribe(
     ["promotedContentAction"],
     ({ promotedContentAction, selectors: { userNameSelector } }) => {
-      document.querySelectorAll(`.${AD}`).forEach((ad) => {
+      Query.from(document).queryAll(`.${AD}`).forEach((ad) => {
         processAd(
           ad as HTMLElement,
           Query.from(ad).query(userNameSelector),
@@ -146,21 +146,6 @@ async function applySettings(state: ExtensionSettings) {
   observeDOMChanges(state);
 }
 
-function cleanup({ selectors }: ExtensionSettings): void {
-  resetObserver();
-  document.querySelectorAll('[messedWith="true"]').forEach((e) => {
-    setMessedWith(e, false);
-  });
-
-  document
-    .querySelectorAll(selectors.userNameSelector)
-    .forEach((userNameElement) => {
-      setMessedWith(userNameElement, false);
-      userNameElement
-        .querySelectorAll("button")
-        .forEach((button) => button.remove());
-    });
-}
 
 export default async function init() {
   console.log("[XTerminator] DOM content loaded, starting initialization...");

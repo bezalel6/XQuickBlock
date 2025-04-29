@@ -44,7 +44,7 @@ class Query {
     return new Query(element);
   }
 
-  static root(): Query {
+  static $(): Query {
     return new Query(document);
   }
 }

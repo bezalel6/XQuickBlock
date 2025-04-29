@@ -96,7 +96,7 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
       if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node instanceof HTMLElement) {
-            const userNames = node.querySelectorAll(
+            const userNames = Query.from(node).queryAll(
               settings.selectors.userNameSelector
             );
             userNames.forEach((userName) =>
