@@ -1,10 +1,11 @@
-type cssSelector = string;
-type QueryProps = cssSelector;
-type SrcElement = Element | Document | ParentNode;
+import { CSSPPInterpreter } from './csspp';
 
-type QueryResult<R extends HTMLElement> = R & { query: QueryFunc };
+export type CSSSelector = string;
+export type QueryProps = CSSSelector;
+export type SrcElement = Element | Document | ParentNode;
 
-type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
+export type QueryResult<R extends HTMLElement> = R & { query: QueryFunc };
+export type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
 
 class Query {
   constructor(readonly root: SrcElement) {
@@ -21,11 +22,11 @@ class Query {
   }
 
   query<R extends HTMLElement>(selector: QueryProps): NullableResult<R> {
-    return Query.res<R>(this.root.querySelector(selector));
+    return Query.res(CSSPPInterpreter.query('query', selector, this.root)[0]);
   }
 
   queryAll<R extends HTMLElement>(selector: QueryProps): QueryResult<R>[] {
-    return Array.from(this.root.querySelectorAll(selector)).map(el => Query.res<R>(el));
+    return CSSPPInterpreter.query('queryAll', selector, this.root).map(Query.res<R>);
   }
 
   closest<R extends HTMLElement>(selector: QueryProps): NullableResult<R> {
@@ -33,7 +34,7 @@ class Query {
   }
 
   // Map a query result object
-  protected static res<R extends HTMLElement>(res: Element): NullableResult<R> {
+  protected static res<R extends HTMLElement>(res: HTMLElement): NullableResult<R> {
     if (!res) return null;
 
     const t = res as QueryResult<R>;

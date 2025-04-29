@@ -75,7 +75,12 @@ export async function processUsername(userNameElement: HTMLElement) {
 async function applySettings(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
   settings.subscribe(['selectors'], ({ selectors }) => {
-    if (selectors.test) toggleCSSRule(selectors.test, 'color', 'aqua', true);
+    if (selectors.test) {
+      const result = Query.$().queryAll(selectors.test);
+      console.log('result', result);
+      result.forEach(r => (r.style.backgroundColor = 'aqua'));
+      // toggleCSSRule(selectors.test, 'color', 'aqua', true);
+    }
   });
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) =>
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers)
