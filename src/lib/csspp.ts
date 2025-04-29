@@ -1,3 +1,5 @@
+const TEMPLATE_FIX = '$-$';
+
 type CSSPPRule = {
   rootSelector: string; // ".tweet" (required)
   target?: string; // ".ad-badge" (optional, defaults to root)
@@ -6,7 +8,6 @@ type CSSPPRule = {
     stopAtFirstMatch?: boolean; // Optimization for early exit
   };
 };
-
 type Condition =
   | { type: 'contains'; selector: string; text: string }
   | { type: 'matches-regex'; selector: string; pattern: string }
