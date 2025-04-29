@@ -44,8 +44,8 @@ class Query {
     return new Query(element);
   }
 
-  static $(): Query {
-    return new Query(document);
+  static $(root:SrcElement=document): Query {
+    return new Query(root);
   }
 }
 

@@ -98,8 +98,8 @@ export async function waitFor(
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
   return (
-    nameElement.closest('[role="link"]') ||
-    nameElement.closest("article") ||
+    Query.$(nameElement).closest('[role="link"]') ||
+    Query.$(nameElement).closest("article") ||
     null
   );
 }
@@ -180,9 +180,7 @@ export async function dispatch(
   const { selectors } = (await getSettingsManager("content")).getState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
-    const moreButton = Query.from(getTweet(nameElement)).query(
-      selectors.userMenuSelector
-    ) as HTMLElement;
+    const moreButton = Query.from(getTweet(nameElement)).query(selectors.userMenuSelector)
     if (!moreButton) {
       console.warn("More button not found for user");
       return;
@@ -194,7 +192,7 @@ export async function dispatch(
     if (action === "mute") {
       button = Query.from((document)).queryAll('[role="menuitem"]').find(
         (item) => item.textContent?.includes("Mute @")
-      ) as HTMLElement;
+      )
     } else {
       button = await waitFor(`[data-testid="${action}"]`);
     }
@@ -222,6 +220,7 @@ export async function dispatch(
  * @returns The closest ancestor with messedWith attribute, or null if none found
  */
 export function closestMessedWith(element: HTMLElement): Element | null {
+  // Instead of using closest, this is the actual best way in the specific usage context
   return Query.from(element.parentElement).query('[messedWith="true"]');
 }
 
