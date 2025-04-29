@@ -46,9 +46,9 @@ class Query {
 
   static $(root:SrcElement=document): Query {
     return new Query(root);
-  }
-}
+    }
 
+    }
 interface QueryFunc {
 
   <R extends HTMLElement>(...selectors: QueryProps): NullableResult<R>;
