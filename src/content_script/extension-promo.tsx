@@ -1,19 +1,17 @@
-import { sendMessageToBackground } from "../message-handler";
-import { html, render } from "../lit";
-import Query from "../lib/css++";
+import { sendMessageToBackground } from '../message-handler';
+import { html, render } from '../lit';
+import Query from '../lib/css++';
 
-export const extensionPromoClassName = "xterminate-promo";
+export const extensionPromoClassName = 'xterminate-promo';
 
 // Function to ensure styles are loaded
 function ensureStyles() {
   // Check if our style tag already exists
-  const existingStyle = Query.from(document).query(
-    `style[data-xterminate-promo-styles]`
-  );
+  const existingStyle = Query.from(document).query(`style[data-xterminate-promo-styles]`);
   if (existingStyle) return;
 
-  const style = document.createElement("style");
-  style.setAttribute("data-xterminate-promo-styles", "");
+  const style = document.createElement('style');
+  style.setAttribute('data-xterminate-promo-styles', '');
   style.textContent = `
     .${extensionPromoClassName} {
       display: flex;
@@ -64,15 +62,19 @@ function ensureStyles() {
 }
 
 // Function to inject the promo into the subscription dialog
-function injectPromo() {
-  // Find the subscription dialog
-  const dialog = Query.from(document).query('[role="dialog"]');
-  if (!dialog) return;
+function injectPromo(target?: HTMLElement) {
+  const findTarget = () => {
+    // Find the subscription dialog
+    const dialog = Query.from(document).query('[role="dialog"]');
+    if (!dialog) return;
 
-  // Find the action buttons container
-  const actionButtons = Query.from(dialog).query(
-    `div:has(> a[href="https://x.com/i/premium_sign_up"])`
-  );
+    // Find the action buttons container
+    const actionButtons = Query.from(dialog).query(
+      `div:has(> a[href="https://x.com/i/premium_sign_up"])`
+    );
+    return actionButtons;
+  };
+  const actionButtons = target || findTarget();
   if (!actionButtons) return;
 
   // Create and inject our promo component
@@ -81,30 +83,24 @@ function injectPromo() {
 }
 function onClick() {
   sendMessageToBackground({
-    sentFrom: "popup",
-    type: "options",
-    payload: { highlight: "hideSubscriptionOffers" },
+    sentFrom: 'popup',
+    type: 'options',
+    payload: { highlight: 'hideSubscriptionOffers' },
   })
     .then(console.log)
     .catch(console.error);
 }
 export default function ExtensionPromo() {
   ensureStyles();
-  const container = document.createElement("div");
+  const container = document.createElement('div');
 
   const template = html`
     <div class="${extensionPromoClassName}" @click=${onClick}>
-      <img
-        class="promo-icon"
-        src="${chrome.runtime.getURL("icons/icon.png")}"
-        alt="X-Terminator"
-      />
+      <img class="promo-icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
       <div class="promo-text">
-        <strong>X-Terminator</strong> will
-        <span class="highlight">hide this dialog</span> and others like it
-        <span class="settings-note"
-          >You can always change this in the settings</span
-        >
+        <strong>X-Terminator</strong> will <span class="highlight">hide this dialog</span> and
+        others like it
+        <span class="settings-note">You can always change this in the settings</span>
       </div>
     </div>
   `;
