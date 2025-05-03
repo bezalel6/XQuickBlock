@@ -173,6 +173,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
+                my: 1,
               }}
             >
               <Box
