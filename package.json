@@ -1,6 +1,6 @@
 {
-  "name": "x-quick-block",
-  "version": "1.0.1",
+  "name": "xterminator",
+  "version": "1.7.0",
   "description": "XTerminator",
   "main": "index.js",
   "scripts": {
