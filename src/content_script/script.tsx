@@ -84,14 +84,15 @@ export async function processUsername(userNameElement: HTMLElement) {
   userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
 }
 
-async function applySettings(state: ExtensionSettings) {
+async function initialize(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
 
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
+    console.log(selectors.test);
     createPersistentMutationCallback(
       'test',
-      node => Query.$(node).query(selectors.test),
-      ee => [ee].forEach(e => (e.style.backgroundColor = 'aqua'))
+      node => Query.$().query(...selectors.test),
+      ee => [ee].forEach(e => (e.style.width = '5px;'))
     );
   });
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) =>
@@ -140,6 +141,6 @@ async function applySettings(state: ExtensionSettings) {
 export default async function init() {
   console.log('[XTerminator] DOM content loaded, starting initialization...');
   const state = (await getSettingsManager('content')).getState();
-  applySettings(state);
+  initialize(state);
   console.log('[XTerminator] Initialized with settings:', state);
 }

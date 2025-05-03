@@ -3,7 +3,7 @@ import { AdvancedSelector } from './css++';
 /**
  * Type definitions for Query functionality
  */
-type QueryProps = [string, ...string[]]; // At least one selector required
+type QueryProps = readonly [string, ...string[]] | [string, ...string[]]; // At least one selector required
 type SrcElement = Element | Document | ParentNode;
 type QueryResult<R extends HTMLElement> = R & { query: QueryFunc };
 type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
@@ -58,15 +58,19 @@ class Query {
    * @returns A wrapped element or null if not found
    */
   query<R extends HTMLElement>(...selectors: QueryProps): NullableResult<R> {
-    const selector = selectors.join(', ');
+    for (const selector of selectors) {
+      // Check if any part of the selector contains advanced patterns
+      if (Query.hasAdvancedSelector(selector)) {
+        const result = AdvancedSelector.query<R>(this.root as Element | Document, selector);
+        if (result) return Query.res<R>(result);
+        continue;
+      }
 
-    // Check if any part of the selector contains advanced patterns
-    if (Query.hasAdvancedSelector(selector)) {
-      const result = AdvancedSelector.query<R>(this.root as Element | Document, selector);
-      return result ? Query.res<R>(result) : null;
+      const result = this.root.querySelector(selector);
+      console.log({ selector, result: result });
+      if (result) return Query.res<R>(result);
     }
-
-    return Query.res<R>(this.root.querySelector(selectors.join(', ')));
+    return null;
   }
 
   /**
@@ -75,19 +79,32 @@ class Query {
    * @returns An array of wrapped elements
    */
   queryAll<R extends HTMLElement>(...selectors: QueryProps): QueryResult<R>[] {
-    const selector = selectors.join(', ');
+    const results: QueryResult<R>[] = [];
 
-    // Check if any part of the selector contains advanced patterns
-    if (Query.hasAdvancedSelector(selector)) {
-      const results = AdvancedSelector.queryAll<R>(this.root as Element | Document, selector);
-      return results
-        .map(result => Query.res<R>(result))
+    for (const selector of selectors) {
+      // Check if the selector contains advanced patterns
+      if (Query.hasAdvancedSelector(selector)) {
+        const advancedResults = AdvancedSelector.queryAll<R>(
+          this.root as Element | Document,
+          selector
+        );
+        results.push(
+          ...advancedResults
+            .map(result => Query.res<R>(result))
+            .filter((el): el is QueryResult<R> => el !== null)
+        );
+        continue;
+      }
+
+      // Add regular query results
+      const regularResults = Array.from(this.root.querySelectorAll(selector))
+        .map(el => Query.res<R>(el))
         .filter((el): el is QueryResult<R> => el !== null);
+      results.push(...regularResults);
     }
 
-    return Array.from(this.root.querySelectorAll(selectors.join(', ')))
-      .map(el => Query.res<R>(el))
-      .filter((el): el is QueryResult<R> => el !== null);
+    // Remove duplicates by using a Set
+    return Array.from(new Set(results));
   }
 
   /**

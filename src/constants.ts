@@ -12,11 +12,13 @@ const SELECTORS = {
   ].join(', '),
   upsaleDialogSelector: '[data-testid="sheetDialog"]',
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
-  test:
+  test: [
     `[data-testid="sheetDialog"] div` +
-    AdvancedSelector.contains(`Want more people to see your reply?`),
+      AdvancedSelector.contains(`Want more people to see your reply?`),
+    'img',
+  ] as const,
 } as const;
 
-export type Selectors = typeof SELECTORS & { [name: string]: string };
+export type Selectors = typeof SELECTORS & { [name: string]: string | readonly string[] };
 
 export default SELECTORS;
