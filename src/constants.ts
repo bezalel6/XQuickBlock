@@ -22,3 +22,5 @@ const SELECTORS = {
 export type Selectors = typeof SELECTORS & { [name: string]: string | readonly string[] };
 
 export default SELECTORS;
+
+const res = AdvancedSelector.$()($ => `${$.contains('hello')}`);

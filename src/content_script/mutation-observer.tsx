@@ -131,25 +131,25 @@ async function handleUpsaleDialog(
   ogPath: string,
   { selectors, hideSubscriptionOffers }: ExtensionSettings
 ) {
-  toggleInvisible(selectors.upsaleDialogSelector, hideSubscriptionOffers);
+  // toggleInvisible(selectors.upsaleDialogSelector, hideSubscriptionOffers);
 
-  createMutationCallback(
-    newNode => Query.from(newNode).query(selectors.upsaleDialogSelector),
-    dialog => {
-      if (isMessedWith(dialog)) return;
-      setMessedWith(dialog);
-      if (hideSubscriptionOffers) {
-        Query.from(dialog).query(`a[href="${selectors.buyIntoUpsaleHref}"] + button`).click();
-        dialog.remove();
-      } else {
-        Query.from(dialog)
-          .queryAll(`a[href='${selectors.buyIntoUpsaleHref}']`)
-          .forEach(console.log);
-        // btns.style.backgroundColor = "aqua";
-      }
-      toggleInvisible(selectors.upsaleDialogSelector, false);
-    }
-  );
+  // createMutationCallback(
+  //   newNode => Query.from(newNode).query(selectors.upsaleDialogSelector),
+  //   dialog => {
+  //     if (isMessedWith(dialog)) return;
+  //     setMessedWith(dialog);
+  //     if (hideSubscriptionOffers) {
+  //       Query.from(dialog).query(`a[href="${selectors.buyIntoUpsaleHref}"] + button`).click();
+  //       dialog.remove();
+  //     } else {
+  //       Query.from(dialog)
+  //         .queryAll(`a[href='${selectors.buyIntoUpsaleHref}']`)
+  //         .forEach(console.log);
+  //       // btns.style.backgroundColor = "aqua";
+  //     }
+  //     toggleInvisible(selectors.upsaleDialogSelector, false);
+  //   }
+  // );
 
   history.replaceState(null, '', ogPath);
 }
@@ -164,17 +164,6 @@ export async function observeDOMChanges(settings: ExtensionSettings) {
   const targetNode = document.body;
   const config = { childList: true, subtree: true };
   let currentPath = location.pathname;
-
-  // Set up persistent mutation callback for usernames
-  createPersistentMutationCallback(
-    'usernameProcessor',
-    node => Query.from(node).queryAll(settings.selectors.userNameSelector),
-    userNames => {
-      if (Array.isArray(userNames)) {
-        userNames.forEach(userName => processUsername(userName as HTMLElement));
-      }
-    }
-  );
 
   observer = new MutationObserver(async mutationsList => {
     if (

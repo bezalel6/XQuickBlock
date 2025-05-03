@@ -28,6 +28,12 @@ class AdvancedSelector {
    */
   private static template: PseudoSelectorConfig = { ...AdvancedSelector.defaultTemplate };
 
+  static $() {
+    return (selectorFn: (selector: typeof AdvancedSelector) => string) => {
+      // Pass the selector to the function and return the result
+      return selectorFn(AdvancedSelector);
+    };
+  }
   /**
    * Registry of custom pseudo-selectors and their implementations
    */

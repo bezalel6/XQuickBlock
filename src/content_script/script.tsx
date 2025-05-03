@@ -87,6 +87,19 @@ export async function processUsername(userNameElement: HTMLElement) {
 async function initialize(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
 
+  // Set up persistent mutation callback for usernames
+  createPersistentMutationCallback(
+    'usernameProcessor',
+    node => Query.from(node).queryAll(settings.getState().selectors.userNameSelector),
+    userNames => userNames.forEach(processUsername)
+  );
+
+  settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) => {
+    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
+
+    // createPersistentMutationCallback('subscriptionOffers',(node)=>Query.)
+  });
+
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
     console.log(selectors.test);
     createPersistentMutationCallback(
@@ -95,9 +108,7 @@ async function initialize(state: ExtensionSettings) {
       ee => [ee].forEach(e => (e.style.width = '5px;'))
     );
   });
-  settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) =>
-    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers)
-  );
+
   settings.subscribe(['hideUserSubscriptions'], ({ hideUserSubscriptions, selectors }) => {
     toggleInvisible(selectors.subscribeToButtonSelector, hideUserSubscriptions);
   });
