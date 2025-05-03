@@ -91,7 +91,7 @@ async function applySettings(state: ExtensionSettings) {
     createPersistentMutationCallback(
       'test',
       node => Query.$(node).query(selectors.test),
-      e => (e.style.backgroundColor = 'aqua')
+      ee => [ee].forEach(e => (e.style.backgroundColor = 'aqua'))
     );
   });
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) =>

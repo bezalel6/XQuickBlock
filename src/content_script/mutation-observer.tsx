@@ -73,6 +73,10 @@ export function createPersistentMutationCallback<T>(
   if (existingIndex !== -1) {
     mutationCallbacks[existingIndex] = mutationCallback as MutationCallback<unknown>;
   } else {
+    const res = condition(document.body);
+    if (res) {
+      callback(res as any);
+    }
     mutationCallbacks.push(mutationCallback as MutationCallback<unknown>);
   }
 

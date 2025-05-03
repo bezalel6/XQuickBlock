@@ -12,7 +12,9 @@ const SELECTORS = {
   ].join(', '),
   upsaleDialogSelector: '[data-testid="sheetDialog"]',
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
-  test: `span` + AdvancedSelector.contains(`Nifla_Po`),
+  test:
+    `[data-testid="sheetDialog"] div` +
+    AdvancedSelector.contains(`Want more people to see your reply?`),
 } as const;
 
 export type Selectors = typeof SELECTORS & { [name: string]: string };
