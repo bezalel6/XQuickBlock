@@ -26,9 +26,11 @@
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@types/styled-components": "^5.1.34",
     "framer-motion": "^12.7.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.17"
   },
   "devDependencies": {
     "@types/chrome": "0.0.158",

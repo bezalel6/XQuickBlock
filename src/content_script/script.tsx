@@ -67,7 +67,14 @@ export async function processUsername(userNameElement: HTMLElement) {
   buttonContainer.style.alignItems = 'center';
   buttonContainer.style.marginLeft = '4px';
 
-  const btns = [Button('Mute', 'mute', userNameElement), Button('Block', 'block', userNameElement)];
+  const { isBlockEnabled, isMuteEnabled } = settings.getState();
+  const btns = [];
+  if (isMuteEnabled) {
+    btns.push(Button('Mute', 'mute', userNameElement));
+  }
+  if (isBlockEnabled) {
+    btns.push(Button('Block', 'block', userNameElement));
+  }
   btns.forEach(btn => buttonContainer.appendChild(btn));
   userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
 }
@@ -84,18 +91,17 @@ async function applySettings(state: ExtensionSettings) {
     toggleInvisible(selectors.subscribeToButtonSelector, hideUserSubscriptions);
   });
   settings.subscribe(
-    ['isBlockMuteEnabled'],
-    ({ isBlockMuteEnabled, selectors: { userNameSelector } }) => {
-      toggleInvisible(`.${BTNS}`, !isBlockMuteEnabled);
-      if (isBlockMuteEnabled) {
+    ['isBlockEnabled', 'isMuteEnabled'],
+    ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
+      const shouldShowButtons = isBlockEnabled || isMuteEnabled;
+      toggleInvisible(`.${BTNS}`, !shouldShowButtons);
+      if (shouldShowButtons) {
         const userNames = Query.from(document).queryAll(userNameSelector);
         userNames.forEach(userName => {
-          // console.log("[XTerminator] Processing username element:", userName);
           processUsername(userName as HTMLElement);
         });
       } else {
         const buttons = Query.from(document).queryAll(`.${BTNS}`);
-        // console.log("[XTerminator] Found buttons to remove:", buttons.length);
         buttons.forEach(b => {
           const parent = closestMessedWith(b as HTMLElement);
           setMessedWith(parent, false);
