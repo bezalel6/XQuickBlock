@@ -107,7 +107,7 @@ function updateSettings() {
     payload: { hideSubscriptionOffers: true },
   });
 }
-export default function ExtensionPromo(onOblitirate: () => void) {
+function ExtensionPromo(onOblitirate: () => void) {
   ensureStyles();
   const container = document.createElement('div');
 
