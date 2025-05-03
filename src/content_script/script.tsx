@@ -97,7 +97,17 @@ async function initialize(state: ExtensionSettings) {
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) => {
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
 
-    // createPersistentMutationCallback('subscriptionOffers',(node)=>Query.)
+    createPersistentMutationCallback(
+      'subscriptionOffers',
+      node => Query.from(node).query(selectors.upsaleDialogSelector),
+      dialog => {
+        if (hideSubscriptionOffers) {
+          Query.$(dialog).closest('[role="dialog"]').remove();
+        } else {
+          injectPromo(dialog);
+        }
+      }
+    );
   });
 
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {

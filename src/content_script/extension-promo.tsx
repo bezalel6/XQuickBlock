@@ -1,19 +1,17 @@
-import { sendMessageToBackground } from "../message-handler";
-import { html, render } from "../lit";
-import Query from "../lib/css++";
+import { sendMessageToBackground } from '../message-handler';
+import { html, render } from '../lit';
+import Query from '../lib/css++';
 
-export const extensionPromoClassName = "xterminate-promo";
+export const extensionPromoClassName = 'xterminate-promo';
 
 // Function to ensure styles are loaded
 function ensureStyles() {
   // Check if our style tag already exists
-  const existingStyle = Query.from(document).query(
-    `style[data-xterminate-promo-styles]`
-  );
+  const existingStyle = Query.from(document).query(`style[data-xterminate-promo-styles]`);
   if (existingStyle) return;
 
-  const style = document.createElement("style");
-  style.setAttribute("data-xterminate-promo-styles", "");
+  const style = document.createElement('style');
+  style.setAttribute('data-xterminate-promo-styles', '');
   style.textContent = `
     .${extensionPromoClassName} {
       display: flex;
@@ -59,14 +57,16 @@ function ensureStyles() {
       margin-top: 4px;
       display: block;
     }
+      .settings-note{
+        text-decoration: underline;
+      }
   `;
   document.head.appendChild(style);
 }
 
 // Function to inject the promo into the subscription dialog
-function injectPromo() {
+function injectPromo(dialog = Query.from(document).query('[role="dialog"]')) {
   // Find the subscription dialog
-  const dialog = Query.from(document).query('[role="dialog"]');
   if (!dialog) return;
 
   // Find the action buttons container
@@ -81,30 +81,24 @@ function injectPromo() {
 }
 function onClick() {
   sendMessageToBackground({
-    sentFrom: "popup",
-    type: "options",
-    payload: { highlight: "hideSubscriptionOffers" },
+    sentFrom: 'popup',
+    type: 'options',
+    payload: { highlight: 'hideSubscriptionOffers' },
   })
     .then(console.log)
     .catch(console.error);
 }
 export default function ExtensionPromo() {
   ensureStyles();
-  const container = document.createElement("div");
+  const container = document.createElement('div');
 
   const template = html`
     <div class="${extensionPromoClassName}" @click=${onClick}>
-      <img
-        class="promo-icon"
-        src="${chrome.runtime.getURL("icons/icon.png")}"
-        alt="X-Terminator"
-      />
+      <img class="promo-icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
       <div class="promo-text">
-        <strong>X-Terminator</strong> will
-        <span class="highlight">hide this dialog</span> and others like it
-        <span class="settings-note"
-          >You can always change this in the settings</span
-        >
+        <strong>X-Terminator</strong> can <span class="highlight">oblitirate this dialog</span> and
+        others like it
+        <span class="settings-note">You can always change this in the settings</span>
       </div>
     </div>
   `;

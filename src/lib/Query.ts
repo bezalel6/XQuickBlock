@@ -67,7 +67,6 @@ class Query {
       }
 
       const result = this.root.querySelector(selector);
-      console.log({ selector, result: result });
       if (result) return Query.res<R>(result);
     }
     return null;
