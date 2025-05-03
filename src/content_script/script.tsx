@@ -92,21 +92,24 @@ async function applySettings(state: ExtensionSettings) {
   });
   settings.subscribe(
     ['isBlockEnabled', 'isMuteEnabled'],
-    ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
-      const shouldShowButtons = isBlockEnabled || isMuteEnabled;
-      toggleInvisible(`.${BTNS}`, !shouldShowButtons);
-      if (shouldShowButtons) {
-        const userNames = Query.from(document).queryAll(userNameSelector);
-        userNames.forEach(userName => {
-          processUsername(userName as HTMLElement);
-        });
-      } else {
-        const buttons = Query.from(document).queryAll(`.${BTNS}`);
-        buttons.forEach(b => {
-          const parent = closestMessedWith(b as HTMLElement);
+    async ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
+      const userNames = Query.from(document).queryAll(userNameSelector);
+
+      // First, remove all existing buttons and reset messedWith state
+      const existingButtons = Query.from(document).queryAll(`.${BTNS}`);
+      existingButtons.forEach(b => {
+        const parent = closestMessedWith(b as HTMLElement);
+        if (parent) {
           setMessedWith(parent, false);
-          b.remove();
-        });
+        }
+        b.remove();
+      });
+
+      // Then process each username if either setting is enabled
+      if (isBlockEnabled || isMuteEnabled) {
+        for (const userName of userNames) {
+          await processUsername(userName as HTMLElement);
+        }
       }
     }
   );
