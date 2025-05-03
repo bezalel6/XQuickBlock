@@ -4,6 +4,7 @@ import {
   Select,
   SelectChangeEvent,
   MenuItem,
+  Box,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Source } from "../../types";
@@ -36,8 +37,20 @@ const SourceSelector: React.FC<Setting<"source">> = ({
   }
   return (
     <FormControl className={className} fullWidth sx={{ mt: 2 }}>
-      <FormLabel>Settings Source</FormLabel>
-      <UpdateButton onUpdate={onUpdate}></UpdateButton>
+      <Box
+        display={"flex"}
+        justifyContent={"center"}
+        alignItems={"center"}
+        flexDirection={"row"}
+        gap={1}
+      >
+        <FormLabel>Selectors Source</FormLabel>
+        <UpdateButton
+          onUpdate={onUpdate}
+          tooltipLabel="Fetch available sources"
+          minimal
+        ></UpdateButton>
+      </Box>
       <Select
         value={value || Source.MAIN}
         onChange={(e: SelectChangeEvent) => onChange(e.target.value as Source)}
