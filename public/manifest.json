@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/chrome-manifest",
   "manifest_version": 3,
   "name": "XTerminator",
-  "version": "1.6.5",
+  "version": "1.7.0",
   "description": "Quickly mute or block users on X with a single click, Automatically block advertisers, and more...",
   "permissions": [
     "storage",
@@ -41,8 +41,7 @@
       ],
       "matches": [
         "https://twitter.com/*",
-        "https://x.com/*",
-        "file://*"
+        "https://x.com/*"
       ]
     }
   ],
