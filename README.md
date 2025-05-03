@@ -4,7 +4,14 @@
 
 ## Overview
 
-**XTerminator** is a Chrome extension that aims to make twitter semi-usable again. It adds quick-access mute and block buttons directly to user elements, letting you manage your feed without jumping through hoops.
+**XTerminator** is a Chrome extension that aims to make X/Twitter semi-usable again. It provides:
+
+- One-Click Mute / block buttons directly on user elements
+- Automatic detection and removal of any sponsored content
+- Removal of premium subscription prompts and upsells
+- Elimination of subscription buttons on user profiles
+- Local processing with no external data collection
+- All fully open source
 
 ## Features
 
@@ -14,15 +21,25 @@
   - Control-click to evaporate every account in a particulary toxic rabbit hole
   - Skip X's endless confirmation dialogs
 
-- **Ads:**
+- **Comprehensive Ad Control:**
 
-  - Automatically detect promoted tweets
-  - Configurable behaviour lets you hide or block any ad on your feed
-  - Put a stop to the endless stream of scam crypto ads
+  - Automatically detect and handle all types of promoted content
+  - Configurable behavior (hide, block, or leave as is)
+  - Clean up your feed from:
+    - Sponsored tweets
+    - Promoted accounts
+    - Crypto and scam advertisements
 
-- **Subscription:**
-  - Automatically hide premium content prompts
-  - Block upgrade interruptions
+- **Premium Subscription Management:**
+
+  - Automatically hide all premium content prompts and upsells
+  - Remove subscription-related interruptions:
+    - "Want more people to see your reply?" prompts
+    - "Remove all ads with Premium+" offers
+    - Verified profile upsells
+    - Premium sign up tab
+  - Hide subscription buttons from other users' profiles
+  - Block upgrade interruptions and premium membership pestering
 
 ## Installation
 
@@ -63,7 +80,9 @@ XTerminator keeps your data private:
 - No data collection
 - No tracking
 - Everything happens in your browser
-- No external API calls
+- No external API calls\*
+
+\* The extension periodically fetches selector definitions from the GitHub repository to keep up with X/Twitter's interface changes. this is fully configurable in the settings, and can be turned off
 
 ## Contributing
 
