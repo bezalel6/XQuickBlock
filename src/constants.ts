@@ -11,14 +11,14 @@ const SELECTORS = {
     '[data-testid="verified_profile_upsell"], aside:has(a[href="/i/premium_sign_up"]), a[href="/i/premium_sign_up"], div [data-testid="super-upsell-UpsellCardRenderProperties"], div [data-testid="inlinePrompt"] a[href^="/i/premium_sign_up"], [data-testid="cellInnerDiv"]:has([data-testid="inlinePrompt"])',
   ].join(', '),
   upsaleDialogSelector: $$$.$()(
-    $ => `[data-testid="sheetDialog"] div ${$.contains('Want more people to see your reply?')}`
+    $ =>
+      `[data-testid="sheetDialog"] div ${$.containsAny('Want more people to see your reply?', 'Remove all ads with Premium+')}`
   ),
   subscribeToButtonSelector: 'div > [aria-label^="Subscribe to @"]',
   test: [
     `[data-testid="sheetDialog"] div` + $$$.contains(`Want more people to see your reply?`),
   ] as const,
 } as const;
-
 export type Selectors = typeof SELECTORS & { [name: string]: string | readonly string[] };
 
 export default SELECTORS;

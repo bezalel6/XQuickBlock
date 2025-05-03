@@ -101,7 +101,13 @@ async function initialize(state: ExtensionSettings) {
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
       dialog => {
-        const oblitirate = () => Query.$(dialog).closest('[role="dialog"]').remove();
+        const oblitirate = () => {
+          Query.$(dialog).closest('[role="dialog"]').remove();
+          Query.$()
+            .queryAll('[role="dialog"]', '[data-testid="mask"]')
+            .forEach(d => d.remove());
+          document.documentElement.style.overflowY = 'scroll';
+        };
         if (hideSubscriptionOffers) {
           oblitirate();
         } else {

@@ -9,6 +9,7 @@ interface PseudoSelectorConfig {
   valueWrapper: string;
 }
 
+type GenerateSelector = (selector: typeof AdvancedSelector) => string;
 /**
  * AdvancedSelector provides additional selection capabilities beyond standard CSS selectors
  * by implementing custom pseudo-selectors and providing a clean integration with the Query system.
@@ -27,11 +28,10 @@ class AdvancedSelector {
    * Current template configuration
    */
   private static template: PseudoSelectorConfig = { ...AdvancedSelector.defaultTemplate };
-
   static $() {
-    return (selectorFn: (selector: typeof AdvancedSelector) => string) => {
+    return (selector: GenerateSelector) => {
       // Pass the selector to the function and return the result
-      return selectorFn(AdvancedSelector);
+      return selector(AdvancedSelector);
     };
   }
   /**
@@ -41,6 +41,13 @@ class AdvancedSelector {
     // Find elements containing specific text
     contains: (text: string) => (element: Element) =>
       element.textContent?.toLowerCase().includes(text.toLowerCase()) || false,
+
+    // Find elements containing any of the provided texts
+    containsAny: (texts: string) => (element: Element) => {
+      const searchTexts = texts.split(',').map(t => t.trim().toLowerCase());
+      const elementText = element.textContent?.toLowerCase() || '';
+      return searchTexts.some(text => elementText.includes(text));
+    },
 
     // Find elements with exact text match
     exact: (text: string) => (element: Element) => element.textContent?.trim() === text.trim(),
@@ -170,6 +177,11 @@ class AdvancedSelector {
   static contains(text: string): string {
     const { prefix, suffix, valueWrapper } = this.template;
     return `${prefix}contains${suffix}(${valueWrapper}${text}${valueWrapper})`;
+  }
+
+  static containsAny(...texts: string[]): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}containsAny${suffix}(${valueWrapper}${texts.join(',')}${valueWrapper})`;
   }
 
   static exact(text: string): string {

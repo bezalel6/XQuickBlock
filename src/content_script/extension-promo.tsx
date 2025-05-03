@@ -1,6 +1,7 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
 import Query from '../lib/css++';
+import { isMessedWith, setMessedWith } from './utils';
 
 export const extensionPromoClassName = 'xterminate-promo';
 
@@ -76,12 +77,10 @@ function injectPromo(
   dialog = Query.from(document).query('[role="dialog"]')
 ) {
   // Find the subscription dialog
-  if (!dialog) return;
-
+  if (!dialog || isMessedWith(dialog)) return;
+  setMessedWith(dialog);
   // Find the action buttons container
-  const actionButtons = Query.from(dialog).query(
-    `div:has(> a[href="https://x.com/i/premium_sign_up"])`
-  );
+  const actionButtons = Query.from(dialog).query(`div:has(> a[href$="/i/premium_sign_up"])`);
   if (!actionButtons) return;
 
   // Create and inject our promo component
