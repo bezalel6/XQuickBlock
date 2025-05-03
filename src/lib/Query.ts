@@ -1,3 +1,5 @@
+import { AdvancedSelector } from './css++';
+
 /**
  * Type definitions for Query functionality
  */
@@ -39,11 +41,31 @@ class Query {
   }
 
   /**
+   * Check if a selector contains advanced selector patterns
+   * @param selector The selector to check
+   * @returns True if the selector contains advanced patterns
+   */
+  private static hasAdvancedSelector(selector: string): boolean {
+    const template = AdvancedSelector.getTemplate();
+    const { prefix, suffix } = template;
+    const pattern = new RegExp(`${prefix}[a-zA-Z]+${suffix}\\(`, 'g');
+    return pattern.test(selector);
+  }
+
+  /**
    * Query for a single element that matches the selector(s)
    * @param selectors One or more CSS selectors to match against
    * @returns A wrapped element or null if not found
    */
   query<R extends HTMLElement>(...selectors: QueryProps): NullableResult<R> {
+    const selector = selectors.join(', ');
+
+    // Check if any part of the selector contains advanced patterns
+    if (Query.hasAdvancedSelector(selector)) {
+      const result = AdvancedSelector.query<R>(this.root as Element | Document, selector);
+      return result ? Query.res<R>(result) : null;
+    }
+
     return Query.res<R>(this.root.querySelector(selectors.join(', ')));
   }
 
@@ -53,6 +75,16 @@ class Query {
    * @returns An array of wrapped elements
    */
   queryAll<R extends HTMLElement>(...selectors: QueryProps): QueryResult<R>[] {
+    const selector = selectors.join(', ');
+
+    // Check if any part of the selector contains advanced patterns
+    if (Query.hasAdvancedSelector(selector)) {
+      const results = AdvancedSelector.queryAll<R>(this.root as Element | Document, selector);
+      return results
+        .map(result => Query.res<R>(result))
+        .filter((el): el is QueryResult<R> => el !== null);
+    }
+
     return Array.from(this.root.querySelectorAll(selectors.join(', ')))
       .map(el => Query.res<R>(el))
       .filter((el): el is QueryResult<R> => el !== null);

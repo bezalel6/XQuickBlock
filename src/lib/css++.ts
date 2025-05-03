@@ -113,7 +113,15 @@ class AdvancedSelector {
     // Apply all custom pseudo-selectors and filter
     return candidates.filter(element => pseudos.every(pseudo => pseudo(element)));
   }
+  static getPatternRegex() {
+    const { prefix, suffix, valueWrapper } = this.template;
 
+    // Create regex pattern based on current template configuration
+    return new RegExp(
+      `${prefix}([a-zA-Z]+)${suffix}\\(${valueWrapper}(.*?)${valueWrapper}\\)`,
+      'g'
+    );
+  }
   /**
    * Parse a selector string into base selector and pseudo-selectors
    * @param selector Full selector string
@@ -123,13 +131,8 @@ class AdvancedSelector {
     baseSelector: string;
     pseudos: ElementPredicate[];
   } {
-    const { prefix, suffix, valueWrapper } = this.template;
-
     // Create regex pattern based on current template configuration
-    const pattern = new RegExp(
-      `${prefix}([a-zA-Z]+)${suffix}\\(${valueWrapper}(.*?)${valueWrapper}\\)`,
-      'g'
-    );
+    const pattern = this.getPatternRegex();
 
     const pseudos: ElementPredicate[] = [];
 

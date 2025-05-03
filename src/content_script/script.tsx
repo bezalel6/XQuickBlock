@@ -90,7 +90,7 @@ async function applySettings(state: ExtensionSettings) {
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
     createPersistentMutationCallback(
       'test',
-      node => Query.$(node).advancedQuery(selectors.test),
+      node => Query.$(node).query(selectors.test),
       e => (e.style.backgroundColor = 'aqua')
     );
   });
