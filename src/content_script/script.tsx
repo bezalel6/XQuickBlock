@@ -101,10 +101,11 @@ async function initialize(state: ExtensionSettings) {
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
       dialog => {
+        const oblitirate = () => Query.$(dialog).closest('[role="dialog"]').remove();
         if (hideSubscriptionOffers) {
-          Query.$(dialog).closest('[role="dialog"]').remove();
+          oblitirate();
         } else {
-          injectPromo(dialog);
+          injectPromo(oblitirate, dialog);
         }
       }
     );

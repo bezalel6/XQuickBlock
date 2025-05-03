@@ -59,13 +59,22 @@ function ensureStyles() {
     }
       .settings-note{
         text-decoration: underline;
+        cursor: pointer;
+        color: #71767B;
+        transition: color 0.2s ease;
+      }
+      .settings-note:hover {
+        color: #1DA1F2;
       }
   `;
   document.head.appendChild(style);
 }
 
 // Function to inject the promo into the subscription dialog
-function injectPromo(dialog = Query.from(document).query('[role="dialog"]')) {
+function injectPromo(
+  oblitirate: () => void,
+  dialog = Query.from(document).query('[role="dialog"]')
+) {
   // Find the subscription dialog
   if (!dialog) return;
 
@@ -76,10 +85,10 @@ function injectPromo(dialog = Query.from(document).query('[role="dialog"]')) {
   if (!actionButtons) return;
 
   // Create and inject our promo component
-  const promo = ExtensionPromo();
+  const promo = ExtensionPromo(oblitirate);
   actionButtons.insertBefore(promo, actionButtons.firstChild);
 }
-function onClick() {
+function onOpenSettings() {
   sendMessageToBackground({
     sentFrom: 'popup',
     type: 'options',
@@ -88,17 +97,19 @@ function onClick() {
     .then(console.log)
     .catch(console.error);
 }
-export default function ExtensionPromo() {
+export default function ExtensionPromo(onOblitirate: () => void) {
   ensureStyles();
   const container = document.createElement('div');
 
   const template = html`
-    <div class="${extensionPromoClassName}" @click=${onClick}>
+    <div class="${extensionPromoClassName}" @click=${onOblitirate}>
       <img class="promo-icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
       <div class="promo-text">
         <strong>X-Terminator</strong> can <span class="highlight">oblitirate this dialog</span> and
         others like it
-        <span class="settings-note">You can always change this in the settings</span>
+        <span @click=${onOpenSettings} class="settings-note"
+          >You can always change this in the settings</span
+        >
       </div>
     </div>
   `;
