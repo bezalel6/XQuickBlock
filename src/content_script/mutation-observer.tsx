@@ -129,9 +129,7 @@ async function handleUpsaleDialog(
 ) {
   toggleInvisible(selectors.upsaleDialogSelector, hideSubscriptionOffers);
 
-  // Using persistent callback instead of one-time
-  createPersistentMutationCallback(
-    'upsaleDialogHandler',
+  createMutationCallback(
     newNode => Query.from(newNode).query(selectors.upsaleDialogSelector),
     dialog => {
       if (isMessedWith(dialog)) return;

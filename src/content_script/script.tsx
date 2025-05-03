@@ -1,7 +1,12 @@
 import { ExtensionMessage, ExtensionSettings } from '../types';
 import AdPlaceholder, { adPlaceHolderClassName } from './ad-placeholder';
 import Button from './dispatch-btn';
-import { createMutationCallback, observeDOMChanges, resetObserver } from './mutation-observer';
+import {
+  createMutationCallback,
+  createPersistentMutationCallback,
+  observeDOMChanges,
+  resetObserver,
+} from './mutation-observer';
 import { getSettingsManager, SettingsManger } from '../settings-manager';
 import {
   closestMessedWith,
@@ -81,11 +86,13 @@ export async function processUsername(userNameElement: HTMLElement) {
 
 async function applySettings(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
+
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
-    if (selectors.test)
-      Query.$()
-        .advancedQueryAll(selectors.test)
-        .forEach(e => (e.style.backgroundColor = 'aqua'));
+    createPersistentMutationCallback(
+      'test',
+      node => Query.$(node).advancedQuery(selectors.test),
+      e => (e.style.backgroundColor = 'aqua')
+    );
   });
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) =>
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers)
