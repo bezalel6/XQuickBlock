@@ -118,12 +118,12 @@ async function initialize(state: ExtensionSettings) {
   });
 
   settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
-    console.log(selectors.test);
-    createPersistentMutationCallback(
-      'test',
-      node => Query.$().query(...selectors.test),
-      ee => [ee].forEach(e => (e.style.width = '5px;'))
-    );
+    if (selectors.test)
+      createPersistentMutationCallback(
+        'test',
+        node => Query.$().query(...selectors.test),
+        ee => [ee].forEach(e => (e.style.width = '5px;'))
+      );
   });
 
   settings.subscribe(['hideUserSubscriptions'], ({ hideUserSubscriptions, selectors }) => {

@@ -17,8 +17,8 @@ export interface ExtensionSettings {
 }
 
 export interface ExtensionMessage {
-  type: 'stateUpdate' | 'forceUpdate' | 'manualUpdate' | 'options';
-  payload?: ExtensionSettings | { highlight?: keyof ExtensionSettings };
+  type: 'stateUpdate' | 'forceUpdate' | 'manualUpdate' | 'options' | 'contentScriptStateUpdate';
+  payload?: Partial<ExtensionSettings> | { highlight?: keyof ExtensionSettings };
 }
 export interface InternalExtensionMessage extends ExtensionMessage {
   sentFrom: End;

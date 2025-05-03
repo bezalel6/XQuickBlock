@@ -58,15 +58,16 @@ function ensureStyles() {
       margin-top: 4px;
       display: block;
     }
-      .settings-note{
-        text-decoration: underline;
-        cursor: pointer;
-        color: #71767B;
-        transition: color 0.2s ease;
-      }
-      .settings-note:hover {
-        color: #1DA1F2;
-      }
+    .settings-note {
+      text-decoration: underline;
+      cursor: pointer;
+      color: #71767B;
+      transition: color 0.2s ease;
+      display: inline-block;
+    }
+    .settings-note:hover {
+      color: #1DA1F2;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -84,17 +85,27 @@ function injectPromo(
   if (!actionButtons) return;
 
   // Create and inject our promo component
-  const promo = ExtensionPromo(oblitirate);
+  const promo = ExtensionPromo(() => {
+    oblitirate();
+    updateSettings();
+  });
   actionButtons.insertBefore(promo, actionButtons.firstChild);
 }
 function onOpenSettings() {
   sendMessageToBackground({
-    sentFrom: 'popup',
+    sentFrom: 'content',
     type: 'options',
     payload: { highlight: 'hideSubscriptionOffers' },
   })
     .then(console.log)
     .catch(console.error);
+}
+function updateSettings() {
+  sendMessageToBackground({
+    sentFrom: 'content',
+    type: 'contentScriptStateUpdate',
+    payload: { hideSubscriptionOffers: true },
+  });
 }
 export default function ExtensionPromo(onOblitirate: () => void) {
   ensureStyles();
@@ -106,8 +117,13 @@ export default function ExtensionPromo(onOblitirate: () => void) {
       <div class="promo-text">
         <strong>X-Terminator</strong> can <span class="highlight">oblitirate this dialog</span> and
         others like it
-        <span @click=${onOpenSettings} class="settings-note"
-          >You can always change this in the settings</span
+        <a
+          @click=${(e: Event) => {
+            e.stopPropagation();
+            onOpenSettings();
+          }}
+          class="settings-note"
+          >You can always change this in the settings</a
         >
       </div>
     </div>
