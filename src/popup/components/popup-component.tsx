@@ -31,6 +31,7 @@ import BuyMeACoffee from './buy-me-a-coffee';
 import ThemeToggle from './theme-toggle';
 import { motion } from 'framer-motion';
 import { ButtonSwitch } from './button-switch';
+import EnvironmentIndicator from './env-indicator';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -245,6 +246,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
             </Accordion>
             <Divider sx={{ my: 2 }} />
             <Footer></Footer>
+            <EnvironmentIndicator></EnvironmentIndicator>
           </Paper>
         </Container>
       </ThemeProvider>

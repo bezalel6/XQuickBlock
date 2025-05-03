@@ -1,0 +1,55 @@
+{
+    "$schema": "https://json.schemastore.org/chrome-manifest",
+    "manifest_version": 3,
+    "name": "XTerminator (Dev)",
+    "version": "1.7.0",
+    "description": "Quickly mute or block users on X with a single click, Automatically block advertisers, and more... (Development Version)",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "alarms"
+    ],
+    "host_permissions": [
+        "https://twitter.com/*",
+        "https://x.com/*",
+        "file:///*"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "options_page": "options.html",
+    "content_scripts": [
+        {
+            "matches": [
+                "https://twitter.com/*",
+                "https://x.com/*",
+                "file:///*"
+            ],
+            "js": [
+                "js/content_script.js"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "js/background.js",
+        "type": "module"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/icon.png"
+            ],
+            "matches": [
+                "https://twitter.com/*",
+                "https://x.com/*",
+                "file:///*"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "icons/icon16.png",
+        "32": "icons/icon32.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    }
+}
