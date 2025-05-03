@@ -11,8 +11,7 @@
   ],
   "host_permissions": [
     "https://twitter.com/*",
-    "https://x.com/*",
-    "file://*/*.html"
+    "https://x.com/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -22,8 +21,7 @@
     {
       "matches": [
         "https://twitter.com/*",
-        "https://x.com/*",
-        "file://*/*.html"
+        "https://x.com/*"
       ],
       "js": [
         "js/content_script.js"
