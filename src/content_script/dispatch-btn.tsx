@@ -1,6 +1,7 @@
 import { Action } from "../types";
 import { getSettingsManager } from "../settings-manager";
 import { toggleInvisible, sleep, dispatch } from "./utils";
+import Query from "lib/css++";
 
 /**
  * Create a styled button with improved hover effects and accessibility
@@ -50,7 +51,7 @@ export default function Button(
     try {
       toggleInvisible(confirmDialogSelector, true);
       if (e.ctrlKey) {
-        const users = Array.from(document.querySelectorAll(userNameSelector))
+        const users = Query.$().queryAll(userNameSelector)
           .filter(
             (e) => e instanceof HTMLElement && e.style?.display !== "none"
           )

@@ -32,6 +32,10 @@ module.exports = {
     },
     resolve: {
         extensions: [".ts", ".tsx", ".js"],
+        modules: [srcDir, "node_modules"],
+        alias: {
+            "lib": path.join(srcDir, "lib")
+        }
     },
     plugins: [
         new CopyPlugin({

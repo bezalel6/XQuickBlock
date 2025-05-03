@@ -1,6 +1,7 @@
 import { default as default_selectors } from "../constants";
 import { Action, ExtensionSettings, Source } from "../types";
 import { getSettingsManager } from "../settings-manager";
+import Query from "lib/css++";
 
 /**
  * Sleep for a specified number of milliseconds
@@ -85,7 +86,7 @@ export async function waitFor(
   delay = 50
 ): Promise<HTMLElement> {
   for (let i = 0; i < maxAttempts; i++) {
-    const element = document.querySelector(selector);
+    const element = Query.from(document).query(selector);
     if (element) return element as HTMLElement;
     await sleep(delay);
   }
@@ -97,8 +98,8 @@ export async function waitFor(
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
   return (
-    nameElement.closest('[role="link"]') ||
-    nameElement.closest("article") ||
+    Query.$(nameElement).closest('[role="link"]') ||
+    Query.$(nameElement).closest("article") ||
     null
   );
 }
@@ -107,11 +108,10 @@ export function getTweet(nameElement: HTMLElement): HTMLElement | null {
  * Check if an element has an ad span
  */
 export function hasAdSpan(parentElement: HTMLElement): boolean {
-  return !!Array.from(parentElement.querySelectorAll("span")).find(
+  return !!Query.from(parentElement).queryAll("span").find(
     (s) => s.textContent === "Ad"
   );
 }
-
 /**
  * Extract user details from a user name element
  */
@@ -120,11 +120,10 @@ export function extractUserDetails(userNameElement: HTMLElement): {
   username: string;
 } {
   const fullName =
-    userNameElement.querySelector("a div span span")?.textContent?.trim() ||
+    Query.from(userNameElement).query("a div span span")?.textContent?.trim() ||
     "Unknown";
   const username =
-    userNameElement
-      .querySelector('a[href^="/"]')
+    Query.from(userNameElement).query('a[href^="/"]')
       ?.getAttribute("href")
       ?.replace("/", "") || "unknown";
   return { fullName, username };
@@ -138,14 +137,14 @@ let cachedUsername: string | null = null;
 function getCurrentUsername(): string | null {
   if (cachedUsername) return cachedUsername;
 
-  const accountSwitcher = document.querySelector(
+  const accountSwitcher = Query.from(document).query(
     '[data-testid="SideNav_AccountSwitcher_Button"]'
   );
   if (!accountSwitcher) {
     return null;
   }
 
-  const userAvatarContainer = accountSwitcher.querySelector(
+  const userAvatarContainer = Query.from(accountSwitcher).query(
     '[data-testid^="UserAvatar-Container-"]'
   );
   if (!userAvatarContainer) {
@@ -164,10 +163,9 @@ function getCurrentUsername(): string | null {
 export function isUserOwnAccount(element: HTMLElement): boolean {
   const currentUsername = getCurrentUsername();
   if (!currentUsername) return false;
-
-  const elementUsername = element
+  const elementUsername = Query.from(element)
     .closest('[data-testid="User-Name"]')
-    ?.querySelector('a[href^="/"]')
+    ?.query('a[href^="/"]')
     ?.getAttribute("href")
     ?.replace("/", "");
   return currentUsername === elementUsername;
@@ -182,9 +180,7 @@ export async function dispatch(
   const { selectors } = (await getSettingsManager("content")).getState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
-    const moreButton = getTweet(nameElement)?.querySelector(
-      selectors.userMenuSelector
-    ) as HTMLElement;
+    const moreButton = Query.from(getTweet(nameElement)).query(selectors.userMenuSelector)
     if (!moreButton) {
       console.warn("More button not found for user");
       return;
@@ -194,9 +190,9 @@ export async function dispatch(
 
     let button: HTMLElement | null = null;
     if (action === "mute") {
-      button = Array.from(document.querySelectorAll('[role="menuitem"]')).find(
+      button = Query.from((document)).queryAll('[role="menuitem"]').find(
         (item) => item.textContent?.includes("Mute @")
-      ) as HTMLElement;
+      )
     } else {
       button = await waitFor(`[data-testid="${action}"]`);
     }
@@ -224,7 +220,8 @@ export async function dispatch(
  * @returns The closest ancestor with messedWith attribute, or null if none found
  */
 export function closestMessedWith(element: HTMLElement): Element | null {
-  return element.parentElement.querySelector('[messedWith="true"]');
+  // Instead of using closest, this is the actual best way in the specific usage context
+  return Query.from(element.parentElement).query('[messedWith="true"]');
 }
 
 export function isMessedWith(node: Element) {
