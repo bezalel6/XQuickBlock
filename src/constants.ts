@@ -1,4 +1,4 @@
-import { AdvancedSelector as $$$ } from 'lib/css++';
+import { AdvancedSelector as $$$ } from './lib/css++';
 
 const SELECTORS = {
   userNameSelector: '*[data-testid=User-Name]',
