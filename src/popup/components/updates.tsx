@@ -14,12 +14,12 @@ import { getSettingsManager } from "../../settings-manager";
 import { ExtensionSettings } from "types";
 import AutomaticPolicySelector from "./update-policy-selector";
 import { Setting } from "./popup-component";
+import UpdateButton from "./update-button";
 
 const UpdateSection: React.FC<{
   lastUpdatedSelectors: ExtensionSettings["lastUpdatedSelectors"];
   policyProps: Setting<"automaticUpdatePolicy">;
 }> = ({ lastUpdatedSelectors, policyProps }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
@@ -33,7 +33,6 @@ const UpdateSection: React.FC<{
   }, [lastUpdatedSelectors]);
 
   const handleUpdate = async () => {
-    setIsUpdating(true);
     setUpdateStatus("idle");
     setDiff(null);
     try {
@@ -59,8 +58,6 @@ const UpdateSection: React.FC<{
     } catch (error) {
       console.error("Error triggering manual update:", error);
       setUpdateStatus("error");
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -135,42 +132,7 @@ const UpdateSection: React.FC<{
             gap: 2,
           }}
         >
-          <Tooltip title="Check for updates" placement="top" arrow>
-            <span>
-              <Button
-                onClick={handleUpdate}
-                loading={isUpdating}
-                startIcon={
-                  <UpdateIcon
-                    sx={{
-                      animation: isUpdating
-                        ? "spin 1s linear infinite"
-                        : "none",
-                      "@keyframes spin": {
-                        "0%": {
-                          transform: "rotate(0deg)",
-                        },
-                        "100%": {
-                          transform: "rotate(360deg)",
-                        },
-                      },
-                    }}
-                  />
-                }
-                variant="contained"
-                color="primary"
-                sx={{
-                  minWidth: 120,
-                  transition: "transform 0.2s",
-                  "&:hover": {
-                    transform: "scale(1.05)",
-                  },
-                }}
-              >
-                {isUpdating ? "Updating..." : "Update Now"}
-              </Button>
-            </span>
-          </Tooltip>
+          <UpdateButton onUpdate={handleUpdate} />
 
           <AnimatePresence>
             {updateStatus !== "idle" && (
