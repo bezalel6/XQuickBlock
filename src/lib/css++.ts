@@ -1,10 +1,33 @@
 type ElementPredicate = (element: Element) => boolean;
 
 /**
+ * Configuration for pseudo-selector templates
+ */
+interface PseudoSelectorConfig {
+  prefix: string;
+  suffix: string;
+  valueWrapper: string;
+}
+
+/**
  * AdvancedSelector provides additional selection capabilities beyond standard CSS selectors
  * by implementing custom pseudo-selectors and providing a clean integration with the Query system.
  */
 class AdvancedSelector {
+  /**
+   * Default template configuration for pseudo-selectors
+   */
+  private static defaultTemplate: PseudoSelectorConfig = {
+    prefix: ':',
+    suffix: '',
+    valueWrapper: '"',
+  };
+
+  /**
+   * Current template configuration
+   */
+  private static template: PseudoSelectorConfig = { ...AdvancedSelector.defaultTemplate };
+
   /**
    * Registry of custom pseudo-selectors and their implementations
    */
@@ -24,6 +47,28 @@ class AdvancedSelector {
     endsWith: (text: string) => (element: Element) =>
       element.textContent?.toLowerCase().trim().endsWith(text.toLowerCase()) || false,
   };
+
+  /**
+   * Configure the template for pseudo-selectors
+   * @param config Partial configuration to apply
+   */
+  static configureTemplate(config: Partial<PseudoSelectorConfig>): void {
+    this.template = { ...this.template, ...config };
+  }
+
+  /**
+   * Reset template configuration to defaults
+   */
+  static resetTemplate(): void {
+    this.template = { ...this.defaultTemplate };
+  }
+
+  /**
+   * Get current template configuration
+   */
+  static getTemplate(): PseudoSelectorConfig {
+    return { ...this.template };
+  }
 
   /**
    * Performs a query with advanced selector support
@@ -78,14 +123,19 @@ class AdvancedSelector {
     baseSelector: string;
     pseudos: ElementPredicate[];
   } {
-    // Regex to match our custom pseudo-selectors
-    // Format: :pseudoName("value") or :pseudoName('value')
-    const pseudoRegex = /:([a-zA-Z]+)\((['"])(.*?)\2\)/g;
+    const { prefix, suffix, valueWrapper } = this.template;
+
+    // Create regex pattern based on current template configuration
+    const pattern = new RegExp(
+      `${prefix}([a-zA-Z]+)${suffix}\\(${valueWrapper}(.*?)${valueWrapper}\\)`,
+      'g'
+    );
+
     const pseudos: ElementPredicate[] = [];
 
     // Replace pseudo-selectors with empty string and collect predicates
     const baseSelector = selector
-      .replace(pseudoRegex, (match, name, quote, value) => {
+      .replace(pattern, (match, name, value) => {
         if (this.pseudoSelectors[name]) {
           pseudos.push(this.pseudoSelectors[name](value));
         } else {
@@ -109,19 +159,23 @@ class AdvancedSelector {
 
   // Convenience methods for common pseudo-selectors
   static contains(text: string): string {
-    return `:contains("${text}")`;
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}contains${suffix}(${valueWrapper}${text}${valueWrapper})`;
   }
 
   static exact(text: string): string {
-    return `:exact("${text}")`;
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}exact${suffix}(${valueWrapper}${text}${valueWrapper})`;
   }
 
   static startsWith(text: string): string {
-    return `:startsWith("${text}")`;
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}startsWith${suffix}(${valueWrapper}${text}${valueWrapper})`;
   }
 
   static endsWith(text: string): string {
-    return `:endsWith("${text}")`;
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}endsWith${suffix}(${valueWrapper}${text}${valueWrapper})`;
   }
 }
 
