@@ -54,6 +54,8 @@ const style = css`
     position: fixed;
     bottom: 0;
     right: 0;
+    height: min-content;
+    width: 400px;
     z-index: 10000;
     background: rgba(29, 161, 242, 1);
     visibility: hidden;
@@ -76,7 +78,6 @@ const style = css`
     flex-direction: column;
     gap: 8px;
     word-wrap: break-word;
-    max-width: 300px;
     line-height: 1.4;
     padding: 4px 0;
   }
@@ -179,7 +180,6 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
   style.inject();
   const container = document.createElement('div');
   container.classList.add('container');
-  console.log(ref);
 
   // Apply custom styles if provided
   if (customStyles) {
@@ -193,7 +193,7 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
     <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
       <div class="xterminate-btn">
         <img class="icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
-        ${html`<div class="tooltip" ${ref(tooltipRef)}>
+        <div class="tooltip" ${ref(tooltipRef)}>
           <div class="tooltip-content">
             <strong>X-Terminator</strong> can
             <span class="highlight">oblitirate this dialog</span> and others like it
@@ -206,27 +206,25 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
               >You can always change this in the settings</a
             >
           </div>
-        </div>`}
+        </div>
       </div>
     </div>
   `;
   render(template, container);
 
-  // Defer DOM manipulation to ensure ref is bound
-  Promise.resolve().then(() => {
-    // const tooltipEl = tooltipRef.value;
-    // if (tooltipEl) {
-    //   document.body.appendChild(tooltipEl);
-    //   tooltipEl.style.visibility = 'visible';
-    //   tooltipEl.style.opacity = '1';
-    //   const btn = container.querySelector('.xterminate-btn');
-    //   if (btn) {
-    //     const btnRect = btn.getBoundingClientRect();
-    //     tooltipEl.style.position = 'fixed';
-    //     tooltipEl.style.top = `${btnRect.bottom + 8}px`;
-    //     tooltipEl.style.left = `${btnRect.left}px`;
-    //   }
-    // }
+  setTimeout(() => {
+    const tooltipEl = tooltipRef.value;
+    if (tooltipEl) {
+      document.body.appendChild(tooltipEl);
+      // Optional: position it next to the button
+      const btn = container.querySelector('.xterminate-btn');
+      if (btn) {
+        const btnRect = btn.getBoundingClientRect();
+        tooltipEl.style.position = 'absolute';
+        tooltipEl.style.top = `${btnRect.bottom + 8}px`;
+        tooltipEl.style.left = `${btnRect.left}px`;
+      }
+    }
   });
 
   return container;
