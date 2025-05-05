@@ -131,7 +131,7 @@ const style = css`
     content: '';
     position: absolute;
     top: 100%;
-    left: 20px;
+    left: 50%; /* Changed from right to left for proper centering */
     margin-left: -6px;
     border-width: 6px;
     border-style: solid;
@@ -178,7 +178,9 @@ const style = css`
     transform: scaleX(1);
     transform-origin: bottom left;
   }
-
+  .settings-note {
+    cursor: pointer;
+  }
   .tooltip-content .settings-note {
     display: block;
     font-size: 0.85em;
@@ -378,9 +380,10 @@ function FlexiblePromo(
       if (btn) {
         const updateTooltipPosition = () => {
           const btnRect = btn.getBoundingClientRect();
-          tooltipEl.style.position = 'absolute';
           tooltipEl.style.top = `${btnRect.top - tooltipEl.offsetHeight - 10}px`;
-          tooltipEl.style.left = `${btnRect.left - tooltipEl.offsetWidth / 2 + btn.offsetWidth / 2}px`;
+          // Fix for centering tooltip properly
+          const btnCenter = btnRect.left + btn.offsetWidth / 2;
+          tooltipEl.style.left = `${btnCenter - tooltipEl.offsetWidth / 2}px`;
         };
 
         updateTooltipPosition();
