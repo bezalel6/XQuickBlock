@@ -23,14 +23,14 @@ import {
 } from './utils';
 import { injectPromo as flexible } from './flexible-promo';
 import { injectPromo } from './extension-promo';
-import Query from 'lib/query';
+import Query from '../lib/query';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
 
 function processAd(tweet: HTMLElement, userNameElement: HTMLElement, settings: SettingsManger) {
   const { promotedContentAction } = settings.getState();
   // First, clean up any previous hide effects
-  const existingNotification = Query.from(tweet.parentNode).query(`.${adPlaceHolderClassName}`);
+  const existingNotification = Query.from(tweet.parentNode!).query(`.${adPlaceHolderClassName}`);
   if (existingNotification) {
     existingNotification.remove();
   }
@@ -74,7 +74,7 @@ export async function processUsername(userNameElement: HTMLElement) {
   buttonContainer.style.marginLeft = '4px';
 
   const { isBlockEnabled, isMuteEnabled } = settings.getState();
-  const btns = [];
+  const btns = Array<HTMLElement>();
   if (isMuteEnabled) {
     btns.push(Button('Mute', 'mute', userNameElement));
   }
@@ -120,7 +120,7 @@ async function initialize(state: ExtensionSettings) {
       node => Query.from(node).query(selectors.upsaleDialogSelector),
       dialog => {
         const oblitirate = () => {
-          Query.$(dialog).closest('[role="dialog"]').remove();
+          Query.$(dialog).closest('[role="dialog"]')?.remove();
           Query.$()
             .queryAll(['[role="dialog"]', '[data-testid="mask"]'])
             .forEach(d => d.remove());
@@ -176,7 +176,7 @@ async function initialize(state: ExtensionSettings) {
       Query.from(document)
         .queryAll(`.${AD}`)
         .forEach(ad => {
-          processAd(ad as HTMLElement, Query.from(ad).query(userNameSelector), settings);
+          processAd(ad as HTMLElement, Query.from(ad).query(userNameSelector)!, settings);
         });
     }
   );

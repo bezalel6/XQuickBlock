@@ -1,24 +1,26 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
+import { ref, createRef } from 'lit-html/directives/ref.js';
 import Query from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
-import css, { className } from 'lib/css';
+import css, { className } from '../lib/css';
+
 export const flexiblePromoClassName = 'flexible-promo';
+
 const style = css`
   ${className(flexiblePromoClassName)} {
     position: absolute;
     right: 10px;
     bottom: 50%;
     color: white;
-    z-index: 9999;
+    z-index: 5;
   }
-  ${className(flexiblePromoClassName)}:hover {
-  }
+
   .container {
     position: relative;
     width: 100%;
   }
-  /* Button component styles */
+
   .xterminate-btn {
     display: flex;
     align-items: center;
@@ -27,13 +29,12 @@ const style = css`
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    position: relative;
     font-weight: bold;
     height: 40px;
     width: min-content;
     transition: all 0.3s ease;
-    overflow: visible; /* Changed from hidden to allow tooltip to show */
     padding: 0 1rem;
+    position: relative;
   }
 
   .xterminate-btn:hover {
@@ -49,35 +50,14 @@ const style = css`
     min-width: 24px;
   }
 
-  .xterminate-btn .text {
-    margin-left: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    opacity: 1;
-    transition: opacity 0.2s ease;
-  }
-
-  /* Tooltip style */
   .tooltip {
-    position: absolute;
-    background-color: #2a2a2a;
-    color: #fff;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    bottom: 120%;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: normal;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 10000;
+    background: rgba(29, 161, 242, 1);
     visibility: hidden;
     opacity: 0;
-    transition: all 0.2s ease-in-out;
-    pointer-events: none;
-    z-index: 10000000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: max-content;
-    max-width: 320px;
   }
 
   .tooltip::after {
@@ -90,8 +70,8 @@ const style = css`
     border-style: solid;
     border-color: #2a2a2a transparent transparent transparent;
   }
+
   .tooltip-content {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -126,23 +106,9 @@ const style = css`
     text-decoration: underline;
   }
 
-  /* Make sure the button has position relative for tooltip positioning */
-  .xterminate-btn {
-    position: relative;
-  }
-
-  /* Fix tooltip visibility */
   .xterminate-btn:hover .tooltip {
     visibility: visible;
     opacity: 1;
-    overflow: visible;
-  }
-
-  /* Container labels */
-  .label {
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-    color: #555;
   }
 `.define('flexible-promo');
 
@@ -164,7 +130,7 @@ function injectPromo(oblitirate: () => void, config: PromoConfig) {
   // Find the action buttons container if using default selector
   let container: HTMLElement;
   if (insertionSelector) {
-    container = Query.from(targetElement).query(insertionSelector);
+    container = Query.from(targetElement).query(insertionSelector)!;
   } else {
     container = targetElement;
   }
@@ -212,7 +178,8 @@ function updateSettings() {
 function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, string>) {
   style.inject();
   const container = document.createElement('div');
-  container.classList.add('container', 'small');
+  container.classList.add('container');
+  console.log(ref);
 
   // Apply custom styles if provided
   if (customStyles) {
@@ -220,12 +187,13 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
       container.style[key as any] = value;
     });
   }
+  const tooltipRef = createRef<HTMLDivElement>();
 
   const template = html`
     <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
       <div class="xterminate-btn">
-        <img class="icon " src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
-        <div class="promo-text tooltip">
+        <img class="icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
+        ${html`<div class="tooltip" ${ref(tooltipRef)}>
           <div class="tooltip-content">
             <strong>X-Terminator</strong> can
             <span class="highlight">oblitirate this dialog</span> and others like it
@@ -238,13 +206,30 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
               >You can always change this in the settings</a
             >
           </div>
-        </div>
+        </div>`}
       </div>
     </div>
   `;
   render(template, container);
+
+  // Defer DOM manipulation to ensure ref is bound
+  Promise.resolve().then(() => {
+    // const tooltipEl = tooltipRef.value;
+    // if (tooltipEl) {
+    //   document.body.appendChild(tooltipEl);
+    //   tooltipEl.style.visibility = 'visible';
+    //   tooltipEl.style.opacity = '1';
+    //   const btn = container.querySelector('.xterminate-btn');
+    //   if (btn) {
+    //     const btnRect = btn.getBoundingClientRect();
+    //     tooltipEl.style.position = 'fixed';
+    //     tooltipEl.style.top = `${btnRect.bottom + 8}px`;
+    //     tooltipEl.style.left = `${btnRect.left}px`;
+    //   }
+    // }
+  });
+
   return container;
 }
 
-// Export the injection function
 export { injectPromo };

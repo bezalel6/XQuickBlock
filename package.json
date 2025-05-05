@@ -39,6 +39,7 @@
     "@types/jest": "^29.5.0",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
+    "@types/web": "^0.0.231",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "archiver": "^6.0.2",
