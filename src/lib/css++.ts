@@ -19,7 +19,7 @@ class AdvancedSelector {
    * Default template configuration for pseudo-selectors
    */
   private static defaultTemplate: PseudoSelectorConfig = {
-    prefix: ':',
+    prefix: 'advanced-selector-',
     suffix: '',
     valueWrapper: '"',
   };

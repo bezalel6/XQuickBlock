@@ -66,17 +66,19 @@ export function createPersistentMutationCallback<T>(
     callback,
     mode: 'persistent',
   };
-
-  // Replace existing callback with the same ID if it exists
-  const existingIndex = mutationCallbacks.findIndex(cb => 'id' in cb && cb.id === id);
-
-  if (existingIndex !== -1) {
-    mutationCallbacks[existingIndex] = mutationCallback as MutationCallback<unknown>;
-  } else {
+  const tryCondition = () => {
     const res = condition(document.body);
     if (res) {
       callback(res as any);
     }
+  };
+
+  // Replace existing callback with the same ID if it exists
+  const existingIndex = mutationCallbacks.findIndex(cb => 'id' in cb && cb.id === id);
+  tryCondition();
+  if (existingIndex !== -1) {
+    mutationCallbacks[existingIndex] = mutationCallback as MutationCallback<unknown>;
+  } else {
     mutationCallbacks.push(mutationCallback as MutationCallback<unknown>);
   }
 

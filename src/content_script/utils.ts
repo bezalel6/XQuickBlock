@@ -1,43 +1,78 @@
-import { default as default_selectors } from "../constants";
-import { Action, ExtensionSettings, Source } from "../types";
-import { getSettingsManager } from "../settings-manager";
-import Query from "lib/css++";
+import { default as default_selectors, Selector } from '../constants';
+import { Action, ExtensionSettings, Source } from '../types';
+import { getSettingsManager } from '../settings-manager';
+import Query, { AdvancedSelector } from 'lib/css++';
 
 /**
  * Sleep for a specified number of milliseconds
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
-
 /**
  * Toggle visibility of elements matching a selector, using {@link toggleCSSRule}
  */
-export function toggleInvisible(selector: string, hide: boolean): void {
-  toggleCSSRule(selector, "display", hide ? "none !important" : "", hide);
+export function toggleInvisible(selector: Selector, hide: boolean, debug?: boolean): void;
+export function toggleInvisible(element: HTMLElement, hide: boolean, debug?: boolean): void;
+export function toggleInvisible(
+  selectorOrElement: Selector | HTMLElement,
+  hide: boolean,
+  debug = false
+): void {
+  if (selectorOrElement instanceof HTMLElement) {
+    toggleElementCSSRule(selectorOrElement, 'display', hide ? 'none !important' : '', hide, debug);
+  } else {
+    toggleCSSRule(selectorOrElement, 'display', hide ? 'none !important' : '', hide, debug);
+  }
+}
+
+/**
+ * Toggle a CSS rule for a specific HTMLElement
+ */
+export function toggleElementCSSRule(
+  element: HTMLElement,
+  property: string,
+  value: string,
+  enable: boolean,
+  debug: boolean
+): void {
+  // Ensure the element has an ID or data attribute for targeting
+  const elementId = element.id || `toggle-target-${generateUniqueId()}`;
+  if (!element.id) {
+    element.id = elementId;
+  }
+
+  // Create a selector for this specific element
+  const selector = `#${elementId}`;
+
+  // Use the existing toggleCSSRule function with this specific selector
+  toggleCSSRule(selector, property, value, enable, debug);
 }
 
 /**
  * Toggle a CSS rule in a dedicated style sheet
  */
 export function toggleCSSRule(
-  _selector: string,
+  _selector: Selector,
   property: string,
   value: string,
-  enable: boolean
+  enable: boolean,
+  debug = false
 ): void {
   // Get or create our dedicated stylesheet
-  const stylesheetId = "toggle-css-utility-stylesheet";
+  const stylesheetId = 'toggle-css-utility-stylesheet';
   let styleSheet = document.getElementById(stylesheetId) as HTMLStyleElement;
 
   if (!styleSheet) {
     // Create new stylesheet if it doesn't exist
-    styleSheet = document.createElement("style");
+    styleSheet = document.createElement('style');
     styleSheet.id = stylesheetId;
     document.head.appendChild(styleSheet);
   }
 
   const selector = normalizeCss(_selector);
+  console.log(_selector, 'Normalized', selector);
+  if (selector === null) return;
   const sheet = styleSheet.sheet as CSSStyleSheet;
   const rules = sheet.cssRules;
   let ruleIndex = -1;
@@ -48,7 +83,7 @@ export function toggleCSSRule(
     const currentNormalized = normalizeCss(rule.selectorText);
     if (currentNormalized === selector) {
       // Check if this rule controls the same property
-      if (rule.style.getPropertyValue(property) !== "") {
+      if (rule.style.getPropertyValue(property) !== '') {
         ruleIndex = i;
         break;
       }
@@ -56,7 +91,8 @@ export function toggleCSSRule(
   }
 
   if (enable) {
-    const cssRule = `${selector} { ${property}: ${value}; }`;
+    const debugStyles = debug ? 'border: 3px solid #ff0000 !important;' : '';
+    const cssRule = `${selector} { ${property}: ${value}; ${debugStyles} }`;
 
     if (ruleIndex === -1) {
       // Add new rule if it doesn't exist
@@ -68,13 +104,44 @@ export function toggleCSSRule(
     }
   } else if (ruleIndex !== -1) {
     // Remove rule if disable requested
+    if (debug) {
+      // Add debug-only rule to show the element
+      const debugRule = `${selector} { border: 3px solid #ff0000 !important; }`;
+      sheet.insertRule(debugRule, rules.length);
+    }
     sheet.deleteRule(ruleIndex);
   }
+}
 
-  // Helper function for normalizing CSS selectors
-  function normalizeCss(cssSelector: string): string {
-    return cssSelector.trim().replace(/\s+/g, " ");
+/**
+ * Helper function for normalizing CSS selectors. Will clear any advanced selectors
+ */
+function normalizeCss(cssSelector: Selector): string | null {
+  let clean = '';
+  const cleanCss = (css: string) => css.trim().replace(/\s+/g, ' ');
+  if (Array.isArray(cssSelector)) {
+    clean = cssSelector
+      .filter(s => {
+        const ret = !Query.hasAdvancedSelector(s);
+        return ret;
+      })
+      .map(cleanCss)
+      .filter(s => !!s.length)
+      .join(', ');
+    if (!clean.length) return null;
+  } else if (typeof cssSelector === 'string') {
+    if (Query.hasAdvancedSelector(cssSelector)) return null;
+    clean = cssSelector;
   }
+
+  return cleanCss(clean);
+}
+
+/**
+ * Generate a unique ID for elements that don't have one
+ */
+function generateUniqueId(): string {
+  return `el-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /**
@@ -98,9 +165,7 @@ export async function waitFor(
  */
 export function getTweet(nameElement: HTMLElement): HTMLElement | null {
   return (
-    Query.$(nameElement).closest('[role="link"]') ||
-    Query.$(nameElement).closest("article") ||
-    null
+    Query.$(nameElement).closest('[role="link"]') || Query.$(nameElement).closest('article') || null
   );
 }
 
@@ -108,9 +173,9 @@ export function getTweet(nameElement: HTMLElement): HTMLElement | null {
  * Check if an element has an ad span
  */
 export function hasAdSpan(parentElement: HTMLElement): boolean {
-  return !!Query.from(parentElement).queryAll("span").find(
-    (s) => s.textContent === "Ad"
-  );
+  return !!Query.from(parentElement)
+    .queryAll('span')
+    .find(s => s.textContent === 'Ad');
 }
 /**
  * Extract user details from a user name element
@@ -120,12 +185,10 @@ export function extractUserDetails(userNameElement: HTMLElement): {
   username: string;
 } {
   const fullName =
-    Query.from(userNameElement).query("a div span span")?.textContent?.trim() ||
-    "Unknown";
+    Query.from(userNameElement).query('a div span span')?.textContent?.trim() || 'Unknown';
   const username =
-    Query.from(userNameElement).query('a[href^="/"]')
-      ?.getAttribute("href")
-      ?.replace("/", "") || "unknown";
+    Query.from(userNameElement).query('a[href^="/"]')?.getAttribute('href')?.replace('/', '') ||
+    'unknown';
   return { fullName, username };
 }
 
@@ -152,9 +215,7 @@ function getCurrentUsername(): string | null {
   }
 
   cachedUsername =
-    userAvatarContainer
-      .getAttribute("data-testid")
-      ?.replace("UserAvatar-Container-", "") || null;
+    userAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '') || null;
   return cachedUsername;
 }
 /**
@@ -166,33 +227,30 @@ export function isUserOwnAccount(element: HTMLElement): boolean {
   const elementUsername = Query.from(element)
     .closest('[data-testid="User-Name"]')
     ?.query('a[href^="/"]')
-    ?.getAttribute("href")
-    ?.replace("/", "");
+    ?.getAttribute('href')
+    ?.replace('/', '');
   return currentUsername === elementUsername;
 }
 /**
  * Perform action on a user (block/mute) with improved error handling
  */
-export async function dispatch(
-  nameElement: HTMLElement,
-  action: Action
-): Promise<void> {
-  const { selectors } = (await getSettingsManager("content")).getState();
+export async function dispatch(nameElement: HTMLElement, action: Action): Promise<void> {
+  const { selectors } = (await getSettingsManager('content')).getState();
   try {
     toggleInvisible(selectors.userMenuSelector, true);
-    const moreButton = Query.from(getTweet(nameElement)).query(selectors.userMenuSelector)
+    const moreButton = Query.from(getTweet(nameElement)).query(selectors.userMenuSelector);
     if (!moreButton) {
-      console.warn("More button not found for user");
+      console.warn('More button not found for user');
       return;
     }
     moreButton.click();
     await waitFor('[role="menu"]');
 
     let button: HTMLElement | null = null;
-    if (action === "mute") {
-      button = Query.from((document)).queryAll('[role="menuitem"]').find(
-        (item) => item.textContent?.includes("Mute @")
-      )
+    if (action === 'mute') {
+      button = Query.from(document)
+        .queryAll('[role="menuitem"]')
+        .find(item => item.textContent?.includes('Mute @'));
     } else {
       button = await waitFor(`[data-testid="${action}"]`);
     }
@@ -203,11 +261,9 @@ export async function dispatch(
     }
 
     button.click();
-    if (action === "mute") return;
+    if (action === 'mute') return;
 
-    await waitFor(selectors.confirmDialogConfirmSelector).then((e) =>
-      e.click()
-    );
+    await waitFor(selectors.confirmDialogConfirmSelector).then(e => e.click());
   } catch (error) {
     console.error(`Error performing ${action} action:`, error);
   } finally {
@@ -225,10 +281,10 @@ export function closestMessedWith(element: HTMLElement): Element | null {
 }
 
 export function isMessedWith(node: Element) {
-  return node.getAttribute("messedWith");
+  return node.getAttribute('messedWith');
 }
 export function setMessedWith(node: Element, messedWith = true) {
   if (!node) return false;
-  if (messedWith) return node.setAttribute("messedWith", "true");
-  node.removeAttribute("messedWith");
+  if (messedWith) return node.setAttribute('messedWith', 'true');
+  node.removeAttribute('messedWith');
 }

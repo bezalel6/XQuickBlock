@@ -1,3 +1,4 @@
+import { Button } from '@mui/material';
 import React from 'react';
 
 /**
@@ -21,7 +22,14 @@ const EnvironmentIndicator: React.FC = () => {
     opacity: 0.9,
   };
 
-  return <div style={styles}>{isProd ? 'PROD' : 'DEV'}</div>;
+  return (
+    <div style={styles}>
+      <>
+        {isProd ? 'PROD' : 'DEV'}
+        {!isProd && <Button>Open local examples</Button>}
+      </>
+    </div>
+  );
 };
 
 export default EnvironmentIndicator;

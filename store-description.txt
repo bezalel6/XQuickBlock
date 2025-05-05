@@ -1,20 +1,19 @@
-XTerminator
+XTerminator - Reclaim Your X/Twitter Experience
 
-Take back control of your Twitter feed with XTerminator! This powerful extension adds quick-access mute and block buttons directly to user elements, making it easier than ever to manage your feed.
+Tired of endless ads, premium prompts, and toxic content? XTerminator is your all-in-one solution to make X/Twitter usable again.
 
-Key Features:
-• One-click mute and block buttons right where you need them
-• Control-click to remove multiple accounts at once
-• Skip X's endless confirmation dialogs
-• Automatically detect and handle promoted tweets
-• Hide or block any ad on your feed
-• Automatically hide premium content prompts
-• Block upgrade interruptions
+What XTerminator Does:
+• Instantly mute or block any user with a single click
+• Mass-block entire toxic threads with Control+Click
+• Automatically removes all sponsored content
+• Eliminates premium subscription prompts and upsells
+• Removes subscription buttons from user profiles
+• Blocks upgrade interruptions and membership pestering
 
-Privacy First:
-• No data collection
+Your Privacy Matters:
+• Zero data collection
 • No tracking
-• Everything happens in your browser
-• No external API calls
+• Local processing only
+• Optional selector updates for interface changes
 
-Make Twitter semi-usable again with XTerminator - the simple, effective way to clean up your feed! 
+XTerminator is open source, free, and designed to give you back control of your feed. No more endless ads, no more premium BS, just the content you want to see.

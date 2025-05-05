@@ -3,7 +3,8 @@ import { AdvancedSelector } from './css++';
 /**
  * Type definitions for Query functionality
  */
-type QueryProps = readonly [string, ...string[]] | [string, ...string[]]; // At least one selector required
+
+type QueryProps = readonly [string, ...string[]] | [string, ...string[]] | string; // At least one selector required
 type SrcElement = Element | Document | ParentNode;
 type QueryResult<R extends HTMLElement> = R & { query: QueryFunc };
 type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
@@ -12,7 +13,7 @@ type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
  * Function signature for query methods
  */
 interface QueryFunc {
-  <R extends HTMLElement>(...selectors: QueryProps): NullableResult<R>;
+  <R extends HTMLElement>(selectors: QueryProps): NullableResult<R>;
 }
 
 /**
@@ -28,7 +29,7 @@ class Query {
     // Make the instance callable as a function through Proxy
     return new Proxy(this, {
       apply: (target, _, args) => {
-        return target.query(...(args as QueryProps));
+        return target.query(args as QueryProps);
       },
     });
   }
@@ -39,13 +40,15 @@ class Query {
   get src(): HTMLElement {
     return this.root as HTMLElement;
   }
-
+  static parseSelectors(selectors: QueryProps) {
+    return typeof selectors === 'string' ? [selectors] : selectors;
+  }
   /**
    * Check if a selector contains advanced selector patterns
    * @param selector The selector to check
    * @returns True if the selector contains advanced patterns
    */
-  private static hasAdvancedSelector(selector: string): boolean {
+  static hasAdvancedSelector(selector: string): boolean {
     const template = AdvancedSelector.getTemplate();
     const { prefix, suffix } = template;
     const pattern = new RegExp(`${prefix}[a-zA-Z]+${suffix}\\(`, 'g');
@@ -57,7 +60,8 @@ class Query {
    * @param selectors One or more CSS selectors to match against
    * @returns A wrapped element or null if not found
    */
-  query<R extends HTMLElement>(...selectors: QueryProps): NullableResult<R> {
+  query<R extends HTMLElement>(_selectors: QueryProps): NullableResult<R> {
+    const selectors = Query.parseSelectors(_selectors);
     for (const selector of selectors) {
       // Check if any part of the selector contains advanced patterns
       if (Query.hasAdvancedSelector(selector)) {
@@ -71,35 +75,32 @@ class Query {
     }
     return null;
   }
-
   /**
    * Query for all elements that match the selector(s)
    * @param selectors One or more CSS selectors to match against
    * @returns An array of wrapped elements
    */
-  queryAll<R extends HTMLElement>(...selectors: QueryProps): QueryResult<R>[] {
+  queryAll<R extends HTMLElement>(_selectors: QueryProps, greedy = true): QueryResult<R>[] {
+    const selectors = Query.parseSelectors(_selectors);
     const results: QueryResult<R>[] = [];
-
     for (const selector of selectors) {
-      // Check if the selector contains advanced patterns
-      if (Query.hasAdvancedSelector(selector)) {
-        const advancedResults = AdvancedSelector.queryAll<R>(
-          this.root as Element | Document,
-          selector
-        );
-        results.push(
-          ...advancedResults
-            .map(result => Query.res<R>(result))
-            .filter((el): el is QueryResult<R> => el !== null)
-        );
-        continue;
-      }
+      const greedAdjustedQuery = (advanced: boolean) => {
+        const inner = () => {
+          if (advanced) {
+            return greedy
+              ? AdvancedSelector.queryAll(this.src, selector)
+              : [AdvancedSelector.query(this.src, selector)];
+          }
+          return greedy
+            ? Array.from(this.src.querySelectorAll<R>(selector))
+            : [this.src.querySelector<R>(selector)];
+        };
+        return inner()
+          .map(result => Query.res<R>(result))
+          .filter((el): el is QueryResult<R> => el !== null);
+      };
 
-      // Add regular query results
-      const regularResults = Array.from(this.root.querySelectorAll(selector))
-        .map(el => Query.res<R>(el))
-        .filter((el): el is QueryResult<R> => el !== null);
-      results.push(...regularResults);
+      results.push(...greedAdjustedQuery(Query.hasAdvancedSelector(selector)));
     }
 
     // Remove duplicates by using a Set
@@ -111,8 +112,9 @@ class Query {
    * @param selectors One or more CSS selectors to match against
    * @returns A wrapped element or null if not found
    */
-  closest<R extends HTMLElement>(...selectors: QueryProps): NullableResult<R> {
-    return Query.res<R>(this.src.closest(selectors.join(', ')));
+  closest<R extends HTMLElement>(selectors: QueryProps): NullableResult<R> {
+    const selectorList = Query.parseSelectors(selectors);
+    return Query.res<R>(this.src.closest(selectorList.join(', ')));
   }
 
   /**
@@ -120,8 +122,9 @@ class Query {
    * @param selectors One or more CSS selectors to match against
    * @returns An array of wrapped elements
    */
-  children<R extends HTMLElement>(...selectors: QueryProps): QueryResult<R>[] {
-    const selector = selectors.join(', ');
+  children<R extends HTMLElement>(selectors: QueryProps): QueryResult<R>[] {
+    const selectorList = Query.parseSelectors(selectors);
+    const selector = selectorList.join(', ');
     return Array.from(this.src.children)
       .filter(child => child.matches(selector))
       .map(el => Query.res<R>(el))
@@ -133,8 +136,9 @@ class Query {
    * @param selectors One or more CSS selectors to match against
    * @returns An array of wrapped elements
    */
-  siblings<R extends HTMLElement>(...selectors: QueryProps): QueryResult<R>[] {
-    const selector = selectors.join(', ');
+  siblings<R extends HTMLElement>(selectors: QueryProps): QueryResult<R>[] {
+    const selectorList = Query.parseSelectors(selectors);
+    const selector = selectorList.join(', ');
     const element = this.src;
     const parent = element.parentElement;
 

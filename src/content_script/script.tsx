@@ -98,13 +98,21 @@ async function initialize(state: ExtensionSettings) {
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
 
     createPersistentMutationCallback(
+      'upsale',
+      node => Query.$(node).queryAll(selectors.upsaleSelectors, false),
+      upsales => {
+        upsales.forEach(u => toggleInvisible(u, hideSubscriptionOffers, true));
+      }
+    );
+
+    createPersistentMutationCallback(
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
       dialog => {
         const oblitirate = () => {
           Query.$(dialog).closest('[role="dialog"]').remove();
           Query.$()
-            .queryAll('[role="dialog"]', '[data-testid="mask"]')
+            .queryAll(['[role="dialog"]', '[data-testid="mask"]'])
             .forEach(d => d.remove());
           document.documentElement.style.overflowY = 'scroll';
         };

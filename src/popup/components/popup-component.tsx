@@ -246,7 +246,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
             </Accordion>
             <Divider sx={{ my: 2 }} />
             <Footer></Footer>
-            <EnvironmentIndicator></EnvironmentIndicator>
+            <EnvironmentIndicator />
           </Paper>
         </Container>
       </ThemeProvider>
