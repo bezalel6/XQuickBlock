@@ -6,7 +6,7 @@ import { AdvancedSelector } from './css++';
 
 type QueryProps = readonly [string, ...string[]] | [string, ...string[]] | string; // At least one selector required
 type SrcElement = Element | Document | ParentNode;
-type QueryResult<R extends HTMLElement> = R & { query: QueryFunc };
+type QueryResult<R extends HTMLElement> = R & { query: QueryFunc; _debugSelector?: string };
 type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
 
 /**
@@ -66,12 +66,12 @@ class Query {
       // Check if any part of the selector contains advanced patterns
       if (Query.hasAdvancedSelector(selector)) {
         const result = AdvancedSelector.query<R>(this.root as Element | Document, selector);
-        if (result) return Query.res<R>(result);
+        if (result) return Query.res<R>(result, selector);
         continue;
       }
 
       const result = this.root.querySelector(selector);
-      if (result) return Query.res<R>(result);
+      if (result) return Query.res<R>(result, selector);
     }
     return null;
   }
@@ -96,7 +96,7 @@ class Query {
             : [this.src.querySelector<R>(selector)];
         };
         return inner()
-          .map(result => Query.res<R>(result))
+          .map(result => Query.res<R>(result, selector))
           .filter((el): el is QueryResult<R> => el !== null);
       };
 
@@ -127,7 +127,7 @@ class Query {
     const selector = selectorList.join(', ');
     return Array.from(this.src.children)
       .filter(child => child.matches(selector))
-      .map(el => Query.res<R>(el))
+      .map(el => Query.res<R>(el, selector))
       .filter((el): el is QueryResult<R> => el !== null);
   }
 
@@ -146,7 +146,7 @@ class Query {
 
     return Array.from(parent.children)
       .filter(child => child !== element && child.matches(selector))
-      .map(el => Query.res<R>(el))
+      .map(el => Query.res<R>(el, selector))
       .filter((el): el is QueryResult<R> => el !== null);
   }
 
@@ -178,7 +178,9 @@ class Query {
       current = current.parentElement;
     }
 
-    return result.map(el => Query.res<R>(el)).filter((el): el is QueryResult<R> => el !== null);
+    return result
+      .map(el => Query.res<R>(el, selector))
+      .filter((el): el is QueryResult<R> => el !== null);
   }
 
   /**
@@ -344,11 +346,17 @@ class Query {
    * @param res Element to wrap
    * @returns A wrapped element or null if the input is falsy
    */
-  protected static res<R extends HTMLElement>(res: Element | null): NullableResult<R> {
+  protected static res<R extends HTMLElement>(
+    res: Element | null,
+    selector?: string
+  ): NullableResult<R> {
     if (!res) return null;
 
     const t = res as QueryResult<R>;
     t.query = (...s) => Query.from(t).query(...s);
+    if (selector) {
+      t._debugSelector = selector;
+    }
     return t;
   }
 

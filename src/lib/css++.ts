@@ -160,7 +160,8 @@ class AdvancedSelector {
         return '';
       })
       .trim();
-
+    console.log('Parsed:', selector, 'Into:', baseSelector);
+    console.log('psuedo:', pseudos);
     return { baseSelector, pseudos };
   }
 
