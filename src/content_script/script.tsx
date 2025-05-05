@@ -21,8 +21,8 @@ import {
   toggleInvisible,
   waitFor,
 } from './utils';
-import { injectPromo } from './extension-promo';
-import Query from 'lib/css++';
+import { injectPromo } from './flexible-promo';
+import Query from 'lib/query';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
 

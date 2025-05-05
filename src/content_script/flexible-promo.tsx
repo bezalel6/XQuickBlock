@@ -4,9 +4,9 @@ import Query from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
 import css, { className } from 'lib/css';
 
-export const extensionPromoClassName = 'xterminate-promo';
+export const flexiblePromoClassName = 'flexible-promo';
 const style = css`
-  ${className(extensionPromoClassName)} {
+  ${className(flexiblePromoClassName)} {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -20,7 +20,7 @@ const style = css`
     width: 100%;
     box-sizing: border-box;
   }
-  ${className(extensionPromoClassName)}:hover {
+  ${className(flexiblePromoClassName)}:hover {
     background: rgba(29, 161, 242, 0.12);
     border-color: rgba(29, 161, 242, 0.3);
   }
@@ -60,7 +60,7 @@ const style = css`
   .settings-note:hover {
     color: #1da1f2;
   }
-`.define('promo');
+`.define('flexible-promo');
 
 // Function to inject the promo into the subscription dialog
 function injectPromo(
@@ -75,7 +75,7 @@ function injectPromo(
   if (!actionButtons) return;
 
   // Create and inject our promo component
-  const promo = ExtensionPromo(() => {
+  const promo = FlexiblePromo(() => {
     oblitirate();
     updateSettings();
   });
@@ -97,12 +97,12 @@ function updateSettings() {
     payload: { hideSubscriptionOffers: true },
   });
 }
-function ExtensionPromo(onOblitirate: () => void) {
+function FlexiblePromo(onOblitirate: () => void) {
   style.inject();
   const container = document.createElement('div');
 
   const template = html`
-    <div class="${extensionPromoClassName}" @click=${onOblitirate}>
+    <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
       <img class="promo-icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
       <div class="promo-text">
         <strong>X-Terminator</strong> can <span class="highlight">oblitirate this dialog</span> and
@@ -118,7 +118,6 @@ function ExtensionPromo(onOblitirate: () => void) {
       </div>
     </div>
   `;
-
   render(template, container);
   return container;
 }
