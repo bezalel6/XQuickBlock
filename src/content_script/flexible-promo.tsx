@@ -107,7 +107,7 @@ const style = css`
     text-decoration: underline;
   }
 
-  .xterminate-btn:hover .tooltip {
+  .tooltip.visible {
     visibility: visible;
     opacity: 1;
   }
@@ -191,7 +191,11 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
 
   const template = html`
     <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
-      <div class="xterminate-btn">
+      <div
+        class="xterminate-btn"
+        @mouseenter=${() => showTooltip(true)}
+        @mouseleave=${() => showTooltip(false)}
+      >
         <img class="icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
         <div class="tooltip" ${ref(tooltipRef)}>
           <div class="tooltip-content">
@@ -211,7 +215,12 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
     </div>
   `;
   render(template, container);
-
+  const showTooltip = (show = true) => {
+    if (tooltipRef.value) {
+      if (show) tooltipRef.value.classList.add('visible');
+      else tooltipRef.value.classList.remove('visible');
+    }
+  };
   setTimeout(() => {
     const tooltipEl = tooltipRef.value;
     if (tooltipEl) {
