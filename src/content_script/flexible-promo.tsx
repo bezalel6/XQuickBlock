@@ -198,6 +198,11 @@ const style = css`
     text-decoration: none;
     transform: translateX(4px);
   }
+  .streak-box {
+    position: relative;
+    overflow: hidden;
+  }
+
   .streak-box::before {
     content: '';
     position: absolute;
@@ -208,6 +213,7 @@ const style = css`
     width: 100%;
     background: red;
     transform: skewX(-20deg);
+    pointer-events: none;
   }
 
   .streak-box.animate::before {
