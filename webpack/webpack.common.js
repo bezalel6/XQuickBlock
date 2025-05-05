@@ -26,12 +26,26 @@ module.exports = (env = {}, argv = {}) => {
       // Preserve modules
       moduleIds: 'named',
       chunkIds: 'named',
+      // Add development-specific optimizations
+      ...(isProd
+        ? {}
+        : {
+            removeAvailableModules: false,
+            removeEmptyChunks: false,
+            splitChunks: false,
+          }),
     },
     module: {
       rules: [
         {
           test: /\.tsx?$/,
-          use: 'ts-loader',
+          use: {
+            loader: 'ts-loader',
+            options: {
+              // Add transpileOnly for faster builds in development
+              ...(isProd ? {} : { transpileOnly: true }),
+            },
+          },
           exclude: /node_modules/,
         },
       ],
@@ -43,6 +57,8 @@ module.exports = (env = {}, argv = {}) => {
         lib: path.join(srcDir, 'lib'),
       },
     },
+    // Add source maps for development
+    devtool: isProd ? false : 'eval-cheap-module-source-map',
     plugins: [
       new CopyPlugin({
         patterns: [
