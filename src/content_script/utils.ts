@@ -1,7 +1,7 @@
 import { default as default_selectors, Selector } from '../constants';
 import { Action, ExtensionSettings, Source } from '../types';
 import { getSettingsManager } from '../settings-manager';
-import Query from 'lib/Query';
+import Query from 'lib/query';
 
 /**
  * Sleep for a specified number of milliseconds

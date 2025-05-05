@@ -1,7 +1,7 @@
 import { Action } from '../types';
 import { getSettingsManager } from '../settings-manager';
 import { toggleInvisible, sleep, dispatch } from './utils';
-import Query from 'lib/Query';
+import Query from 'lib/query';
 
 /**
  * Create a styled button with improved hover effects and accessibility

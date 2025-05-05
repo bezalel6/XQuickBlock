@@ -2,7 +2,7 @@ import { processUsername } from './script';
 import { ExtensionSettings } from '../types';
 import { getSettingsManager } from '../settings-manager';
 import { isMessedWith, setMessedWith, toggleInvisible } from './utils';
-import Query from 'lib/Query';
+import Query from 'lib/query';
 
 type Falsy = false | 0 | '' | null | undefined;
 type Truthy<T> = T extends Falsy ? never : T;

@@ -1,6 +1,6 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
-import Query from '../lib/Query';
+import Query from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
 import css, { className } from 'lib/css';
 

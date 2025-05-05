@@ -1,4 +1,4 @@
-import Query from 'lib/Query';
+import Query from 'lib/query';
 import { html, render } from '../lit';
 import { Action } from '../types';
 import { dispatch, extractUserDetails, getTweet } from './utils';
