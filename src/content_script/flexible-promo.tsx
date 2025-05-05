@@ -178,25 +178,48 @@ const style = css`
     transform: scaleX(1);
     transform-origin: bottom left;
   }
-  .settings-note {
-    cursor: pointer;
-  }
   .tooltip-content .settings-note {
     display: block;
     font-size: 0.85em;
-    color: #aaa;
-    text-decoration: none;
     margin-top: 6px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 8px;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
+    cursor: default;
   }
-
-  .tooltip-content .settings-note:hover {
+  .tooltip-content .settings-note a {
     color: #1da1f2;
+    cursor: pointer;
     text-decoration: underline;
   }
 
+  .tooltip-content .settings-note:hover {
+    color: #ff6b35;
+    text-decoration: none;
+    transform: translateX(4px);
+  }
+  .streak-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -100%;
+    opacity: 0;
+    width: 100%;
+    background: red;
+    transform: skewX(-20deg);
+  }
+
+  .streak-box.animate::before {
+    opacity: 1;
+    animation: streak 0.6s ease-out infinite;
+  }
+
+  @keyframes streak {
+    to {
+      left: 100%;
+    }
+  }
   /* Animation for the obliterate action */
   @keyframes obliterate {
     0% {
@@ -240,21 +263,26 @@ function injectPromo(obliterate: () => void, config: PromoConfig) {
     container = targetElement;
   }
   if (!container) return;
+  targetElement.classList.add('streak-box');
 
   // Create and inject our promo component
-  const promo = FlexiblePromo(targetEl => {
-    // Apply animation to target element
-    if (targetEl) {
-      targetEl.classList.add('obliterating');
-      setTimeout(() => {
+  const promo = FlexiblePromo(
+    targetEl => {
+      // Apply animation to target element
+      if (targetEl) {
+        targetEl.classList.add('obliterating');
+        setTimeout(() => {
+          obliterate();
+          updateSettings();
+        }, 500); // Wait for animation to complete
+      } else {
         obliterate();
         updateSettings();
-      }, 500); // Wait for animation to complete
-    } else {
-      obliterate();
-      updateSettings();
-    }
-  }, customStyles);
+      }
+    },
+    config,
+    customStyles
+  );
 
   // Insert the promo based on the specified method
   switch (insertionMethod) {
@@ -293,6 +321,7 @@ function updateSettings() {
 
 function FlexiblePromo(
   onObliterate: (targetEl?: HTMLElement) => void,
+  config: PromoConfig,
   customStyles?: Record<string, string>
 ) {
   style.inject();
@@ -339,15 +368,16 @@ function FlexiblePromo(
             @mouseenter=${() => showTooltip(true)}
             @mouseleave=${() => showTooltip(false)}
           >
-            <strong>X-Terminator</strong>
-            <div>Can <span class="highlight">obliterate this dialog</span> and others like it</div>
-            <a
-              @click=${(e: Event) => {
-                e.stopPropagation();
-                onOpenSettings();
-              }}
-              class="settings-note"
-              >You can always change this in the settings</a
+            <div>Click to <strong class="highlight">EXTERMINATE</strong></div>
+            <span class="settings-note"
+              >You can always change this
+              <a
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  onOpenSettings();
+                }}
+                >in the settings</a
+              ></span
             >
           </div>
         </div>
@@ -362,11 +392,13 @@ function FlexiblePromo(
 
     if (tooltipRef.value) {
       if (show) {
+        config.targetElement.classList.add('animate');
         tooltipRef.value.classList.add('visible');
       } else {
+        config.targetElement.classList.remove('animate');
         tooltipTimeout = window.setTimeout(() => {
           tooltipRef.value?.classList.remove('visible');
-        }, 200);
+        }, 1000);
       }
     }
   };

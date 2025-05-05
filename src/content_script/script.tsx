@@ -96,8 +96,6 @@ async function initialize(state: ExtensionSettings) {
   );
 
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) => {
-    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
-
     createPersistentMutationCallback(
       'upsale',
       node => Query.$().queryAll(selectors.upsaleSelectors, false),
@@ -115,6 +113,7 @@ async function initialize(state: ExtensionSettings) {
       }
     );
 
+    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
     createPersistentMutationCallback(
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
@@ -129,7 +128,7 @@ async function initialize(state: ExtensionSettings) {
         if (hideSubscriptionOffers) {
           oblitirate();
         } else {
-          injectPromo(oblitirate, dialog);
+          flexible(oblitirate, { targetElement: dialog, i });
         }
       }
     );
