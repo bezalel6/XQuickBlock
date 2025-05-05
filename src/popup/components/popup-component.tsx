@@ -246,7 +246,10 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
             </Accordion>
             <Divider sx={{ my: 2 }} />
             <Footer></Footer>
-            <EnvironmentIndicator />
+            <EnvironmentIndicator
+              label="Persist Default Selectors"
+              {...settingField('overrideDefaultSelectors')}
+            />
           </Paper>
         </Container>
       </ThemeProvider>

@@ -14,6 +14,7 @@ export interface ExtensionSettings {
   selectors: Selectors;
   automaticUpdatePolicy: UpdatePolicy;
   source?: Source;
+  overrideDefaultSelectors?: boolean;
 }
 
 export interface ExtensionMessage {
