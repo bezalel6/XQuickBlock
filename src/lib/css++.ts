@@ -160,7 +160,6 @@ class AdvancedSelector {
         return '';
       })
       .trim();
-
     return { baseSelector, pseudos };
   }
 

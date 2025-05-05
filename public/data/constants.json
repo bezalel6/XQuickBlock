@@ -7,7 +7,7 @@
   "buyIntoUpsaleHref": "/i/premium_sign_up",
   "upsaleSelectors": [
     "[data-testid=\"verified_profile_upsell\"], aside:has(a[href=\"/i/premium_sign_up\"]), a[href=\"/i/premium_sign_up\"], div [data-testid=\"super-upsell-UpsellCardRenderProperties\"], div [data-testid=\"inlinePrompt\"] a[href^=\"/i/premium_sign_up\"], [data-testid=\"cellInnerDiv\"]:has([data-testid=\"inlinePrompt\"])",
-    "div > div:has(divadvanced-selector-contains(\"Access your post analytics\"))"
+    "[data-testid=\"tweet\"] div:has( > div > div > span advanced-selector-contains(\"Access your post analytics\"))"
   ],
   "upsaleDialogSelector": "[data-testid=\"sheetDialog\"] div advanced-selector-containsAny(\"Want more people to see your reply?,Remove all ads with Premium+\")",
   "subscribeToButtonSelector": "div > [aria-label^=\"Subscribe to @\"]",

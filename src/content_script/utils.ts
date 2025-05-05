@@ -71,7 +71,6 @@ export function toggleCSSRule(
   }
 
   const selector = normalizeCss(_selector);
-  console.log(_selector, 'Normalized', selector);
   if (selector === null) return;
   const sheet = styleSheet.sheet as CSSStyleSheet;
   const rules = sheet.cssRules;

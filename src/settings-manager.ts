@@ -1,6 +1,7 @@
 import { ExtensionMessage, ExtensionSettings, InternalExtensionMessage, Source } from './types';
 import { default as default_selectors } from './constants';
 import { sendMessageToBackground, sendMessageToContentScript } from './message-handler';
+import { isProd } from 'lib/environment';
 
 // Add logging utility
 const log = (context: string, message: string, data?: any) => {
@@ -257,6 +258,9 @@ class SettingsManager<T extends End> extends StateManager<ExtensionSettings> {
           ...defaultSettings,
           ...data,
         };
+        if (!isProd && finalState.overrideDefaultSelectors) {
+          finalState.selectors = default_selectors;
+        }
         log('SettingsManager', 'Fetched settings', finalState);
         resolve(finalState);
       });
@@ -307,4 +311,5 @@ const defaultSettings: ExtensionSettings = {
   selectors: default_selectors,
   automaticUpdatePolicy: 'weekly',
   source: Source.MAIN,
+  overrideDefaultSelectors: false,
 };

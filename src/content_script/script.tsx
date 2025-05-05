@@ -99,7 +99,7 @@ async function initialize(state: ExtensionSettings) {
 
     createPersistentMutationCallback(
       'upsale',
-      node => Query.$(node).queryAll(selectors.upsaleSelectors, false),
+      node => Query.$().queryAll(selectors.upsaleSelectors, false),
       upsales => {
         upsales.forEach(u => toggleInvisible(u, hideSubscriptionOffers, true));
       }
