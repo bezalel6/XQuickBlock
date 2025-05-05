@@ -2,7 +2,7 @@
  * Type definitions for Query functionality
  */
 
-type QueryProps = readonly [string, ...string[]] | [string, ...string[]] | string; // At least one selector required
+export type QueryProps = readonly [string, ...string[]] | [string, ...string[]] | string; // At least one selector required
 type SrcElement = Element | Document | ParentNode;
 type QueryResult<R extends HTMLElement> = R & { query: QueryFunc; _debugSelector?: string };
 type NullableResult<R extends HTMLElement> = QueryResult<R> | null;
@@ -71,6 +71,9 @@ class Query {
     // Find elements where text ends with value
     endsWith: (text: string) => (element: Element) =>
       element.textContent?.toLowerCase().trim().endsWith(text.toLowerCase()) || false,
+
+    // Query the element itself using a selector
+    self: (selector: string) => (element: Element) => element.matches(selector),
   };
 
   /**
@@ -532,6 +535,12 @@ class Query {
     const { prefix, suffix, valueWrapper } = this.template;
     return `${prefix}endsWith${suffix}(${valueWrapper}${text}${valueWrapper})`;
   }
+
+  static self(selector: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}self${suffix}(${valueWrapper}${selector}${valueWrapper})`;
+  }
+
   /**
    * Performs a query with advanced selector support
    * @param root The root element to search within
@@ -543,10 +552,10 @@ class Query {
     selector: string
   ): R | null {
     const { baseSelector, pseudos } = this.parseSelector(selector);
-
     // First, get all elements matching the base selector
-    const candidates = Array.from(root.querySelectorAll<R>(baseSelector));
-
+    const candidates = Array.from(
+      baseSelector.trim().length ? root.querySelectorAll<R>(baseSelector) : [root as R]
+    );
     // If no custom pseudo-selectors, return the first match
     if (pseudos.length === 0) {
       return candidates[0] || null;

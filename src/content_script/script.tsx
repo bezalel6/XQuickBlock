@@ -100,15 +100,19 @@ async function initialize(state: ExtensionSettings) {
       'upsale',
       node => Query.$().queryAll(selectors.upsaleSelectors, false),
       upsales => {
+        console.log({ upsales });
         upsales.forEach(u => {
           if (!hideSubscriptionOffers) {
             flexible(() => {}, {
               targetElement: u,
-              insertionSelector: `a[role="link"]`,
+              insertionSelector: [
+                `a[role="link"]`,
+                Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
+              ],
               insertionMethod: 'after',
             });
           }
-          toggleInvisible(u, hideSubscriptionOffers, true);
+          toggleInvisible(u, hideSubscriptionOffers);
         });
       }
     );
@@ -128,7 +132,7 @@ async function initialize(state: ExtensionSettings) {
         if (hideSubscriptionOffers) {
           oblitirate();
         } else {
-          flexible(oblitirate, { targetElement: dialog, i });
+          flexible(oblitirate, { targetElement: dialog });
         }
       }
     );

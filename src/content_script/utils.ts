@@ -278,12 +278,19 @@ export function closestMessedWith(element: HTMLElement): Element | null {
   // Instead of using closest, this is the actual best way in the specific usage context
   return Query.from(element.parentElement).query('[messedWith="true"]');
 }
-
-export function isMessedWith(node: Element) {
-  return node.getAttribute('messedWith');
+type MessSrc = 'static-selectors' | 'advanced-selectors';
+type MessSelector = '*' | MessSrc;
+export function isMessedWith(node: Element, by: MessSelector = '*') {
+  const res = node.getAttribute('messedWith');
+  if (res && by !== '*') return by === res;
+  return !!res;
 }
-export function setMessedWith(node: Element, messedWith = true) {
+export function setMessedWith(
+  node: Element,
+  messedWith = true,
+  by: MessSelector = 'static-selectors'
+) {
   if (!node) return false;
-  if (messedWith) return node.setAttribute('messedWith', 'true');
+  if (messedWith) return node.setAttribute('messedWith', by);
   node.removeAttribute('messedWith');
 }

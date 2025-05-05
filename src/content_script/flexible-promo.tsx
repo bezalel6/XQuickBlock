@@ -1,7 +1,7 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
 import { ref, createRef } from 'lit-html/directives/ref.js';
-import Query from '../lib/query';
+import Query, { QueryProps } from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
 import css, { className } from '../lib/css';
 
@@ -241,7 +241,7 @@ const style = css`
 `.define('flexible-promo');
 
 interface PromoConfig {
-  insertionSelector?: string;
+  insertionSelector?: QueryProps;
   insertionMethod?: 'before' | 'after' | 'prepend' | 'append';
   targetElement: HTMLElement;
   customStyles?: Record<string, string>;
@@ -252,12 +252,13 @@ function injectPromo(obliterate: () => void, config: PromoConfig) {
   const { insertionSelector, insertionMethod = 'before', targetElement, customStyles } = config;
 
   // Find the targetElement element
-  if (!targetElement || isMessedWith(targetElement)) return;
-  setMessedWith(targetElement);
+  if (!targetElement || isMessedWith(targetElement, 'advanced-selectors')) return;
+  setMessedWith(targetElement, true, 'advanced-selectors');
 
   // Find the action buttons container if using default selector
   let container: HTMLElement;
   if (insertionSelector) {
+    console.log('insertion selector:', insertionSelector);
     container = Query.from(targetElement).query(insertionSelector)!;
   } else {
     container = targetElement;
