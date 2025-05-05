@@ -3,7 +3,7 @@ import { ExtensionSettings } from '../types';
 import { getSettingsManager } from '../settings-manager';
 import { isMessedWith, setMessedWith, toggleInvisible } from './utils';
 import Reminder from './reminder';
-import Query from 'lib/css++';
+import Query from 'lib/Query';
 
 type Falsy = false | 0 | '' | null | undefined;
 type Truthy<T> = T extends Falsy ? never : T;

@@ -1,9 +1,9 @@
-import Query from "lib/css++";
-import { html, render } from "../lit";
-import { Action } from "../types";
-import { dispatch, extractUserDetails, getTweet } from "./utils";
+import Query from 'lib/Query';
+import { html, render } from '../lit';
+import { Action } from '../types';
+import { dispatch, extractUserDetails, getTweet } from './utils';
 
-export const adPlaceHolderClassName = "xterminate-notification";
+export const adPlaceHolderClassName = 'xterminate-notification';
 
 // Function to ensure styles are loaded
 function ensureStyles() {
@@ -11,8 +11,8 @@ function ensureStyles() {
   const existingStyle = Query.from(document).query(`style[data-xterminate-styles]`);
   if (existingStyle) return;
 
-  const style = document.createElement("style");
-  style.setAttribute("data-xterminate-styles", "");
+  const style = document.createElement('style');
+  style.setAttribute('data-xterminate-styles', '');
   style.textContent = `
 
       div:has(> div > .${adPlaceHolderClassName}) {
@@ -139,7 +139,7 @@ function ensureStyles() {
 
 export default function AdPlaceholder(userNameElement: HTMLElement) {
   ensureStyles();
-  const container = document.createElement("div");
+  const container = document.createElement('div');
   const { fullName, username } = extractUserDetails(userNameElement);
   let isContentVisible = false;
 
@@ -153,9 +153,9 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
 
   const toggleVisible = () => {
     const tweet = getTweet(userNameElement);
-    const expanded = tweet.hasAttribute("expanded");
-    const toggleButton = Query.from(container).query(".toggle-button");
-    const toggleText = Query.from(toggleButton).query(".toggle-text");
+    const expanded = tweet.hasAttribute('expanded');
+    const toggleButton = Query.from(container).query('.toggle-button');
+    const toggleText = Query.from(toggleButton).query('.toggle-text');
 
     if (expanded) {
       // Collapsing: First get the current height, then animate to zero
@@ -164,23 +164,23 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
       void tweet.offsetHeight;
 
       // Now set height to 0 to animate collapsing
-      tweet.style.height = "0px";
-      tweet.classList.remove("visible-tweet");
-      tweet.classList.add("hidden-tweet");
-      tweet.removeAttribute("expanded");
+      tweet.style.height = '0px';
+      tweet.classList.remove('visible-tweet');
+      tweet.classList.add('hidden-tweet');
+      tweet.removeAttribute('expanded');
       isContentVisible = false;
-      toggleButton?.classList.remove("expanded");
+      toggleButton?.classList.remove('expanded');
     } else {
       // Expanding: First make sure the content is laid out so we can measure it
-      tweet.classList.remove("hidden-tweet");
-      tweet.classList.add("visible-tweet");
+      tweet.classList.remove('hidden-tweet');
+      tweet.classList.add('visible-tweet');
 
       // Temporarily remove transition to get accurate scrollHeight
       const originalTransition = tweet.style.transition;
-      tweet.style.transition = "none";
-      tweet.style.height = "auto";
+      tweet.style.transition = 'none';
+      tweet.style.height = 'auto';
       const expandedHeight = tweet.scrollHeight;
-      tweet.style.height = "0px";
+      tweet.style.height = '0px';
 
       // Force reflow to ensure height is reset before animation starts
       void tweet.offsetHeight;
@@ -188,23 +188,21 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
       // Restore transition and set target height
       tweet.style.transition = originalTransition;
       tweet.style.height = `${expandedHeight}px`;
-      tweet.setAttribute("expanded", "true");
+      tweet.setAttribute('expanded', 'true');
       isContentVisible = true;
-      toggleButton?.classList.add("expanded");
+      toggleButton?.classList.add('expanded');
 
       // Optional: Once animation completes, set height to auto to handle content changes
       setTimeout(() => {
-        if (tweet.hasAttribute("expanded")) {
-          tweet.style.height = "auto";
+        if (tweet.hasAttribute('expanded')) {
+          tweet.style.height = 'auto';
         }
       }, 30);
     }
 
     // Update the button text
     if (toggleText) {
-      toggleText.textContent = isContentVisible
-        ? "Hide content"
-        : "Show sponsored content";
+      toggleText.textContent = isContentVisible ? 'Hide content' : 'Show sponsored content';
     }
   };
 
@@ -213,7 +211,7 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
       <div class="notification-content">
         <img
           class="notification-icon"
-          src="${chrome.runtime.getURL("icons/icon.png")}"
+          src="${chrome.runtime.getURL('icons/icon.png')}"
           alt="X-Terminator"
         />
         <div class="notification-text">
@@ -221,14 +219,9 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
           <p>
             Sponsored content from
             <span class="user-info">@${username}</span> has been hidden.
-            <button class="inline-button" @click=${() => handleAction("block")}>
-              Block
-            </button>
+            <button class="inline-button" @click=${() => handleAction('block')}>Block</button>
             or
-            <button
-              class="inline-button secondary"
-              @click=${() => handleAction("mute")}
-            >
+            <button class="inline-button secondary" @click=${() => handleAction('mute')}>
               mute
             </button>
             this account.

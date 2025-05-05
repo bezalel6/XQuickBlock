@@ -1,5 +1,3 @@
-import { AdvancedSelector } from './css++';
-
 /**
  * Type definitions for Query functionality
  */
@@ -16,11 +14,65 @@ interface QueryFunc {
   <R extends HTMLElement>(selectors: QueryProps): NullableResult<R>;
 }
 
+type ElementPredicate = (element: Element) => boolean;
+
+/**
+ * Configuration for pseudo-selector templates
+ */
+interface PseudoSelectorConfig {
+  prefix: string;
+  suffix: string;
+  valueWrapper: string;
+}
+
+type GenerateSelector = (selector: typeof Query) => string;
+
 /**
  * Query class provides a fluent interface for DOM manipulation and traversal
  * with chainable methods and extended functionality
  */
 class Query {
+  /**
+   * Default template configuration for pseudo-selectors
+   */
+  private static defaultTemplate: PseudoSelectorConfig = {
+    prefix: 'advanced-selector-',
+    suffix: '',
+    valueWrapper: '"',
+  };
+
+  /**
+   * Current template configuration
+   */
+  private static template: PseudoSelectorConfig = { ...Query.defaultTemplate };
+
+  /**
+   * Registry of custom pseudo-selectors and their implementations
+   */
+  private static readonly pseudoSelectors: Record<string, (value: string) => ElementPredicate> = {
+    // Find elements containing specific text
+    contains: (text: string) => (element: Element) =>
+      element.textContent?.toLowerCase().includes(text.toLowerCase()) || false,
+
+    // Find elements containing any of the provided texts
+    containsAny: (texts: string) => (element: Element) => {
+      const searchTexts = texts.split(',').map(t => t.trim().toLowerCase());
+      const elementText = element.textContent?.toLowerCase() || '';
+      return searchTexts.some(text => elementText.includes(text));
+    },
+
+    // Find elements with exact text match
+    exact: (text: string) => (element: Element) => element.textContent?.trim() === text.trim(),
+
+    // Find elements where text starts with value
+    startsWith: (text: string) => (element: Element) =>
+      element.textContent?.toLowerCase().trim().startsWith(text.toLowerCase()) || false,
+
+    // Find elements where text ends with value
+    endsWith: (text: string) => (element: Element) =>
+      element.textContent?.toLowerCase().trim().endsWith(text.toLowerCase()) || false,
+  };
+
   /**
    * Create a new Query instance with the given root element
    * @param root The root element to query within
@@ -49,7 +101,7 @@ class Query {
    * @returns True if the selector contains advanced patterns
    */
   static hasAdvancedSelector(selector: string): boolean {
-    const template = AdvancedSelector.getTemplate();
+    const template = Query.getTemplate();
     const { prefix, suffix } = template;
     const pattern = new RegExp(`${prefix}[a-zA-Z]+${suffix}\\(`, 'g');
     return pattern.test(selector);
@@ -65,7 +117,7 @@ class Query {
     for (const selector of selectors) {
       // Check if any part of the selector contains advanced patterns
       if (Query.hasAdvancedSelector(selector)) {
-        const result = AdvancedSelector.query<R>(this.root as Element | Document, selector);
+        const result = Query.advancedQuery<R>(this.root as Element | Document, selector);
         if (result) return Query.res<R>(result, selector);
         continue;
       }
@@ -88,8 +140,8 @@ class Query {
         const inner = () => {
           if (advanced) {
             return greedy
-              ? AdvancedSelector.queryAll(this.src, selector)
-              : [AdvancedSelector.query(this.src, selector)];
+              ? Query.advancedQueryAll(this.src, selector)
+              : [Query.advancedQuery(this.src, selector)];
           }
           return greedy
             ? Array.from(this.src.querySelectorAll<R>(selector))
@@ -116,7 +168,7 @@ class Query {
     const selectorList = Query.parseSelectors(selectors);
     return Query.res<R>(this.src.closest(selectorList.join(', ')));
   }
-
+  //#region unused
   /**
    * Find all children that match the selector(s)
    * @param selectors One or more CSS selectors to match against
@@ -340,7 +392,7 @@ class Query {
     });
     return this;
   }
-
+  //#endregion
   /**
    * Wrap an element for query chaining
    * @param res Element to wrap
@@ -380,6 +432,154 @@ class Query {
       return new Query(element || document);
     }
     return new Query(root);
+  }
+  static $$() {
+    return (selector: GenerateSelector) => {
+      // Pass the selector to the function and return the result
+      return selector(Query);
+    };
+  }
+
+  /**
+   * Configure the template for pseudo-selectors
+   * @param config Partial configuration to apply
+   */
+  static configureTemplate(config: Partial<PseudoSelectorConfig>): void {
+    this.template = { ...this.template, ...config };
+  }
+
+  /**
+   * Reset template configuration to defaults
+   */
+  static resetTemplate(): void {
+    this.template = { ...this.defaultTemplate };
+  }
+
+  /**
+   * Get current template configuration
+   */
+  static getTemplate(): PseudoSelectorConfig {
+    return { ...this.template };
+  }
+
+  /**
+   * Get the pattern regex for pseudo-selectors
+   */
+  private static getPatternRegex() {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return new RegExp(
+      `${prefix}([a-zA-Z]+)${suffix}\\(${valueWrapper}(.*?)${valueWrapper}\\)`,
+      'g'
+    );
+  }
+
+  /**
+   * Parse a selector string into base selector and pseudo-selectors
+   * @param selector Full selector string
+   * @returns Object with baseSelector and array of predicates
+   */
+  private static parseSelector(selector: string): {
+    baseSelector: string;
+    pseudos: ElementPredicate[];
+  } {
+    const pattern = this.getPatternRegex();
+    const pseudos: ElementPredicate[] = [];
+
+    const baseSelector = selector
+      .replace(pattern, (match, name, value) => {
+        if (this.pseudoSelectors[name]) {
+          pseudos.push(this.pseudoSelectors[name](value));
+        } else {
+          console.warn(`Unknown pseudo-selector: ${name}`);
+        }
+        return '';
+      })
+      .trim();
+    return { baseSelector, pseudos };
+  }
+
+  /**
+   * Register a new custom pseudo-selector
+   * @param name Name of the pseudo-selector (without the colon)
+   * @param handler Function that returns an element predicate
+   */
+  static register(name: string, handler: (value: string) => ElementPredicate): void {
+    this.pseudoSelectors[name] = handler;
+  }
+
+  // Convenience methods for common pseudo-selectors
+  static contains(text: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}contains${suffix}(${valueWrapper}${text}${valueWrapper})`;
+  }
+
+  static containsAny(...texts: string[]): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}containsAny${suffix}(${valueWrapper}${texts.join(',')}${valueWrapper})`;
+  }
+
+  static exact(text: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}exact${suffix}(${valueWrapper}${text}${valueWrapper})`;
+  }
+
+  static startsWith(text: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}startsWith${suffix}(${valueWrapper}${text}${valueWrapper})`;
+  }
+
+  static endsWith(text: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}endsWith${suffix}(${valueWrapper}${text}${valueWrapper})`;
+  }
+  /**
+   * Performs a query with advanced selector support
+   * @param root The root element to search within
+   * @param selector The CSS selector, potentially with custom pseudo-selectors
+   * @returns The matching element or null
+   */
+  private static advancedQuery<R extends HTMLElement>(
+    root: Element | Document,
+    selector: string
+  ): R | null {
+    const { baseSelector, pseudos } = this.parseSelector(selector);
+
+    // First, get all elements matching the base selector
+    const candidates = Array.from(root.querySelectorAll<R>(baseSelector));
+
+    // If no custom pseudo-selectors, return the first match
+    if (pseudos.length === 0) {
+      return candidates[0] || null;
+    }
+
+    // Apply all custom pseudo-selectors
+    const match = candidates.find(element => pseudos.every(pseudo => pseudo(element)));
+
+    return match || null;
+  }
+
+  /**
+   * Performs an advanced selector query for all elements
+   * @param root The root element to search within
+   * @param selector The CSS selector, potentially with custom pseudo-selectors
+   * @returns Array of matching elements
+   */
+  private static advancedQueryAll<R extends HTMLElement>(
+    root: Element | Document,
+    selector: string
+  ): R[] {
+    const { baseSelector, pseudos } = this.parseSelector(selector);
+
+    // First, get all elements matching the base selector
+    const candidates = Array.from(root.querySelectorAll<R>(baseSelector));
+
+    // If no custom pseudo-selectors, return all matches
+    if (pseudos.length === 0) {
+      return candidates;
+    }
+
+    // Apply all custom pseudo-selectors and filter
+    return candidates.filter(element => pseudos.every(pseudo => pseudo(element)));
   }
 }
 

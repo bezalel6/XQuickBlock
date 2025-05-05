@@ -22,7 +22,7 @@ import {
   waitFor,
 } from './utils';
 import { injectPromo } from './flexible-promo';
-import Query from 'lib/css++';
+import Query from 'lib/Query';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
 

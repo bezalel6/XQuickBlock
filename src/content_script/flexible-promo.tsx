@@ -1,6 +1,6 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
-import Query from '../lib/css++';
+import Query from '../lib/Query';
 import { isMessedWith, setMessedWith } from './utils';
 
 export const extensionPromoClassName = 'xterminate-promo';
