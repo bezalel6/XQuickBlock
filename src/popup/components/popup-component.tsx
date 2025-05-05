@@ -53,6 +53,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
     automaticUpdatePolicy: 'weekly',
     selectors: SELECTORS,
     source: Source.MAIN,
+    overrideDefaultSelectors: false,
   });
 
   useEffect(() => {
