@@ -7,6 +7,9 @@ import css, { className } from '../lib/css';
 
 export const flexiblePromoClassName = 'flexible-promo';
 
+// Store all streak-box elements to be able to animate them in sync
+const allStreakBoxes = new Set<HTMLElement>();
+
 const style = css`
   ${className(flexiblePromoClassName)} {
     position: absolute;
@@ -253,6 +256,19 @@ interface PromoConfig {
   customStyles?: Record<string, string>;
 }
 
+// Functions to synchronize animations across all streak-boxes
+function animateAllStreakBoxes() {
+  allStreakBoxes.forEach(box => {
+    box.classList.add('animate');
+  });
+}
+
+function stopAnimatingAllStreakBoxes() {
+  allStreakBoxes.forEach(box => {
+    box.classList.remove('animate');
+  });
+}
+
 // Function to inject the promo into the subscription dialog
 function injectPromo(obliterate: () => void, config: PromoConfig) {
   const { insertionSelector, insertionMethod = 'before', targetElement, customStyles } = config;
@@ -264,13 +280,15 @@ function injectPromo(obliterate: () => void, config: PromoConfig) {
   // Find the action buttons container if using default selector
   let container: HTMLElement;
   if (insertionSelector) {
-    console.log('insertion selector:', insertionSelector);
     container = Query.from(targetElement).query(insertionSelector)!;
   } else {
     container = targetElement;
   }
   if (!container) return;
+
+  // Add to streak-boxes collection and add class
   targetElement.classList.add('streak-box');
+  allStreakBoxes.add(targetElement);
 
   // Create and inject our promo component
   const promo = FlexiblePromo(
@@ -279,6 +297,8 @@ function injectPromo(obliterate: () => void, config: PromoConfig) {
       if (targetEl) {
         targetEl.classList.add('obliterating');
         setTimeout(() => {
+          // Remove from streak-boxes collection
+          allStreakBoxes.delete(targetEl);
           obliterate();
           updateSettings();
         }, 500); // Wait for animation to complete
@@ -399,10 +419,12 @@ function FlexiblePromo(
 
     if (tooltipRef.value) {
       if (show) {
-        config.targetElement.classList.add('animate');
+        // Animate all streak-boxes instead of just the local one
+        animateAllStreakBoxes();
         tooltipRef.value.classList.add('visible');
       } else {
-        config.targetElement.classList.remove('animate');
+        // Stop animating all streak-boxes
+        stopAnimatingAllStreakBoxes();
         tooltipTimeout = window.setTimeout(() => {
           tooltipRef.value?.classList.remove('visible');
         }, 1000);

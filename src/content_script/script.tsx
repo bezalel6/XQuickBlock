@@ -100,7 +100,6 @@ async function initialize(state: ExtensionSettings) {
       'upsale',
       node => Query.$().queryAll(selectors.upsaleSelectors, false),
       upsales => {
-        console.log({ upsales });
         upsales.forEach(u => {
           if (!hideSubscriptionOffers) {
             flexible(() => {}, {
