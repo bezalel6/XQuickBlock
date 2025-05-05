@@ -1,5 +1,3 @@
-import { html } from 'lit';
-
 type CSS = { css: string; define: (identifier: string) => StyleSheet };
 type StyleSheet = Omit<CSS, 'define'> & { id: string; inject: () => void };
 const STYLE_PREFIX = 'xterminator-style-';

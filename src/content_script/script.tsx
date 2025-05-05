@@ -21,7 +21,8 @@ import {
   toggleInvisible,
   waitFor,
 } from './utils';
-import { injectPromo } from './flexible-promo';
+import { injectPromo as flexible } from './flexible-promo';
+import { injectPromo } from './extension-promo';
 import Query from 'lib/query';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
@@ -101,7 +102,16 @@ async function initialize(state: ExtensionSettings) {
       'upsale',
       node => Query.$().queryAll(selectors.upsaleSelectors, false),
       upsales => {
-        upsales.forEach(u => toggleInvisible(u, hideSubscriptionOffers, true));
+        upsales.forEach(u => {
+          if (!hideSubscriptionOffers) {
+            flexible(() => {}, {
+              targetElement: u,
+              insertionSelector: `a[role="link"]`,
+              insertionMethod: 'after',
+            });
+          }
+          toggleInvisible(u, hideSubscriptionOffers, true);
+        });
       }
     );
 
