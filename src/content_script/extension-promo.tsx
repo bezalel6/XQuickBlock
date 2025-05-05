@@ -2,124 +2,65 @@ import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
 import Query from '../lib/Query';
 import { isMessedWith, setMessedWith } from './utils';
-
-// This is a technique to trigger the lit-html CSS syntax highlighting
-
-// First, create a tagged template function that does nothing but return the string
-const css = (strings, ...values) => {
-  // This is just a pass-through function
-  // It tricks the editor but doesn't affect runtime behavior
-  let result = '';
-  strings.forEach((string, i) => {
-    result += string;
-    if (values[i] !== undefined) {
-      result += values[i];
-    }
-  });
-  return result;
-};
-
-// Now use this tag with your CSS string
-// The editor should apply lit-html style highlighting to this
-const myStyles = css`
-  .container {
-    background-color: #f0f0f0;
-    padding: 20px;
-    border-radius: 8px;
-  }
-
-  .heading {
-    color: #2a5885;
-    font-size: 24px;
-  }
-
-  /* The extension should highlight this as CSS */
-  @media (max-width: 768px) {
-    .container {
-      padding: 10px;
-    }
-  }
-`;
-
-// Function to append styles
-function appendStyleTag(cssContent) {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = cssContent;
-  document.head.appendChild(styleElement);
-  return styleElement;
-}
-
-// Use the styled string
-appendStyleTag(myStyles);
+import css, { className } from 'lib/css';
 
 export const extensionPromoClassName = 'xterminate-promo';
-const attr = 'data-xterminate-promo-styles';
-function ensureStyles() {
-  if (document.head.querySelector(`style[${attr}]`)) return;
-
-  const styleTemplate = html`
-    <style ${attr}="true">
-      .${extensionPromoClassName} {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        background: rgba(29, 161, 242, 0.08);
-        border: 1px solid rgba(29, 161, 242, 0.2);
-        border-radius: 12px;
-        margin: 16px 0;
-        cursor: pointer;
-        transition: all 0.2s;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .${extensionPromoClassName}:hover {
-        background: rgba(29, 161, 242, 0.12);
-        border-color: rgba(29, 161, 242, 0.3);
-      }
-      .promo-icon {
-        width: 24px;
-        height: 24px;
-        fill: #1da1f2;
-        flex-shrink: 0;
-      }
-      .promo-text {
-        font-size: 15px;
-        color: #e7e9ea;
-        line-height: 1.4;
-        flex: 1;
-      }
-      .promo-text strong {
-        color: #1da1f2;
-        font-weight: 600;
-      }
-      .promo-text .highlight {
-        color: #1da1f2;
-        font-weight: 500;
-      }
-      .promo-text .settings-note {
-        font-size: 13px;
-        color: #71767b;
-        margin-top: 4px;
-        display: block;
-      }
-      .settings-note {
-        text-decoration: underline;
-        cursor: pointer;
-        color: #71767b;
-        transition: color 0.2s ease;
-        display: inline-block;
-      }
-      .settings-note:hover {
-        color: #1da1f2;
-      }
-    </style>
-  `;
-
-  const container = document.createElement('template');
-  render(styleTemplate, container);
-  document.head.appendChild(container.querySelector('style'));
-}
+const style = css`
+  ${className(extensionPromoClassName)} {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(29, 161, 242, 0.08);
+    border: 1px solid rgba(29, 161, 242, 0.2);
+    border-radius: 12px;
+    margin: 16px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  ${className(extensionPromoClassName)}:hover {
+    background: rgba(29, 161, 242, 0.12);
+    border-color: rgba(29, 161, 242, 0.3);
+  }
+  .promo-icon {
+    width: 24px;
+    height: 24px;
+    fill: #1da1f2;
+    flex-shrink: 0;
+  }
+  .promo-text {
+    font-size: 15px;
+    color: #e7e9ea;
+    line-height: 1.4;
+    flex: 1;
+  }
+  .promo-text strong {
+    color: #1da1f2;
+    font-weight: 600;
+  }
+  .promo-text .highlight {
+    color: #1da1f2;
+    font-weight: 500;
+  }
+  .promo-text .settings-note {
+    font-size: 13px;
+    color: #71767b;
+    margin-top: 4px;
+    display: block;
+  }
+  .settings-note {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #71767b;
+    transition: color 0.2s ease;
+    display: inline-block;
+  }
+  .settings-note:hover {
+    color: #1da1f2;
+  }
+`.define('promo');
 
 // Function to inject the promo into the subscription dialog
 function injectPromo(
@@ -157,7 +98,7 @@ function updateSettings() {
   });
 }
 function ExtensionPromo(onOblitirate: () => void) {
-  ensureStyles();
+  style.inject();
   const container = document.createElement('div');
 
   const template = html`
