@@ -48,6 +48,16 @@ module.exports = (env = {}, argv = {}) => {
           },
           exclude: /node_modules/,
         },
+        {
+          test: /\.js$/,
+          include: /node_modules\/lit-html/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env'],
+            },
+          },
+        },
       ],
     },
     devtool: false,
@@ -56,6 +66,9 @@ module.exports = (env = {}, argv = {}) => {
       modules: [srcDir, 'node_modules'],
       alias: {
         lib: path.join(srcDir, 'lib'),
+        'lit-html': path.resolve(__dirname, '../node_modules/lit-html/'),
+        'lit-html/directives/': path.resolve(__dirname, '../node_modules/lit-html/directives/'),
+        'lit-element': path.resolve(__dirname, '../node_modules/lit-element/lit-element.js'),
       },
     },
     plugins: [

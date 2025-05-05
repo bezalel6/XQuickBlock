@@ -34,6 +34,8 @@
     "styled-components": "^6.1.17"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.1",
     "@styled/typescript-styled-plugin": "^1.0.1",
     "@types/chrome": "0.0.158",
     "@types/jest": "^29.5.0",
@@ -43,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "archiver": "^6.0.2",
+    "babel-loader": "^10.0.0",
     "copy-webpack-plugin": "^9.0.1",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
