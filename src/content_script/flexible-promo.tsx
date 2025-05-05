@@ -20,34 +20,85 @@ const style = css`
     position: relative;
     width: 100%;
   }
-
+  .icon {
+    width: 24px;
+    height: auto;
+    max-width: max-content;
+  }
   .xterminate-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    background-color: #1da1f2;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     height: 40px;
     width: min-content;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     padding: 0 1rem;
     position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+
+  .xterminate-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   .xterminate-btn:hover {
     background-color: #e03d00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(224, 61, 0, 0.3);
+  }
+
+  .xterminate-btn:hover::before {
+    opacity: 1;
+  }
+
+  .xterminate-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   .xterminate-btn .icon {
-    font-size: 1.5rem;
-    font-weight: 900;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
+    transition: transform 0.3s ease;
+  }
+
+  .xterminate-btn:hover .icon {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  .xterminate-btn .text {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .xterminate-btn:hover .text {
+    opacity: 1;
+    width: auto;
+    margin-left: 8px;
   }
 
   .tooltip {
@@ -55,18 +106,32 @@ const style = css`
     bottom: 0;
     right: 0;
     height: min-content;
-    width: 400px;
+    width: 280px;
     z-index: 10000;
-    background: rgba(29, 161, 242, 1);
+    background: #2a2a2a;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     visibility: hidden;
     opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+  }
+
+  .tooltip.visible {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   .tooltip::after {
     content: '';
     position: absolute;
     top: 100%;
-    left: 50%;
+    left: 20px;
     margin-left: -6px;
     border-width: 6px;
     border-style: solid;
@@ -78,38 +143,75 @@ const style = css`
     flex-direction: column;
     gap: 8px;
     word-wrap: break-word;
-    line-height: 1.4;
-    padding: 4px 0;
+    line-height: 1.5;
+    font-size: 14px;
   }
 
   .tooltip-content strong {
-    color: #ff6b35;
+    color: #1da1f2;
     font-size: 1.1em;
+    display: block;
+    margin-bottom: 2px;
   }
 
   .tooltip-content .highlight {
     color: #ff6b35;
     font-weight: 600;
+    display: inline-block;
+    position: relative;
+  }
+
+  .tooltip-content .highlight::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: #ff6b35;
+    bottom: 0;
+    left: 0;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease;
+  }
+
+  .tooltip-content:hover .highlight::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
   }
 
   .tooltip-content .settings-note {
     display: block;
     font-size: 0.85em;
-    color: #888;
+    color: #aaa;
     text-decoration: none;
-    margin-top: 4px;
+    margin-top: 6px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 6px;
+    padding-top: 8px;
+    transition: color 0.2s ease;
   }
 
   .tooltip-content .settings-note:hover {
-    color: #ff6b35;
+    color: #1da1f2;
     text-decoration: underline;
   }
 
-  .tooltip.visible {
-    visibility: visible;
-    opacity: 1;
+  /* Animation for the obliterate action */
+  @keyframes obliterate {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    20% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+
+  .obliterating {
+    animation: obliterate 0.5s forwards cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 `.define('flexible-promo');
 
@@ -121,7 +223,7 @@ interface PromoConfig {
 }
 
 // Function to inject the promo into the subscription dialog
-function injectPromo(oblitirate: () => void, config: PromoConfig) {
+function injectPromo(obliterate: () => void, config: PromoConfig) {
   const { insertionSelector, insertionMethod = 'before', targetElement, customStyles } = config;
 
   // Find the targetElement element
@@ -138,9 +240,18 @@ function injectPromo(oblitirate: () => void, config: PromoConfig) {
   if (!container) return;
 
   // Create and inject our promo component
-  const promo = FlexiblePromo(() => {
-    oblitirate();
-    updateSettings();
+  const promo = FlexiblePromo(targetEl => {
+    // Apply animation to target element
+    if (targetEl) {
+      targetEl.classList.add('obliterating');
+      setTimeout(() => {
+        obliterate();
+        updateSettings();
+      }, 500); // Wait for animation to complete
+    } else {
+      obliterate();
+      updateSettings();
+    }
   }, customStyles);
 
   // Insert the promo based on the specified method
@@ -169,6 +280,7 @@ function onOpenSettings() {
     .then(console.log)
     .catch(console.error);
 }
+
 function updateSettings() {
   sendMessageToBackground({
     sentFrom: 'content',
@@ -176,7 +288,11 @@ function updateSettings() {
     payload: { hideSubscriptionOffers: true },
   });
 }
-function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, string>) {
+
+function FlexiblePromo(
+  onObliterate: (targetEl?: HTMLElement) => void,
+  customStyles?: Record<string, string>
+) {
   style.inject();
   const container = document.createElement('div');
   container.classList.add('container');
@@ -187,20 +303,42 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
       container.style[key as any] = value;
     });
   }
+
   const tooltipRef = createRef<HTMLDivElement>();
+  let tooltipTimeout: number;
 
   const template = html`
-    <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
+    <div class="${flexiblePromoClassName}">
       <div
         class="xterminate-btn"
         @mouseenter=${() => showTooltip(true)}
         @mouseleave=${() => showTooltip(false)}
+        @click=${(e: Event) => {
+          e.stopPropagation();
+          // todo: fix this nonsense
+          // Find the target element (usually the dialog or popup)
+          const targetDialog = container.closest('.dialog, .modal, .popup, [role="dialog"]');
+          onObliterate(targetDialog as HTMLElement);
+        }}
       >
-        <img class="icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
-        <div class="tooltip" ${ref(tooltipRef)}>
-          <div class="tooltip-content">
-            <strong>X-Terminator</strong> can
-            <span class="highlight">oblitirate this dialog</span> and others like it
+        <img
+          class="icon"
+          src="${chrome.runtime.getURL('icons/transparent-icon.png')}"
+          alt="X-Terminator"
+        />
+        <div
+          class="tooltip"
+          ${ref(tooltipRef)}
+          @mouseenter=${() => showTooltip(true)}
+          @mouseleave=${() => showTooltip(false)}
+        >
+          <div
+            class="tooltip-content"
+            @mouseenter=${() => showTooltip(true)}
+            @mouseleave=${() => showTooltip(false)}
+          >
+            <strong>X-Terminator</strong>
+            <div>Can <span class="highlight">obliterate this dialog</span> and others like it</div>
             <a
               @click=${(e: Event) => {
                 e.stopPropagation();
@@ -214,27 +352,43 @@ function FlexiblePromo(onOblitirate: () => void, customStyles?: Record<string, s
       </div>
     </div>
   `;
+
   render(template, container);
+
   const showTooltip = (show = true) => {
+    clearTimeout(tooltipTimeout);
+
     if (tooltipRef.value) {
-      if (show) tooltipRef.value.classList.add('visible');
-      else tooltipRef.value.classList.remove('visible');
+      if (show) {
+        tooltipRef.value.classList.add('visible');
+      } else {
+        tooltipTimeout = window.setTimeout(() => {
+          tooltipRef.value?.classList.remove('visible');
+        }, 200);
+      }
     }
   };
+
   setTimeout(() => {
     const tooltipEl = tooltipRef.value;
     if (tooltipEl) {
       document.body.appendChild(tooltipEl);
-      // Optional: position it next to the button
-      const btn = container.querySelector('.xterminate-btn');
+      // Position it next to the button
+      const btn = Query.$(container).query('.xterminate-btn');
       if (btn) {
-        const btnRect = btn.getBoundingClientRect();
-        tooltipEl.style.position = 'absolute';
-        tooltipEl.style.top = `${btnRect.bottom + 8}px`;
-        tooltipEl.style.left = `${btnRect.left}px`;
+        const updateTooltipPosition = () => {
+          const btnRect = btn.getBoundingClientRect();
+          tooltipEl.style.position = 'absolute';
+          tooltipEl.style.top = `${btnRect.top - tooltipEl.offsetHeight - 10}px`;
+          tooltipEl.style.left = `${btnRect.left - tooltipEl.offsetWidth / 2 + btn.offsetWidth / 2}px`;
+        };
+
+        updateTooltipPosition();
+        window.addEventListener('resize', updateTooltipPosition);
+        window.addEventListener('scroll', updateTooltipPosition, true);
       }
     }
-  });
+  }, 100);
 
   return container;
 }
