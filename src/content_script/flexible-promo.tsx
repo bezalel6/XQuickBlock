@@ -3,55 +3,6 @@ import { html, render } from '../lit';
 import Query from '../lib/css++';
 import { isMessedWith, setMessedWith } from './utils';
 
-// This is a technique to trigger the lit-html CSS syntax highlighting
-
-// First, create a tagged template function that does nothing but return the string
-const css = (strings, ...values) => {
-  // This is just a pass-through function
-  // It tricks the editor but doesn't affect runtime behavior
-  let result = '';
-  strings.forEach((string, i) => {
-    result += string;
-    if (values[i] !== undefined) {
-      result += values[i];
-    }
-  });
-  return result;
-};
-
-// Now use this tag with your CSS string
-// The editor should apply lit-html style highlighting to this
-const myStyles = css`
-  .container {
-    background-color: #f0f0f0;
-    padding: 20px;
-    border-radius: 8px;
-  }
-
-  .heading {
-    color: #2a5885;
-    font-size: 24px;
-  }
-
-  /* The extension should highlight this as CSS */
-  @media (max-width: 768px) {
-    .container {
-      padding: 10px;
-    }
-  }
-`;
-
-// Function to append styles
-function appendStyleTag(cssContent) {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = cssContent;
-  document.head.appendChild(styleElement);
-  return styleElement;
-}
-
-// Use the styled string
-appendStyleTag(myStyles);
-
 export const extensionPromoClassName = 'xterminate-promo';
 const attr = 'data-xterminate-promo-styles';
 function ensureStyles() {
@@ -134,7 +85,7 @@ function injectPromo(
   if (!actionButtons) return;
 
   // Create and inject our promo component
-  const promo = ExtensionPromo(() => {
+  const promo = FlexiblePromo(() => {
     oblitirate();
     updateSettings();
   });
@@ -156,7 +107,7 @@ function updateSettings() {
     payload: { hideSubscriptionOffers: true },
   });
 }
-function ExtensionPromo(onOblitirate: () => void) {
+function FlexiblePromo(onOblitirate: () => void) {
   ensureStyles();
   const container = document.createElement('div');
 
@@ -177,7 +128,6 @@ function ExtensionPromo(onOblitirate: () => void) {
       </div>
     </div>
   `;
-
   render(template, container);
   return container;
 }
