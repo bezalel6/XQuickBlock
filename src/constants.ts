@@ -10,7 +10,8 @@ const SELECTORS = {
   upsaleSelectors: [
     '[data-testid="verified_profile_upsell"], aside:has(a[href="/i/premium_sign_up"]), a[href="/i/premium_sign_up"], div [data-testid="super-upsell-UpsellCardRenderProperties"], div [data-testid="inlinePrompt"] a[href^="/i/premium_sign_up"], [data-testid="cellInnerDiv"]:has([data-testid="inlinePrompt"])',
     $$$.$()(
-      $ => `[data-testid="tweet"]:has(div > div > span ${$.contains('Access your post analytics')})`
+      $ =>
+        `[data-testid="tweet"] div:has( > div > div > span ${$.contains('Access your post analytics')})`
     ),
   ],
   upsaleDialogSelector: $$$.$()(
