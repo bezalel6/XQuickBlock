@@ -50,6 +50,7 @@ module.exports = (env = {}, argv = {}) => {
         },
       ],
     },
+    devtool: false,
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
       modules: [srcDir, 'node_modules'],
@@ -57,8 +58,6 @@ module.exports = (env = {}, argv = {}) => {
         lib: path.join(srcDir, 'lib'),
       },
     },
-    // Add source maps for development
-    devtool: isProd ? false : 'eval-cheap-module-source-map',
     plugins: [
       new CopyPlugin({
         patterns: [
