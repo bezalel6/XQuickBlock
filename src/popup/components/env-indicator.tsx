@@ -26,7 +26,6 @@ const EnvironmentIndicator: React.FC<PropsOf<typeof ToggleSwitch>> = props => {
     <div style={styles}>
       <>
         {isProd ? 'PROD' : 'DEV'}
-        {!isProd && <Link href={'./'}>Open local examples</Link>}
         {!isProd && <ToggleSwitch {...props} />}
       </>
     </div>
