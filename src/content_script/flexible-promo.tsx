@@ -4,6 +4,7 @@ import { ref, createRef } from 'lit-html/directives/ref.js';
 import Query, { QueryProps } from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
 import css, { className } from '../lib/css';
+import { Computable, resolveComputable } from 'lib/computed';
 
 export const flexiblePromoClassName = 'flexible-promo';
 
@@ -252,6 +253,7 @@ const style = css`
 interface PromoConfig {
   insertionSelector?: QueryProps;
   bgAnimContainer?: QueryProps;
+  // NTS: append-ing offsets the premium button
   insertionMethod?: 'before' | 'after' | 'prepend' | 'append';
   targetElement: HTMLElement;
   customStyles?: Record<string, string>;
@@ -271,7 +273,8 @@ function stopAnimatingAllStreakBoxes() {
 }
 
 // Function to inject the promo into the subscription dialog
-function injectPromo(obliterate: () => void, config: PromoConfig) {
+function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
+  const config = resolveComputable(_config);
   const {
     insertionSelector,
     bgAnimContainer = null,

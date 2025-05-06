@@ -107,7 +107,14 @@ async function initialize(state: ExtensionSettings) {
                 `a[role="link"]`,
                 Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
               ],
-              insertionMethod: 'append',
+              bgAnimContainer({ targetElement }) {
+                return targetElement.matches(
+                  '[data-testid=super-upsell-UpsellCardRenderProperties]'
+                )
+                  ? 'div div'
+                  : null;
+              },
+              insertionMethod: 'after',
             });
           }
           toggleInvisible(u, hideSubscriptionOffers);
