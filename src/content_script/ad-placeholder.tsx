@@ -4,6 +4,7 @@ import { Action } from '../types';
 import { dispatch, extractUserDetails, getTweet } from './utils';
 import css from 'lib/css';
 import { className } from './../lib/css';
+import { getIconPath } from '../lib/themeing';
 
 export const adPlaceHolderClassName = 'xterminate-notification';
 
@@ -203,7 +204,7 @@ export default function AdPlaceholder(userNameElement: HTMLElement) {
       <div class="notification-content">
         <img
           class="notification-icon"
-          src="${chrome.runtime.getURL('icons/icon.png')}"
+          src="${chrome.runtime.getURL(getIconPath('light'))}"
           alt="X-Terminator"
         />
         <div class="notification-text">

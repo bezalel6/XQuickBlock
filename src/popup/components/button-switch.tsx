@@ -16,20 +16,24 @@ const SwitchContainer = styled.div`
   gap: 8px;
 `;
 
-const SwitchButton = styled.button<{ isOn: boolean }>`
+interface SwitchButtonProps {
+  $isOn: boolean;
+}
+
+const SwitchButton = styled.button<SwitchButtonProps>`
   padding: 8px 16px;
   border-radius: 4px;
-  border: 1px solid ${({ isOn }) => (isOn ? '#4CAF50' : '#ccc')};
-  background-color: ${({ isOn }) => (isOn ? '#4CAF50' : '#ffffff')};
-  color: ${({ isOn }) => (isOn ? '#ffffff' : '#333333')};
+  border: 1px solid ${({ $isOn }) => ($isOn ? '#4CAF50' : '#ccc')};
+  background-color: ${({ $isOn }) => ($isOn ? '#4CAF50' : '#ffffff')};
+  color: ${({ $isOn }) => ($isOn ? '#ffffff' : '#333333')};
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
   outline: none;
 
   &:hover {
-    background-color: ${({ isOn }) => (isOn ? '#45a049' : '#f5f5f5')};
-    border-color: ${({ isOn }) => (isOn ? '#45a049' : '#bdbdbd')};
+    background-color: ${({ $isOn }) => ($isOn ? '#45a049' : '#f5f5f5')};
+    border-color: ${({ $isOn }) => ($isOn ? '#45a049' : '#bdbdbd')};
   }
 
   &:disabled {
@@ -57,7 +61,7 @@ export const ButtonSwitch = <K extends keyof ExtensionSettings>({
   return (
     <SwitchContainer className={className}>
       <SwitchButton
-        isOn={value as boolean}
+        $isOn={value as boolean}
         onClick={() => onChange(!value as ExtensionSettings[K])}
         disabled={disabled}
         role="switch"

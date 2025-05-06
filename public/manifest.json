@@ -35,11 +35,12 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icons/icon.png"
+        "icons/*.png"
       ],
       "matches": [
         "https://twitter.com/*",
-        "https://x.com/*"
+        "https://x.com/*",
+        "file:///*"
       ]
     }
   ],

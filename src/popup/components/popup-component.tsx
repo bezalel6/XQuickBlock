@@ -32,6 +32,9 @@ import ThemeToggle from './theme-toggle';
 import { motion } from 'framer-motion';
 import { ButtonSwitch } from './button-switch';
 import EnvironmentIndicator from './env-indicator';
+import Query from 'lib/query';
+import { getIconPath } from 'lib/themeing';
+import { isProd } from 'lib/environment';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -53,6 +56,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
     automaticUpdatePolicy: 'weekly',
     selectors: SELECTORS,
     source: Source.MAIN,
+    overrideDefaultSelectors: false,
   });
 
   useEffect(() => {
@@ -105,7 +109,10 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
 
   const updateState = async (newState: Partial<ExtensionSettings>) => {
     const settings = { ...state, ...newState };
+    const iconElement = Query.$(document.head).query(`[rel="icon"]`) as HTMLLinkElement;
+    if (iconElement) iconElement.href = getIconPath(settings.themeOverride);
     const settingsManager = await getSettingsManager('popup');
+
     await settingsManager.update(settings);
     setState(settings);
   };
@@ -241,15 +248,18 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
                   >
                     Reset to default
                   </Button>
+                  {!isProd && (
+                    <ToggleSwitch
+                      label="Persist Default Selectors"
+                      {...settingField('overrideDefaultSelectors')}
+                    ></ToggleSwitch>
+                  )}
                 </Advanced>
               </AccordionDetails>
             </Accordion>
             <Divider sx={{ my: 2 }} />
             <Footer></Footer>
-            <EnvironmentIndicator
-              label="Persist Default Selectors"
-              {...settingField('overrideDefaultSelectors')}
-            />
+            <EnvironmentIndicator />
           </Paper>
         </Container>
       </ThemeProvider>

@@ -1,86 +1,343 @@
 import { sendMessageToBackground } from '../message-handler';
 import { html, render } from '../lit';
-import Query from '../lib/query';
+import { ref, createRef } from 'lit-html/directives/ref.js';
+import Query, { QueryProps } from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
-import css, { className } from 'lib/css';
+import css, { className } from '../lib/css';
 
 export const flexiblePromoClassName = 'flexible-promo';
+
+// Store all streak-box elements to be able to animate them in sync
+const allStreakBoxes = new Set<HTMLElement>();
+
 const style = css`
   ${className(flexiblePromoClassName)} {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: white;
+    z-index: 5;
+  }
+
+  .container {
+    position: relative;
+    width: 100%;
+  }
+  .icon {
+    width: 24px;
+    height: auto;
+    max-width: max-content;
+  }
+  .xterminate-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: rgba(29, 161, 242, 0.08);
-    border: 1px solid rgba(29, 161, 242, 0.2);
-    border-radius: 12px;
-    margin: 16px 0;
+    justify-content: center;
+    color: white;
+    background-color: #1da1f2;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    font-weight: bold;
+    height: 40px;
+    width: min-content;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0 1rem;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+
+  .xterminate-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    box-sizing: border-box;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
-  ${className(flexiblePromoClassName)}:hover {
-    background: rgba(29, 161, 242, 0.12);
-    border-color: rgba(29, 161, 242, 0.3);
+
+  .xterminate-btn:hover {
+    background-color: #e03d00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(224, 61, 0, 0.3);
   }
-  .promo-icon {
+
+  .xterminate-btn:hover::before {
+    opacity: 1;
+  }
+
+  .xterminate-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .xterminate-btn .icon {
     width: 24px;
     height: 24px;
-    fill: #1da1f2;
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
   }
-  .promo-text {
-    font-size: 15px;
-    color: #e7e9ea;
-    line-height: 1.4;
-    flex: 1;
+
+  .xterminate-btn:hover .icon {
+    transform: rotate(15deg) scale(1.1);
   }
-  .promo-text strong {
-    color: #1da1f2;
+
+  .xterminate-btn .text {
+    margin-left: 8px;
+    font-size: 14px;
     font-weight: 600;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    white-space: nowrap;
   }
-  .promo-text .highlight {
+
+  .xterminate-btn:hover .text {
+    opacity: 1;
+    width: auto;
+    margin-left: 8px;
+  }
+
+  .tooltip {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    height: min-content;
+    width: 280px;
+    z-index: 10000;
+    background: #2a2a2a;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+  }
+
+  .tooltip.visible {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%; /* Changed from right to left for proper centering */
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #2a2a2a transparent transparent transparent;
+  }
+
+  .tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    word-wrap: break-word;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .tooltip-content strong {
     color: #1da1f2;
-    font-weight: 500;
-  }
-  .promo-text .settings-note {
-    font-size: 13px;
-    color: #71767b;
-    margin-top: 4px;
+    font-size: 1.1em;
     display: block;
+    margin-bottom: 2px;
   }
-  .settings-note {
-    text-decoration: underline;
-    cursor: pointer;
-    color: #71767b;
-    transition: color 0.2s ease;
+
+  .tooltip-content .highlight {
+    color: #ff6b35;
+    font-weight: 600;
     display: inline-block;
+    position: relative;
   }
-  .settings-note:hover {
+
+  .tooltip-content .highlight::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: #ff6b35;
+    bottom: 0;
+    left: 0;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease;
+  }
+
+  .tooltip-content:hover .highlight::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+  .tooltip-content .settings-note {
+    display: block;
+    font-size: 0.85em;
+    margin-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 8px;
+    transition: all 0.2s ease;
+    cursor: default;
+  }
+  .tooltip-content .settings-note a {
     color: #1da1f2;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .tooltip-content .settings-note:hover {
+    color: #ff6b35;
+    text-decoration: none;
+    transform: translateX(4px);
+  }
+  .streak-box {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .streak-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -100%;
+    opacity: 0;
+    width: 100%;
+    background: red;
+    transform: skewX(-20deg);
+    pointer-events: none;
+  }
+
+  .streak-box.animate::before {
+    opacity: 1;
+    animation: streak 0.6s ease-out infinite;
+  }
+
+  @keyframes streak {
+    to {
+      left: 100%;
+    }
+  }
+  /* Animation for the obliterate action */
+  @keyframes obliterate {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    20% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+
+  .obliterating {
+    animation: obliterate 0.5s forwards cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 `.define('flexible-promo');
 
+interface PromoConfig {
+  insertionSelector?: QueryProps;
+  bgAnimContainer?: QueryProps;
+  insertionMethod?: 'before' | 'after' | 'prepend' | 'append';
+  targetElement: HTMLElement;
+  customStyles?: Record<string, string>;
+}
+
+// Functions to synchronize animations across all streak-boxes
+function animateAllStreakBoxes() {
+  allStreakBoxes.forEach(box => {
+    box.classList.add('animate');
+  });
+}
+
+function stopAnimatingAllStreakBoxes() {
+  allStreakBoxes.forEach(box => {
+    box.classList.remove('animate');
+  });
+}
+
 // Function to inject the promo into the subscription dialog
-function injectPromo(
-  oblitirate: () => void,
-  dialog = Query.from(document).query('[role="dialog"]')
-) {
-  // Find the subscription dialog
-  if (!dialog || isMessedWith(dialog)) return;
-  setMessedWith(dialog);
-  // Find the action buttons container
-  const actionButtons = Query.from(dialog).query(`div:has(> a[href$="/i/premium_sign_up"])`);
-  if (!actionButtons) return;
+function injectPromo(obliterate: () => void, config: PromoConfig) {
+  const {
+    insertionSelector,
+    bgAnimContainer = null,
+    insertionMethod = 'before',
+    targetElement,
+    customStyles,
+  } = config;
+
+  // Find the targetElement element
+  if (!targetElement || isMessedWith(targetElement, 'advanced-selectors')) return;
+  setMessedWith(targetElement, true, 'advanced-selectors');
+
+  // Find the action buttons container if using default selector
+  let container: HTMLElement;
+  if (insertionSelector) {
+    container = Query.from(targetElement).query(insertionSelector)!;
+  } else {
+    container = targetElement;
+  }
+  if (!container) return;
+
+  // Add to streak-boxes collection and add class
+  let streakBox: HTMLElement = bgAnimContainer
+    ? (Query.$(targetElement).query(bgAnimContainer) ?? targetElement)
+    : targetElement;
+  streakBox.classList.add('streak-box');
+  allStreakBoxes.add(streakBox);
 
   // Create and inject our promo component
-  const promo = FlexiblePromo(() => {
-    oblitirate();
-    updateSettings();
-  });
-  actionButtons.insertBefore(promo, actionButtons.firstChild);
+  const promo = FlexiblePromo(
+    targetEl => {
+      // Apply animation to target element
+      if (targetEl) {
+        targetEl.classList.add('obliterating');
+        setTimeout(() => {
+          // Remove from streak-boxes collection
+          allStreakBoxes.delete(targetEl);
+          obliterate();
+          updateSettings();
+        }, 500); // Wait for animation to complete
+      } else {
+        obliterate();
+        updateSettings();
+      }
+    },
+    config,
+    customStyles
+  );
+
+  // Insert the promo based on the specified method
+  switch (insertionMethod) {
+    case 'before':
+      container.insertBefore(promo, container.firstChild);
+      break;
+    case 'after':
+      container.parentNode?.insertBefore(promo, container.nextSibling);
+      break;
+    case 'prepend':
+      container.prepend(promo);
+      break;
+    case 'append':
+      container.append(promo);
+      break;
+  }
 }
+
 function onOpenSettings() {
   sendMessageToBackground({
     sentFrom: 'content',
@@ -90,6 +347,7 @@ function onOpenSettings() {
     .then(console.log)
     .catch(console.error);
 }
+
 function updateSettings() {
   sendMessageToBackground({
     sentFrom: 'content',
@@ -97,30 +355,116 @@ function updateSettings() {
     payload: { hideSubscriptionOffers: true },
   });
 }
-function FlexiblePromo(onOblitirate: () => void) {
+
+function FlexiblePromo(
+  onObliterate: (targetEl?: HTMLElement) => void,
+  config: PromoConfig,
+  customStyles?: Record<string, string>
+) {
   style.inject();
   const container = document.createElement('div');
+  container.classList.add('container');
+
+  // Apply custom styles if provided
+  if (customStyles) {
+    Object.entries(customStyles).forEach(([key, value]) => {
+      container.style[key as any] = value;
+    });
+  }
+
+  const tooltipRef = createRef<HTMLDivElement>();
+  let tooltipTimeout: number;
 
   const template = html`
-    <div class="${flexiblePromoClassName}" @click=${onOblitirate}>
-      <img class="promo-icon" src="${chrome.runtime.getURL('icons/icon.png')}" alt="X-Terminator" />
-      <div class="promo-text">
-        <strong>X-Terminator</strong> can <span class="highlight">oblitirate this dialog</span> and
-        others like it
-        <a
-          @click=${(e: Event) => {
-            e.stopPropagation();
-            onOpenSettings();
-          }}
-          class="settings-note"
-          >You can always change this in the settings</a
+    <div class="${flexiblePromoClassName}">
+      <div
+        class="xterminate-btn"
+        @mouseenter=${() => showTooltip(true)}
+        @mouseleave=${() => showTooltip(false)}
+        @click=${(e: Event) => {
+          e.stopPropagation();
+          // todo: fix this nonsense
+          // Find the target element (usually the dialog or popup)
+          const targetDialog = container.closest('.dialog, .modal, .popup, [role="dialog"]');
+          onObliterate(targetDialog as HTMLElement);
+        }}
+      >
+        <img
+          class="icon"
+          src="${chrome.runtime.getURL('icons/transparent-icon.png')}"
+          alt="X-Terminator"
+        />
+        <div
+          class="tooltip"
+          ${ref(tooltipRef)}
+          @mouseenter=${() => showTooltip(true)}
+          @mouseleave=${() => showTooltip(false)}
         >
+          <div
+            class="tooltip-content"
+            @mouseenter=${() => showTooltip(true)}
+            @mouseleave=${() => showTooltip(false)}
+          >
+            <div>Click to <strong class="highlight">EXTERMINATE</strong></div>
+            <span class="settings-note"
+              >You can always change this
+              <a
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  onOpenSettings();
+                }}
+                >in the settings</a
+              ></span
+            >
+          </div>
+        </div>
       </div>
     </div>
   `;
+
   render(template, container);
+
+  const showTooltip = (show = true) => {
+    clearTimeout(tooltipTimeout);
+
+    if (tooltipRef.value) {
+      if (show) {
+        // Animate all streak-boxes instead of just the local one
+        animateAllStreakBoxes();
+        tooltipRef.value.classList.add('visible');
+      } else {
+        // Stop animating all streak-boxes
+        stopAnimatingAllStreakBoxes();
+        tooltipTimeout = window.setTimeout(() => {
+          tooltipRef.value?.classList.remove('visible');
+        }, 1000);
+      }
+    }
+  };
+
+  setTimeout(() => {
+    const tooltipEl = tooltipRef.value;
+    if (tooltipEl) {
+      document.body.appendChild(tooltipEl);
+      // Position it next to the button
+      const btn = Query.$(container).query('.xterminate-btn');
+      if (btn) {
+        const updateTooltipPosition = () => {
+          const btnRect = btn.getBoundingClientRect();
+          tooltipEl.style.top = `${btnRect.top - tooltipEl.offsetHeight - 10}px`;
+          // Fix for centering tooltip properly
+          const btnCenter = btnRect.left + btn.offsetWidth / 2;
+          tooltipEl.style.left = `${btnCenter - tooltipEl.offsetWidth / 2}px`;
+        };
+
+        updateTooltipPosition();
+        window.addEventListener('resize', updateTooltipPosition);
+        window.addEventListener('scroll', updateTooltipPosition, true);
+      }
+    }
+  }, 100);
+
   return container;
 }
 
-// Export the injection function
 export { injectPromo };

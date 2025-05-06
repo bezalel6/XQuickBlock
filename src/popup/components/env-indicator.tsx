@@ -7,7 +7,7 @@ import { PropsOf } from '@emotion/react';
 /**
  * A component that displays the current environment (dev/prod) in the popup
  */
-const EnvironmentIndicator: React.FC<PropsOf<typeof ToggleSwitch>> = props => {
+const EnvironmentIndicator: React.FC = () => {
   const styles: React.CSSProperties = {
     position: 'fixed',
     bottom: '8px',
@@ -22,14 +22,7 @@ const EnvironmentIndicator: React.FC<PropsOf<typeof ToggleSwitch>> = props => {
     opacity: 1,
   };
 
-  return (
-    <div style={styles}>
-      <>
-        {isProd ? 'PROD' : 'DEV'}
-        {!isProd && <ToggleSwitch {...props} />}
-      </>
-    </div>
-  );
+  return <div style={styles}>{isProd ? 'PROD' : 'DEV'}</div>;
 };
 
 export default EnvironmentIndicator;

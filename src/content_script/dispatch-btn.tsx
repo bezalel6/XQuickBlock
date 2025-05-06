@@ -13,8 +13,9 @@ export default function Button(
 ): HTMLButtonElement {
   const button = document.createElement('button');
   button.innerHTML = icon;
+  button.classList.add(`${action}-btn`);
   button.setAttribute('aria-label', `${action} user`);
-  button.setAttribute('title', `Click to ${action} user (Ctrl+Click for all)`);
+  button.setAttribute('title', `Click to ${action} user`);
 
   Object.assign(button.style, {
     marginLeft: '10px',

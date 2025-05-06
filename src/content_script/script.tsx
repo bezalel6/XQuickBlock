@@ -21,15 +21,17 @@ import {
   toggleInvisible,
   waitFor,
 } from './utils';
-import { injectPromo } from './flexible-promo';
-import Query from 'lib/query';
+import { injectPromo as flexible } from './flexible-promo';
+import { injectPromo } from './extension-promo';
+import Query from '../lib/query';
+import { className } from 'lib/css';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
 
 function processAd(tweet: HTMLElement, userNameElement: HTMLElement, settings: SettingsManger) {
   const { promotedContentAction } = settings.getState();
   // First, clean up any previous hide effects
-  const existingNotification = Query.from(tweet.parentNode).query(`.${adPlaceHolderClassName}`);
+  const existingNotification = Query.from(tweet.parentNode!).query(`.${adPlaceHolderClassName}`);
   if (existingNotification) {
     existingNotification.remove();
   }
@@ -73,44 +75,53 @@ export async function processUsername(userNameElement: HTMLElement) {
   buttonContainer.style.marginLeft = '4px';
 
   const { isBlockEnabled, isMuteEnabled } = settings.getState();
-  const btns = [];
-  if (isMuteEnabled) {
-    btns.push(Button('Mute', 'mute', userNameElement));
-  }
-  if (isBlockEnabled) {
-    btns.push(Button('Block', 'block', userNameElement));
-  }
+  const btns = Array<HTMLElement>();
+  btns.push(Button('Mute', 'mute', userNameElement));
+  btns.push(Button('Block', 'block', userNameElement));
   btns.forEach(btn => buttonContainer.appendChild(btn));
   userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
 }
 
 async function initialize(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
-
+  const {
+    selectors: { userNameSelector },
+  } = settings.getState();
   // Set up persistent mutation callback for usernames
   createPersistentMutationCallback(
     'usernameProcessor',
-    node => Query.from(node).queryAll(settings.getState().selectors.userNameSelector),
+    node => Query.from(node).queryAll(userNameSelector),
     userNames => userNames.forEach(processUsername)
   );
 
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) => {
-    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
-
     createPersistentMutationCallback(
       'upsale',
-      node => Query.$().queryAll(selectors.upsaleSelectors, false),
+      node => Query.$().queryAll(selectors.upsaleSelectors, true),
       upsales => {
-        upsales.forEach(u => toggleInvisible(u, hideSubscriptionOffers, true));
+        upsales.forEach(u => {
+          if (!hideSubscriptionOffers) {
+            flexible(() => {}, {
+              targetElement: u,
+              insertionSelector: [
+                `a[role="link"]`,
+                Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
+              ],
+              insertionMethod: 'append',
+            });
+          }
+          toggleInvisible(u, hideSubscriptionOffers);
+        });
       }
     );
 
+    toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
     createPersistentMutationCallback(
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
       dialog => {
         const oblitirate = () => {
-          Query.$(dialog).closest('[role="dialog"]').remove();
+          Query.$(dialog).closest('[role="dialog"]')?.remove();
           Query.$()
             .queryAll(['[role="dialog"]', '[data-testid="mask"]'])
             .forEach(d => d.remove());
@@ -125,7 +136,7 @@ async function initialize(state: ExtensionSettings) {
     );
   });
 
-  settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
+  settings.subscribe(['selectors'], ({ selectors }) => {
     if (selectors.test)
       createPersistentMutationCallback(
         'test',
@@ -139,25 +150,9 @@ async function initialize(state: ExtensionSettings) {
   });
   settings.subscribe(
     ['isBlockEnabled', 'isMuteEnabled'],
-    async ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
-      const userNames = Query.from(document).queryAll(userNameSelector);
-
-      // First, remove all existing buttons and reset messedWith state
-      const existingButtons = Query.from(document).queryAll(`.${BTNS}`);
-      existingButtons.forEach(b => {
-        const parent = closestMessedWith(b as HTMLElement);
-        if (parent) {
-          setMessedWith(parent, false);
-        }
-        b.remove();
-      });
-
-      // Then process each username if either setting is enabled
-      if (isBlockEnabled || isMuteEnabled) {
-        for (const userName of userNames) {
-          await processUsername(userName as HTMLElement);
-        }
-      }
+    ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
+      toggleInvisible(className(BTNS) + ' .block-btn', !isBlockEnabled, { maintainSize: true });
+      toggleInvisible(className(BTNS) + ' .mute-btn', !isMuteEnabled, { maintainSize: true });
     }
   );
   settings.subscribe(
@@ -166,7 +161,7 @@ async function initialize(state: ExtensionSettings) {
       Query.from(document)
         .queryAll(`.${AD}`)
         .forEach(ad => {
-          processAd(ad as HTMLElement, Query.from(ad).query(userNameSelector), settings);
+          processAd(ad as HTMLElement, Query.from(ad).query(userNameSelector)!, settings);
         });
     }
   );

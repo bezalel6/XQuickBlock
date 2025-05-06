@@ -9,20 +9,56 @@ import Query from 'lib/query';
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+type VisibilityOptions = Partial<{
+  debug: boolean;
+  // should keep taking up space in the DOM while invisible
+  maintainSize: boolean;
+}>;
+const defaultVisibilityOptions: Required<VisibilityOptions> = {
+  debug: false,
+  maintainSize: false,
+};
+const visibilityMap = [
+  { property: 'display', value: 'none' },
+  { property: 'visibility', value: 'hidden' },
+];
 /**
  * Toggle visibility of elements matching a selector, using {@link toggleCSSRule}
  */
-export function toggleInvisible(selector: Selector, hide: boolean, debug?: boolean): void;
-export function toggleInvisible(element: HTMLElement, hide: boolean, debug?: boolean): void;
+export function toggleInvisible(
+  selector: Selector,
+  hide: boolean,
+  options?: VisibilityOptions
+): void;
+export function toggleInvisible(
+  element: HTMLElement,
+  hide: boolean,
+  options?: VisibilityOptions
+): void;
 export function toggleInvisible(
   selectorOrElement: Selector | HTMLElement,
   hide: boolean,
-  debug = false
+  _options?: VisibilityOptions
 ): void {
+  const options = { ...defaultVisibilityOptions, ..._options };
+  const visibility = visibilityMap[Number(options.maintainSize)];
+  if (!visibility) debugger;
   if (selectorOrElement instanceof HTMLElement) {
-    toggleElementCSSRule(selectorOrElement, 'display', hide ? 'none !important' : '', hide, debug);
+    toggleElementCSSRule(
+      selectorOrElement,
+      visibility.property,
+      hide ? `${visibility.value} !important` : '',
+      hide,
+      options.debug
+    );
   } else {
-    toggleCSSRule(selectorOrElement, 'display', hide ? 'none !important' : '', hide, debug);
+    toggleCSSRule(
+      selectorOrElement,
+      visibility.property,
+      hide ? `${visibility.value} !important` : '',
+      hide,
+      options.debug
+    );
   }
 }
 
@@ -278,12 +314,19 @@ export function closestMessedWith(element: HTMLElement): Element | null {
   // Instead of using closest, this is the actual best way in the specific usage context
   return Query.from(element.parentElement).query('[messedWith="true"]');
 }
-
-export function isMessedWith(node: Element) {
-  return node.getAttribute('messedWith');
+type MessSrc = 'static-selectors' | 'advanced-selectors';
+type MessSelector = '*' | MessSrc;
+export function isMessedWith(node: Element, by: MessSelector = '*') {
+  const res = node.getAttribute('messedWith');
+  if (res && by !== '*') return by === res;
+  return !!res;
 }
-export function setMessedWith(node: Element, messedWith = true) {
+export function setMessedWith(
+  node: Element,
+  messedWith = true,
+  by: MessSelector = 'static-selectors'
+) {
   if (!node) return false;
-  if (messedWith) return node.setAttribute('messedWith', 'true');
+  if (messedWith) return node.setAttribute('messedWith', by);
   node.removeAttribute('messedWith');
 }

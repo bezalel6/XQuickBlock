@@ -1,6 +1,7 @@
 import { Selectors } from './constants';
 import { getSettingsManager } from './settings-manager';
 import { ExtensionMessage, ExtensionSettings, Source, UpdatePolicy } from './types';
+import { getAllIconPaths } from './lib/themeing';
 
 const makeUpdateURL = (source: Source = Source.MAIN) =>
   `https://raw.githubusercontent.com/bezalel6/XTerminator/refs/heads/${source}/public/data/constants.json`;
@@ -75,7 +76,9 @@ async function applyPolicy(policy: UpdatePolicy) {
 }
 async function init() {
   const settingsManager = await getSettingsManager('background');
-
+  settingsManager.subscribe(['themeOverride'], ({ themeOverride }) => {
+    chrome.action.setIcon({ path: getAllIconPaths(themeOverride, '../') });
+  });
   settingsManager.registerMessageHandler('manualUpdate', async (_, __, sendResponse) => {
     return await fetchAndUpdateJson()
       .then(diff => {
