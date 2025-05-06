@@ -34,6 +34,7 @@ import { ButtonSwitch } from './button-switch';
 import EnvironmentIndicator from './env-indicator';
 import Query from 'lib/query';
 import { getIconPath } from 'lib/themeing';
+import { isProd } from 'lib/environment';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -247,15 +248,18 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
                   >
                     Reset to default
                   </Button>
+                  {!isProd && (
+                    <ToggleSwitch
+                      label="Persist Default Selectors"
+                      {...settingField('overrideDefaultSelectors')}
+                    ></ToggleSwitch>
+                  )}
                 </Advanced>
               </AccordionDetails>
             </Accordion>
             <Divider sx={{ my: 2 }} />
             <Footer></Footer>
-            <EnvironmentIndicator
-              label="Persist Default Selectors"
-              {...settingField('overrideDefaultSelectors')}
-            />
+            <EnvironmentIndicator />
           </Paper>
         </Container>
       </ThemeProvider>

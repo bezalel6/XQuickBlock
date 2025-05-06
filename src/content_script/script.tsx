@@ -97,7 +97,7 @@ async function initialize(state: ExtensionSettings) {
   settings.subscribe(['hideSubscriptionOffers'], ({ hideSubscriptionOffers, selectors }) => {
     createPersistentMutationCallback(
       'upsale',
-      node => Query.$().queryAll(selectors.upsaleSelectors, false),
+      node => Query.$().queryAll(selectors.upsaleSelectors, true),
       upsales => {
         upsales.forEach(u => {
           if (!hideSubscriptionOffers) {
@@ -107,7 +107,7 @@ async function initialize(state: ExtensionSettings) {
                 `a[role="link"]`,
                 Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
               ],
-              insertionMethod: 'after',
+              insertionMethod: 'append',
             });
           }
           toggleInvisible(u, hideSubscriptionOffers);
@@ -130,7 +130,7 @@ async function initialize(state: ExtensionSettings) {
         if (hideSubscriptionOffers) {
           oblitirate();
         } else {
-          flexible(oblitirate, { targetElement: dialog });
+          injectPromo(oblitirate, dialog);
         }
       }
     );

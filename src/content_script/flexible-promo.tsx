@@ -14,7 +14,7 @@ const style = css`
   ${className(flexiblePromoClassName)} {
     position: absolute;
     right: 10px;
-    bottom: 50%;
+    bottom: 10px;
     color: white;
     z-index: 5;
   }
@@ -251,6 +251,7 @@ const style = css`
 
 interface PromoConfig {
   insertionSelector?: QueryProps;
+  bgAnimContainer?: QueryProps;
   insertionMethod?: 'before' | 'after' | 'prepend' | 'append';
   targetElement: HTMLElement;
   customStyles?: Record<string, string>;
@@ -271,7 +272,13 @@ function stopAnimatingAllStreakBoxes() {
 
 // Function to inject the promo into the subscription dialog
 function injectPromo(obliterate: () => void, config: PromoConfig) {
-  const { insertionSelector, insertionMethod = 'before', targetElement, customStyles } = config;
+  const {
+    insertionSelector,
+    bgAnimContainer = null,
+    insertionMethod = 'before',
+    targetElement,
+    customStyles,
+  } = config;
 
   // Find the targetElement element
   if (!targetElement || isMessedWith(targetElement, 'advanced-selectors')) return;
@@ -287,8 +294,11 @@ function injectPromo(obliterate: () => void, config: PromoConfig) {
   if (!container) return;
 
   // Add to streak-boxes collection and add class
-  targetElement.classList.add('streak-box');
-  allStreakBoxes.add(targetElement);
+  let streakBox: HTMLElement = bgAnimContainer
+    ? (Query.$(targetElement).query(bgAnimContainer) ?? targetElement)
+    : targetElement;
+  streakBox.classList.add('streak-box');
+  allStreakBoxes.add(streakBox);
 
   // Create and inject our promo component
   const promo = FlexiblePromo(
