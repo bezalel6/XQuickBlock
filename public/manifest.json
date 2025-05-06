@@ -35,8 +35,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icons/icon.png",
-        "icons/transparent-icon.png"
+        "icons/*.png"
       ],
       "matches": [
         "https://twitter.com/*",
