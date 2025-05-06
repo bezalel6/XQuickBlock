@@ -109,7 +109,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
   const updateState = async (newState: Partial<ExtensionSettings>) => {
     const settings = { ...state, ...newState };
     const iconElement = Query.$(document.head).query(`[rel="icon"]`) as HTMLLinkElement;
-    iconElement.href = getIconPath(settings.themeOverride);
+    if (iconElement) iconElement.href = getIconPath(settings.themeOverride);
     const settingsManager = await getSettingsManager('popup');
 
     await settingsManager.update(settings);
