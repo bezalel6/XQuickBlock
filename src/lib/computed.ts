@@ -28,7 +28,6 @@ const obj = {
   y: ({ x, z }) => x + z * 2, // Inferred as (deps: Omit<Point, 'y'>) => number
   z: 1,
 } satisfies Computable<Point>;
-console.log(computed(obj.y)(obj));
 const obj2: Computable<Point> = {
   x: 5,
   y: computed<Point, 'y'>(({ x }) => x * 2), // Explicit generic parameters
