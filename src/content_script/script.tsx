@@ -151,8 +151,12 @@ async function initialize(state: ExtensionSettings) {
   settings.subscribe(
     ['isBlockEnabled', 'isMuteEnabled'],
     ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
-      toggleInvisible(className(BTNS) + ' .block-btn', !isBlockEnabled, { maintainSize: true });
-      toggleInvisible(className(BTNS) + ' .mute-btn', !isMuteEnabled, { maintainSize: true });
+      toggleInvisible(className(BTNS) + ' .block-btn', !isBlockEnabled, {
+        maintainSize: !isMuteEnabled,
+      });
+      toggleInvisible(className(BTNS) + ' .mute-btn', !isMuteEnabled, {
+        maintainSize: !isBlockEnabled,
+      });
     }
   );
   settings.subscribe(
