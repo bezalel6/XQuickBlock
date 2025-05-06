@@ -24,6 +24,7 @@ import {
 import { injectPromo as flexible } from './flexible-promo';
 import { injectPromo } from './extension-promo';
 import Query from '../lib/query';
+import { className } from 'lib/css';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
 
@@ -75,23 +76,21 @@ export async function processUsername(userNameElement: HTMLElement) {
 
   const { isBlockEnabled, isMuteEnabled } = settings.getState();
   const btns = Array<HTMLElement>();
-  if (isMuteEnabled) {
-    btns.push(Button('Mute', 'mute', userNameElement));
-  }
-  if (isBlockEnabled) {
-    btns.push(Button('Block', 'block', userNameElement));
-  }
+  btns.push(Button('Mute', 'mute', userNameElement));
+  btns.push(Button('Block', 'block', userNameElement));
   btns.forEach(btn => buttonContainer.appendChild(btn));
   userNameElement.parentElement?.parentElement?.appendChild(buttonContainer);
 }
 
 async function initialize(state: ExtensionSettings) {
   const settings = await getSettingsManager('content');
-
+  const {
+    selectors: { userNameSelector },
+  } = settings.getState();
   // Set up persistent mutation callback for usernames
   createPersistentMutationCallback(
     'usernameProcessor',
-    node => Query.from(node).queryAll(settings.getState().selectors.userNameSelector),
+    node => Query.from(node).queryAll(userNameSelector),
     userNames => userNames.forEach(processUsername)
   );
 
@@ -137,7 +136,7 @@ async function initialize(state: ExtensionSettings) {
     );
   });
 
-  settings.subscribe(['selectors', 'isBlockEnabled'], ({ selectors }) => {
+  settings.subscribe(['selectors'], ({ selectors }) => {
     if (selectors.test)
       createPersistentMutationCallback(
         'test',
@@ -151,25 +150,9 @@ async function initialize(state: ExtensionSettings) {
   });
   settings.subscribe(
     ['isBlockEnabled', 'isMuteEnabled'],
-    async ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
-      const userNames = Query.from(document).queryAll(userNameSelector);
-
-      // First, remove all existing buttons and reset messedWith state
-      const existingButtons = Query.from(document).queryAll(`.${BTNS}`);
-      existingButtons.forEach(b => {
-        const parent = closestMessedWith(b as HTMLElement);
-        if (parent) {
-          setMessedWith(parent, false);
-        }
-        b.remove();
-      });
-
-      // Then process each username if either setting is enabled
-      if (isBlockEnabled || isMuteEnabled) {
-        for (const userName of userNames) {
-          await processUsername(userName as HTMLElement);
-        }
-      }
+    ({ isBlockEnabled, isMuteEnabled, selectors: { userNameSelector } }) => {
+      toggleInvisible(className(BTNS) + ' .block-btn', !isBlockEnabled);
+      toggleInvisible(className(BTNS) + ' .mute-btn', !isMuteEnabled);
     }
   );
   settings.subscribe(
