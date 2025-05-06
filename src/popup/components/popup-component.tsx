@@ -32,6 +32,8 @@ import ThemeToggle from './theme-toggle';
 import { motion } from 'framer-motion';
 import { ButtonSwitch } from './button-switch';
 import EnvironmentIndicator from './env-indicator';
+import Query from 'lib/query';
+import { getIconPath } from 'lib/themeing';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -106,7 +108,10 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
 
   const updateState = async (newState: Partial<ExtensionSettings>) => {
     const settings = { ...state, ...newState };
+    const iconElement = Query.$(document.head).query(`[rel="icon"]`) as HTMLLinkElement;
+    if (iconElement) iconElement.href = getIconPath(settings.themeOverride);
     const settingsManager = await getSettingsManager('popup');
+
     await settingsManager.update(settings);
     setState(settings);
   };
