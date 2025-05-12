@@ -22,6 +22,13 @@ jobs:
       - name: Create constants directory
         run: mkdir -p public/data
 
+      - name: Fix case sensitivity issue
+        run: |
+          # Create a symlink for Query.ts to handle case-sensitivity issues
+          mkdir -p src/lib/.case-links
+          ln -s ../query.ts src/lib/.case-links/Query.ts
+          echo "export * from '../query';" > src/lib/Query.ts
+
       - name: Compile constants file
         run: npm run build:constants
 
