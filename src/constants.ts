@@ -1,4 +1,4 @@
-import { default as $$$ } from './lib/query';
+import $$$ from './lib/query';
 
 const SELECTORS = {
   userNameSelector: '*[data-testid=User-Name]',
