@@ -5,11 +5,10 @@ import Query, { QueryProps } from '../lib/query';
 import { isMessedWith, setMessedWith } from './utils';
 import css, { className } from '../lib/css';
 import { Computable, resolveComputable } from 'lib/computed';
+import { ExtensionSettings } from 'types';
 
 export const flexiblePromoClassName = 'flexible-promo';
-
-// Store all streak-box elements to be able to animate them in sync
-const allStreakBoxes = new Set<HTMLElement>();
+export const streakBoxClassName = 'streak-box';
 
 const style = css`
   ${className(flexiblePromoClassName)} {
@@ -202,7 +201,7 @@ const style = css`
     text-decoration: none;
     transform: translateX(4px);
   }
-  .streak-box {
+  [class*='streak-box'] {
     position: relative;
     overflow: hidden;
     border: 2px solid transparent;
@@ -210,7 +209,7 @@ const style = css`
     transition: border-color 0.3s ease;
   }
 
-  .streak-box.animate {
+  [class*='streak-box'].animate {
     animation: border-pulse 1s ease-in-out infinite;
   }
 
@@ -255,17 +254,20 @@ interface PromoConfig {
   insertionMethod?: 'before' | 'after' | 'prepend' | 'append';
   targetElement: HTMLElement;
   customStyles?: Record<string, string>;
+  settingGroup: keyof ExtensionSettings;
 }
 
 // Functions to synchronize animations across all streak-boxes
-function animateAllStreakBoxes() {
-  allStreakBoxes.forEach(box => {
+function animateStreakBoxes(setting: PromoConfig['settingGroup']) {
+  const c = `.${streakBoxClassName}-${setting}`;
+  console.log('Animating with selector:', c);
+  document.querySelectorAll(c).forEach(box => {
     box.classList.add('animate');
   });
 }
 
-function stopAnimatingAllStreakBoxes() {
-  allStreakBoxes.forEach(box => {
+function stopAnimatingStreakBoxes(setting: PromoConfig['settingGroup']) {
+  document.querySelectorAll(`.${streakBoxClassName}-${setting}`).forEach(box => {
     box.classList.remove('animate');
   });
 }
@@ -279,6 +281,7 @@ function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
     insertionMethod = 'before',
     targetElement,
     customStyles,
+    settingGroup,
   } = config;
 
   // Find the targetElement element
@@ -298,8 +301,7 @@ function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
   let streakBox: HTMLElement = bgAnimContainer
     ? (Query.$(targetElement).query(bgAnimContainer) ?? targetElement)
     : targetElement;
-  streakBox.classList.add('streak-box');
-  allStreakBoxes.add(streakBox);
+  streakBox.classList.add(`${streakBoxClassName}-${settingGroup}`);
 
   // Create and inject our promo component
   const promo = FlexiblePromo(
@@ -308,14 +310,12 @@ function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
       if (targetEl) {
         targetEl.classList.add('obliterating');
         setTimeout(() => {
-          // Remove from streak-boxes collection
-          allStreakBoxes.delete(targetEl);
           obliterate();
-          updateSettings();
+          updateSettings(config);
         }, 500); // Wait for animation to complete
       } else {
         obliterate();
-        updateSettings();
+        updateSettings(config);
       }
     },
     config,
@@ -339,21 +339,21 @@ function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
   }
 }
 
-function onOpenSettings() {
+function onOpenSettings(config: PromoConfig) {
   sendMessageToBackground({
     sentFrom: 'content',
     type: 'options',
-    payload: { highlight: 'hideSubscriptionOffers' },
+    payload: { highlight: config.settingGroup },
   })
     .then(console.log)
     .catch(console.error);
 }
 
-function updateSettings() {
+function updateSettings(config: PromoConfig) {
   sendMessageToBackground({
     sentFrom: 'content',
     type: 'contentScriptStateUpdate',
-    payload: { hideSubscriptionOffers: true },
+    payload: { [config.settingGroup]: true },
   });
 }
 
@@ -412,7 +412,7 @@ function FlexiblePromo(
               <a
                 @click=${(e: Event) => {
                   e.stopPropagation();
-                  onOpenSettings();
+                  onOpenSettings(config);
                 }}
                 >in the settings</a
               ></span
@@ -431,11 +431,11 @@ function FlexiblePromo(
     if (tooltipRef.value) {
       if (show) {
         // Animate all streak-boxes instead of just the local one
-        animateAllStreakBoxes();
+        animateStreakBoxes(config.settingGroup);
         tooltipRef.value.classList.add('visible');
       } else {
         // Stop animating all streak-boxes
-        stopAnimatingAllStreakBoxes();
+        stopAnimatingStreakBoxes(config.settingGroup);
         tooltipTimeout = window.setTimeout(() => {
           tooltipRef.value?.classList.remove('visible');
         }, 1000);

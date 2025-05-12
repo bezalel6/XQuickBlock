@@ -111,6 +111,7 @@ async function initialize(state: ExtensionSettings) {
               //   $.self('[data-testid=super-upsell-UpsellCardRenderProperties]') ? 'div div' : null
               // ),
               insertionMethod: 'after',
+              settingGroup: 'hideSubscriptionOffers',
             });
           }
           toggleInvisible(u, hideSubscriptionOffers);
