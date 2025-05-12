@@ -3,7 +3,7 @@ name: Save Constants as JSON
 on:
   push:
     branches:
-      - "**" # This will trigger on all branches
+      - '**' # This will trigger on all branches
 
 jobs:
   save-constants:
@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -23,7 +23,7 @@ jobs:
         run: mkdir -p public/data
 
       - name: Compile constants file
-        run: npx tsc src/constants.ts --outDir dist --esModuleInterop true
+        run: npm run build:constants
 
       - name: Generate constants JSON
         run: |

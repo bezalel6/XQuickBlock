@@ -6,9 +6,10 @@
   "scripts": {
     "watch": "npm run build:icons && webpack --config webpack/webpack.dev.js --env development --watch",
     "watch:clean": "npm run clean && webpack --config webpack/webpack.dev.js --env development --watch",
-    "build": "npm run clean && npm run build:icons && webpack --config webpack/webpack.prod.js --env production",
+    "build": "npm run clean && webpack --config webpack/webpack.prod.js --env production",
     "clean": "rimraf dist",
     "build:icons": "node scripts/icon.js",
+    "build:constants": "tsc -p tsconfig.build.json",
     "style": "prettier --write \"src/**/*.{ts,tsx}\" && eslint \"src/**/*.{ts,tsx}\" --fix",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
