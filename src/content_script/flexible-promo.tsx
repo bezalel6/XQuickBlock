@@ -205,29 +205,27 @@ const style = css`
   .streak-box {
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
   }
 
-  .streak-box::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -100%;
-    opacity: 0;
-    width: 100%;
-    background: red;
-    transform: skewX(-20deg);
-    pointer-events: none;
+  .streak-box.animate {
+    animation: border-pulse 1s ease-in-out infinite;
   }
 
-  .streak-box.animate::before {
-    opacity: 1;
-    animation: streak 0.6s ease-out infinite;
-  }
-
-  @keyframes streak {
-    to {
-      left: 100%;
+  @keyframes border-pulse {
+    0% {
+      border-color: transparent;
+      box-shadow: 0 0 0 rgba(255, 0, 0, 0);
+    }
+    50% {
+      border-color: #ff3b30;
+      box-shadow: 0 0 8px rgba(255, 59, 48, 0.7);
+    }
+    100% {
+      border-color: transparent;
+      box-shadow: 0 0 0 rgba(255, 0, 0, 0);
     }
   }
   /* Animation for the obliterate action */

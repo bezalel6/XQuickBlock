@@ -107,9 +107,9 @@ async function initialize(state: ExtensionSettings) {
                 `a[role="link"]`,
                 Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
               ],
-              bgAnimContainer: Query.$$()($ =>
-                $.self('[data-testid=super-upsell-UpsellCardRenderProperties]') ? 'div div' : null
-              ),
+              // bgAnimContainer: Query.$$()($ =>
+              //   $.self('[data-testid=super-upsell-UpsellCardRenderProperties]') ? 'div div' : null
+              // ),
               insertionMethod: 'after',
             });
           }
