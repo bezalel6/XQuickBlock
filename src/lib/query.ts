@@ -27,6 +27,7 @@ interface PseudoSelectorConfig {
 
 type GenerateSelector = (selector: typeof Query) => string;
 
+type Smuggle = { property: string; value: string };
 /**
  * Query class provides a fluent interface for DOM manipulation and traversal
  * with chainable methods and extended functionality
@@ -74,6 +75,24 @@ class Query {
 
     // Query the element itself using a selector
     self: (selector: string) => (element: Element) => element.matches(selector),
+
+    // Find if element has a closest ancestor matching selector
+    closest: (selector: string) => (element: Element) => !!element.closest(selector),
+
+    smuggleIf: (stringified: string) => element => {
+      const { selector, whenMatch, whenNoMatch } = JSON.parse(stringified) as {
+        selector: QueryProps;
+        whenMatch: Smuggle;
+        whenNoMatch: Smuggle;
+      };
+      if (Query.from(element).query(selector)) {
+        console.log('smuggle if matched', element);
+        if (whenMatch) element[whenMatch.property] = whenMatch.value;
+      } else {
+        if (whenNoMatch) element[whenNoMatch.property] = whenNoMatch.value;
+      }
+      return false;
+    },
   };
 
   /**
@@ -539,6 +558,21 @@ class Query {
   static self(selector: string): string {
     const { prefix, suffix, valueWrapper } = this.template;
     return `${prefix}self${suffix}(${valueWrapper}${selector}${valueWrapper})`;
+  }
+
+  static closest(selector: string): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    return `${prefix}closest${suffix}(${valueWrapper}${selector}${valueWrapper})`;
+  }
+
+  static smuggleIf(
+    selector: QueryProps,
+    whenMatch: Smuggle | undefined,
+    whenNoMatch: Smuggle | undefined
+  ): string {
+    const { prefix, suffix, valueWrapper } = this.template;
+    const config = JSON.stringify({ selector, whenMatch, whenNoMatch });
+    return `${prefix}smuggleIf${suffix}(${valueWrapper}${config}${valueWrapper})`;
   }
 
   /**

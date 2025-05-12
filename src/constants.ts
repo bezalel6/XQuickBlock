@@ -1,4 +1,4 @@
-import { default as $$$ } from './lib/query';
+import $$$ from './lib/query';
 
 const SELECTORS = {
   userNameSelector: '*[data-testid=User-Name]',
@@ -13,6 +13,10 @@ const SELECTORS = {
       $ =>
         `[data-testid="tweet"] div:has( > div > div > span ${$.contains('Access your post analytics')})`
     ),
+  ],
+  upsaleSelectorsInsertions: [
+    `a[role="link"]`,
+    $$$.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
   ],
   upsaleDialogSelector: $$$.$$()(
     $ =>

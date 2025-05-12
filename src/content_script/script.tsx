@@ -21,7 +21,7 @@ import {
   toggleInvisible,
   waitFor,
 } from './utils';
-import { injectPromo as flexible } from './flexible-promo';
+import { injectPromo as flexible, injectedContainerClassName } from './flexible-promo';
 import { injectPromo } from './extension-promo';
 import Query from '../lib/query';
 import { className } from 'lib/css';
@@ -103,19 +103,21 @@ async function initialize(state: ExtensionSettings) {
           if (!hideSubscriptionOffers) {
             flexible(() => {}, {
               targetElement: u,
-              insertionSelector: [
-                `a[role="link"]`,
-                Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
-              ],
-              insertionMethod: 'append',
+              insertionSelector: selectors.upsaleSelectorsInsertions || undefined,
+              insertionMethod: 'after',
+              settingGroup: 'hideSubscriptionOffers',
             });
           }
           toggleInvisible(u, hideSubscriptionOffers);
         });
       }
     );
-
+    toggleInvisible(
+      `.${injectedContainerClassName('hideSubscriptionOffers')}`,
+      hideSubscriptionOffers
+    );
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
+
     createPersistentMutationCallback(
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),
