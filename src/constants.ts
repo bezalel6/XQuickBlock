@@ -14,6 +14,10 @@ const SELECTORS = {
         `[data-testid="tweet"] div:has( > div > div > span ${$.contains('Access your post analytics')})`
     ),
   ],
+  upsaleSelectorsInsertions: [
+    `a[role="link"]`,
+    $$$.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
+  ],
   upsaleDialogSelector: $$$.$$()(
     $ =>
       `[data-testid="sheetDialog"] div ${$.containsAny('Want more people to see your reply?', 'Remove all ads with Premium+')}`

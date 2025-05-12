@@ -103,13 +103,7 @@ async function initialize(state: ExtensionSettings) {
           if (!hideSubscriptionOffers) {
             flexible(() => {}, {
               targetElement: u,
-              insertionSelector: [
-                `a[role="link"]`,
-                Query.$$()($ => $.self(`[data-testid="premium-signup-tab"]`)),
-              ],
-              // bgAnimContainer: Query.$$()($ =>
-              //   $.self('[data-testid=super-upsell-UpsellCardRenderProperties]') ? 'div div' : null
-              // ),
+              insertionSelector: selectors.upsaleSelectorsInsertions || undefined,
               insertionMethod: 'after',
               settingGroup: 'hideSubscriptionOffers',
             });
