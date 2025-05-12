@@ -21,7 +21,7 @@ import {
   toggleInvisible,
   waitFor,
 } from './utils';
-import { injectPromo as flexible } from './flexible-promo';
+import { injectPromo as flexible, injectedContainerClassName } from './flexible-promo';
 import { injectPromo } from './extension-promo';
 import Query from '../lib/query';
 import { className } from 'lib/css';
@@ -118,8 +118,12 @@ async function initialize(state: ExtensionSettings) {
         });
       }
     );
-
+    toggleInvisible(
+      `.${injectedContainerClassName('hideSubscriptionOffers')}`,
+      hideSubscriptionOffers
+    );
     toggleInvisible(selectors.upsaleSelectors, hideSubscriptionOffers);
+
     createPersistentMutationCallback(
       'subscriptionOffers',
       node => Query.from(node).query(selectors.upsaleDialogSelector),

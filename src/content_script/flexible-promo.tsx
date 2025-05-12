@@ -8,7 +8,10 @@ import { Computable, resolveComputable } from 'lib/computed';
 import { ExtensionSettings } from 'types';
 
 export const flexiblePromoClassName = 'flexible-promo';
-export const streakBoxClassName = 'streak-box';
+export const streakBoxClassName = (settingGroup: keyof ExtensionSettings) =>
+  `streak-box-${settingGroup}`;
+export const injectedContainerClassName = (settingGroup: keyof ExtensionSettings) =>
+  `container-${settingGroup}`;
 
 const style = css`
   ${className(flexiblePromoClassName)} {
@@ -19,10 +22,16 @@ const style = css`
     z-index: 5;
   }
 
-  .container {
+  [class*='container-'] {
     position: relative;
     width: 100%;
   }
+
+  [class*='container-'] {
+    position: relative;
+    width: 100%;
+  }
+
   .icon {
     width: 24px;
     height: auto;
@@ -201,7 +210,7 @@ const style = css`
     text-decoration: none;
     transform: translateX(4px);
   }
-  [class*='streak-box'] {
+  [class*='streak-box-'] {
     position: relative;
     overflow: hidden;
     border: 2px solid transparent;
@@ -209,7 +218,7 @@ const style = css`
     transition: border-color 0.3s ease;
   }
 
-  [class*='streak-box'].animate {
+  [class*='streak-box-'].animate {
     animation: border-pulse 1s ease-in-out infinite;
   }
 
@@ -259,7 +268,7 @@ interface PromoConfig {
 
 // Functions to synchronize animations across all streak-boxes
 function animateStreakBoxes(setting: PromoConfig['settingGroup']) {
-  const c = `.${streakBoxClassName}-${setting}`;
+  const c = `.${streakBoxClassName(setting)}`;
   console.log('Animating with selector:', c);
   document.querySelectorAll(c).forEach(box => {
     box.classList.add('animate');
@@ -267,7 +276,7 @@ function animateStreakBoxes(setting: PromoConfig['settingGroup']) {
 }
 
 function stopAnimatingStreakBoxes(setting: PromoConfig['settingGroup']) {
-  document.querySelectorAll(`.${streakBoxClassName}-${setting}`).forEach(box => {
+  document.querySelectorAll(`.${streakBoxClassName(setting)}`).forEach(box => {
     box.classList.remove('animate');
   });
 }
@@ -301,7 +310,7 @@ function injectPromo(obliterate: () => void, _config: Computable<PromoConfig>) {
   let streakBox: HTMLElement = bgAnimContainer
     ? (Query.$(targetElement).query(bgAnimContainer) ?? targetElement)
     : targetElement;
-  streakBox.classList.add(`${streakBoxClassName}-${settingGroup}`);
+  streakBox.classList.add(streakBoxClassName(settingGroup));
 
   // Create and inject our promo component
   const promo = FlexiblePromo(
@@ -364,7 +373,7 @@ function FlexiblePromo(
 ) {
   style.inject();
   const container = document.createElement('div');
-  container.classList.add('container');
+  container.classList.add(injectedContainerClassName(config.settingGroup));
 
   // Apply custom styles if provided
   if (customStyles) {
